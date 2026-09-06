@@ -1,0 +1,32 @@
+{
+  "nai-1": {
+    "rong": 181,
+    "cao": 320,
+    "ti_le": 0.566,
+    "dang": "đực đứng thẳng, sừng lớn, quay mặt về phía người xem"
+  },
+  "nai-2": {
+    "rong": 185,
+    "cao": 320,
+    "ti_le": 0.578,
+    "dang": "đực đứng, thân quay trái"
+  },
+  "nai-3": {
+    "rong": 212,
+    "cao": 320,
+    "ti_le": 0.662,
+    "dang": "đực đang bước, thân quay phải"
+  },
+  "nai-4": {
+    "rong": 319,
+    "cao": 320,
+    "ti_le": 0.997,
+    "dang": "cái cúi gặm cỏ, đầu chúc xuống phải"
+  },
+  "nai-5": {
+    "rong": 202,
+    "cao": 320,
+    "ti_le": 0.631,
+    "dang": "cái non đứng, thân quay phải"
+  }
+}

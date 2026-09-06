@@ -1,0 +1,21 @@
+# Luật đặt tiêu đề HTTP cho Cloudflare (Tracy duyệt 08/08).
+#
+# Mặc định Cloudflare trả `cache-control: public, max-age=0, must-revalidate`
+# cho MỌI tệp — đo bằng curl trên bản thật ngày 08/08. Nghĩa là mỗi lần mở app,
+# trình duyệt vẫn phải hỏi lại máy chủ về từng tệp trong vendor/ xem có bản mới
+# không, dù chúng chưa hề đổi.
+#
+# Khai một năm cho vendor/ là an toàn TUYỆT ĐỐI ở đây, vì mọi tên tệp trong đó
+# đều MANG SỐ BẢN: montserrat-v31-*.woff2 và supabase-js-2.112.2.min.js. Muốn
+# đổi bản là phải đổi tên tệp, mà tên mới thì trình duyệt chưa từng thấy nên
+# bắt buộc tải lại. Không có đường nào kẹt lại bản cũ.
+#
+# ⚠️ LUẬT ĐI KÈM: mọi tệp đặt vào vendor/ PHẢI mang số bản trong tên. Đưa vào
+# một tệp tên trơn (kiểu `logo.png`) rồi sửa nội dung nó, thì người đã mở app
+# sẽ giữ bản cũ tới một năm và không cách nào biết.
+#
+# index.html CỐ Ý không khai gì ở đây — giữ nguyên mặc định phải hỏi lại mỗi
+# lần. Đó là cách bản mới tới được tay 12 người ngay sau khi push.
+
+/vendor/*
+  Cache-Control: public, max-age=31536000, immutable

@@ -1,0 +1,11 @@
+{
+  // Cấu hình Cloudflare cho app Khu Vườn Tỉnh Thức.
+  // CHỈ thư mục public/ được đưa ra web. Các file .sql và .md ở lại kho riêng tư
+  // — schema.sql có email thật của thành viên, không được để công khai.
+  "name": "rovatinhthuc",
+  "compatibility_date": "2026-08-06",
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "single-page-application"
+  }
+}

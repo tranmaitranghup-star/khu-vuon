@@ -1,0 +1,14 @@
+.DS_Store
+.env*
+!.env.example
+*.log
+
+# Ảnh NGUỒN của cánh đồng bồ công anh — 16 MB PNG, chỉ dùng để chạy lại
+# `chuan-bong.py` và `nuong-dong-hoa.py` khi muốn đổi bố cục hoa. Sản phẩm của
+# chúng (`public/anh/`) thì có trong kho. Để nguyên đây thì mỗi lần đổi ảnh là
+# thêm 16 MB vào lịch sử kho, mà kho này sửa hằng ngày.
+anh-goc/
+
+# Bản thử do thu-*.py sinh ra. Chúng ghi thẳng vào public/ — thư mục LÊN SÓNG
+# thật — nên quên `rm` một lần là bản nháp 200 KB ra web. Chặn ở đây cho chắc.
+public/thu-*.html

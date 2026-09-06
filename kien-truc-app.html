@@ -1,0 +1,858 @@
+<title>Kiến trúc Khu Vườn Tỉnh Thức</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --nen:#F4F7F4; --the:#FFFFFF; --muc:#16201B; --mo:#59685F; --vien:#DBE3DC;
+  --dich:#1C6B4F; --nhip:#8E620F; --suc:#2A5885;
+  --dich-nen:#E4F0E9; --nhip-nen:#F5EDDB; --suc-nen:#E3ECF6;
+  --canh:#9E3B2E; --canh-nen:#F6E5E2;
+  --bong:0 1px 2px rgba(22,32,27,.05), 0 8px 24px -12px rgba(22,32,27,.14);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --nen:#0C1310; --the:#141D18; --muc:#E6ECE7; --mo:#8FA098; --vien:#243128;
+    --dich:#63C89C; --nhip:#D8A445; --suc:#7FB0E2;
+    --dich-nen:#11241B; --nhip-nen:#241E0E; --suc-nen:#111F2D;
+    --canh:#E68C7C; --canh-nen:#2A1614;
+    --bong:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --nen:#0C1310; --the:#141D18; --muc:#E6ECE7; --mo:#8FA098; --vien:#243128;
+  --dich:#63C89C; --nhip:#D8A445; --suc:#7FB0E2;
+  --dich-nen:#11241B; --nhip-nen:#241E0E; --suc-nen:#111F2D;
+  --canh:#E68C7C; --canh-nen:#2A1614;
+  --bong:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--nen); color:var(--muc);
+  font-family:"Source Serif 4",Georgia,serif; font-size:17px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.bao{max-width:1080px; margin:0 auto; padding:0 22px 96px}
+.hep{max-width:66ch}
+
+h1,h2,h3,.nhan,.mono,th,.chip,figcaption{font-family:"Be Vietnam Pro",system-ui,sans-serif}
+h1{font-size:clamp(2rem,4.6vw,3.1rem); font-weight:800; letter-spacing:-.028em; line-height:1.08; margin:0 0 14px; text-wrap:balance}
+h2{font-size:clamp(1.32rem,2.6vw,1.72rem); font-weight:800; letter-spacing:-.02em; line-height:1.2; margin:0 0 10px; text-wrap:balance}
+h3{font-size:1.02rem; font-weight:700; letter-spacing:-.008em; margin:26px 0 8px}
+p{margin:0 0 15px}
+a{color:var(--dich)}
+
+.nhan{
+  font-size:.7rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--mo); margin:0 0 8px;
+}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.86em}
+code{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.84em;
+  background:var(--nen); border:1px solid var(--vien); border-radius:5px; padding:1px 5px}
+
+/* ── đầu trang ── */
+.dau{padding:64px 0 40px; border-bottom:1px solid var(--vien)}
+.dau .phu{font-size:1.16rem; color:var(--mo); max-width:60ch; margin:0}
+.tho{
+  margin:30px 0 0; padding:20px 22px; background:var(--the); border:1px solid var(--vien);
+  border-left:3px solid var(--dich); border-radius:3px; box-shadow:var(--bong); max-width:64ch;
+}
+.tho p{margin:0; font-size:1.06rem}
+
+/* ── mục ── */
+section{padding:52px 0 8px; border-bottom:1px solid var(--vien)}
+section:last-of-type{border-bottom:0}
+.so-muc{
+  display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:.76rem; font-weight:500;
+  color:var(--mo); border:1px solid var(--vien); border-radius:99px; padding:2px 10px; margin-bottom:12px;
+}
+
+/* ── hình ── */
+figure{margin:30px 0 8px}
+.khung-hinh{
+  background:var(--the); border:1px solid var(--vien); border-radius:6px;
+  padding:22px 18px; overflow-x:auto; box-shadow:var(--bong);
+}
+svg.hinh{display:block; width:100%; min-width:660px; max-width:100%; height:auto; color:var(--muc)}
+figcaption{margin-top:12px; font-size:.88rem; color:var(--mo); line-height:1.5; max-width:70ch}
+
+/* ── bảng ── */
+.cuon{overflow-x:auto; margin:24px 0}
+table{border-collapse:collapse; width:100%; min-width:560px; font-size:.93rem; background:var(--the)}
+th,td{text-align:left; padding:11px 13px; border-bottom:1px solid var(--vien); vertical-align:top}
+th{font-size:.74rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--mo);
+  border-bottom:1.5px solid var(--vien); white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums}
+
+/* ── chip trục ── */
+.chip{
+  display:inline-flex; align-items:center; gap:6px; font-size:.72rem; font-weight:700;
+  letter-spacing:.04em; padding:3px 9px; border-radius:99px; white-space:nowrap;
+}
+.chip.dich{background:var(--dich-nen); color:var(--dich)}
+.chip.nhip{background:var(--nhip-nen); color:var(--nhip)}
+.chip.suc{background:var(--suc-nen); color:var(--suc)}
+
+/* ── thẻ ── */
+.luoi{display:grid; gap:16px; margin:24px 0}
+@media(min-width:760px){ .luoi.ba{grid-template-columns:repeat(3,1fr)} .luoi.hai{grid-template-columns:repeat(2,1fr)} }
+.the{
+  background:var(--the); border:1px solid var(--vien); border-radius:6px; padding:18px 18px 16px;
+  box-shadow:var(--bong);
+}
+.the h3{margin:10px 0 6px; font-size:1.04rem}
+.the p{margin:0; font-size:.92rem; color:var(--mo); line-height:1.55}
+.the.dich{border-top:3px solid var(--dich)}
+.the.nhip{border-top:3px solid var(--nhip)}
+.the.suc{border-top:3px solid var(--suc)}
+
+/* ── hộp đã kiểm ── */
+.kiem{
+  background:var(--dich-nen); border:1px solid var(--vien); border-left:3px solid var(--dich);
+  border-radius:3px; padding:16px 18px; margin:22px 0; font-size:.94rem;
+}
+.kiem ul{margin:8px 0 0; padding-left:20px}
+.kiem li{margin-bottom:5px}
+.canh-bao{
+  background:var(--canh-nen); border:1px solid var(--vien); border-left:3px solid var(--canh);
+  border-radius:3px; padding:16px 18px; margin:22px 0; font-size:.94rem;
+}
+.canh-bao p:last-child{margin-bottom:0}
+
+/* ── câu hỏi chốt ── */
+.hoi{
+  background:var(--the); border:1px solid var(--vien); border-radius:6px;
+  padding:20px 22px; margin:18px 0; box-shadow:var(--bong);
+}
+.hoi .ma{font-family:"IBM Plex Mono",monospace; font-size:.76rem; color:var(--mo); letter-spacing:.06em}
+.hoi h3{margin:6px 0 8px; font-size:1.08rem}
+.hoi p{margin:0 0 8px; font-size:.95rem}
+.hoi .macdinh{
+  font-size:.9rem; color:var(--mo); border-top:1px dashed var(--vien); padding-top:10px; margin:12px 0 0;
+}
+.hoi .macdinh b{color:var(--muc)}
+
+ul.gon{margin:10px 0 16px; padding-left:20px}
+ul.gon li{margin-bottom:6px}
+
+.chan{margin-top:56px; padding-top:22px; border-top:1px solid var(--vien);
+  font-size:.84rem; color:var(--mo); line-height:1.6}
+</style>
+
+<div class="bao">
+
+<header class="dau">
+  <p class="nhan">App Khu Vườn Tỉnh Thức · bản kiến trúc 28/08/2026 · <b style="color:var(--dich)">ĐÃ CHỐT</b> · <b style="color:var(--nhip)">CÓ PHỤ LỤC 29/08</b></p>
+  <h1>Kiến trúc Khu Vườn Tỉnh Thức</h1>
+  <p class="phu">Ba trục công việc, hai phạm vi, bốn màn. Tracy chốt cả ba câu kiến trúc ngày 28/08 — bản này nay là bản nền để chuyển khối trong mã.</p>
+
+  <div class="tho">
+    <p><b>Một câu chốt.</b> App chỉ có <b>hai loại công việc</b> — việc có vạch đích và việc lặp lại — cùng <b>một loại nhiên liệu</b> là giờ tập trung. Bốn màn không phải bốn loại việc; chúng là <b>bốn cách nhìn</b> vào đúng ba thứ đó.</p>
+  </div>
+
+  <div class="canh-bao">
+    <p><b>Phụ lục 29/08 — nay là NĂM màn, và luật 2 đã được nới.</b> Tracy tách cụm cam kết
+    khỏi màn Hôm nay thành một màn riêng: <i>"tách giúp tôi cam kết ra 1 mục riêng · chuyển
+    cam kết cá nhân từ mục hôm nay qua đó · cho thêm nút chọn toàn rova nữa"</i>.</p>
+    <p><b>Màn Cam kết</b> — trục <span class="chip dich">đích</span>, phạm vi <b>tôi hoặc cả
+    đội có nút chọn</b>, bề dày <b>một tuần</b>. Nó lấp đúng ô trống mà bảng bốn màn ở Mục 04
+    không có: trục đích × cả đội × tuần này.</p>
+    <p><b>Luật 2 nới có chủ ý.</b> Bản này viết <i>"phạm vi do nơi đứng quyết định — đếm số
+    nút đổi phạm vi, phải bằng không"</i>. Luật ấy đúng khi cam kết còn ở nhờ trong màn Hôm
+    nay, vì màn Hôm nay đã tự mang nghĩa <i>của tôi</i>. Màn Cam kết không mang sẵn phạm vi
+    nào, nên nút chọn là thứ <b>phải có</b>. Cách đếm mới: <b>màn Cam kết được đúng một bộ
+    chọn, bốn màn kia vẫn phải bằng không.</b></p>
+    <p style="margin-bottom:0">Năm sơ đồ bên dưới <b>vẫn đúng về ba trục và hai phạm vi</b> —
+    chỉ riêng Hình 3 và Hình 4 nay thiếu màn thứ năm. Chi tiết thi công ở
+    <code>BAN-GIAO-kien-truc-bon-man.md</code> mục 4b.</p>
+  </div>
+</header>
+
+<!-- ══════════════════ 1 ══════════════════ -->
+<section>
+  <div class="so-muc">01</div>
+  <h2>Bản vẽ của bạn chạm phải thứ đã có sẵn</h2>
+
+  <div class="hep">
+    <p>Bạn xếp việc cố định theo <b>phòng ban</b>. Tôi soi lại cơ sở dữ liệu: tầng đó đã được dựng từ 14/08 và đang chạy trên máy chủ, chỉ là màn hình chưa bày nó ra.</p>
+  </div>
+
+  <div class="kiem">
+    <b>Đã kiểm trong mã, không phải phán đoán</b>
+    <ul>
+      <li>Bảng <code>chuc_nang</code> giữ <b>sáu khối chức năng</b> của ROVA: CEO, Vận hành, Sản phẩm, Kinh doanh, Tài chính, Trải nghiệm khách hàng.</li>
+      <li><code>viec_co_dinh.chuc_nang_id</code> — nguyên văn ghi chú trong tệp: <i>“Việc cố định thuộc về CHỨC NĂNG, không thuộc về người — người nghỉ thì kho việc ở lại với ghế.”</i></li>
+      <li><code>nguoi.chuc_nang_id</code> — mỗi người trỏ về một khối.</li>
+      <li>App <b>đang lọc</b> việc cố định theo khối của người đăng nhập, nên mỗi người chỉ thấy kho của khối mình.</li>
+      <li><code>phien_deepwork</code> có <b>cả hai</b> khoá: <code>task_id</code> và <code>nhip_id</code>.</li>
+      <li><code>muc_tieu</code> (dự án) <b>không có</b> cột khối chức năng nào.</li>
+    </ul>
+  </div>
+
+  <div class="hep">
+    <p>Hai dòng cuối là hai câu trả lời kiến trúc, không phải hai chi tiết kỹ thuật. Phiên deep work nối vào <b>cả</b> việc lẫn nhịp, nên nó không phải loại việc thứ ba — nó là <b>nhiên liệu</b> đổ vào hai loại kia. Và dự án không thuộc khối nào, nên nó <b>vắt ngang</b> các khối thay vì nằm trong một khối.</p>
+    <p>Bản vẽ của bạn đúng hướng. Việc còn lại là đặt tên cho cái đang có, rồi bày nó ra màn hình.</p>
+  </div>
+</section>
+
+<!-- ══════════════════ 2 ══════════════════ -->
+<section>
+  <div class="so-muc">02</div>
+  <h2>Tầng một — ba trục</h2>
+
+  <div class="hep">
+    <p>Toàn bộ app đứng trên ba trục. Mọi bảng dữ liệu, mọi khối trên màn hình đều thuộc về đúng một trong ba, không có ngoại lệ.</p>
+  </div>
+
+  <figure>
+    <div class="khung-hinh">
+      <svg class="hinh" viewBox="0 0 900 580" role="img"
+           aria-label="Trục Đích gồm Dự án chia thành Milestone, gánh bởi Cam kết, vỡ thành Việc. Trục Nhịp gồm Khối chức năng sở hữu Danh mục việc cố định, chép về Nhịp tuần của một người, đếm bằng Số làm được mỗi ngày. Phiên deep work nằm dưới, nối lên Việc bằng khoá task_id và lên Nhịp tuần bằng khoá nhip_id.">
+        <defs>
+          <marker id="mt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+          <marker id="md" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--dich)"/>
+          </marker>
+          <marker id="mn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--nhip)"/>
+          </marker>
+          <marker id="ms" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--suc)"/>
+          </marker>
+        </defs>
+
+        <!-- tiêu đề cột -->
+        <text x="230" y="26" text-anchor="middle" font-family="Be Vietnam Pro, sans-serif" font-size="15" font-weight="800" fill="var(--dich)">TRỤC ĐÍCH</text>
+        <text x="230" y="46" text-anchor="middle" font-size="12" fill="currentColor" opacity=".62">việc một lần, có vạch đích</text>
+        <text x="670" y="26" text-anchor="middle" font-family="Be Vietnam Pro, sans-serif" font-size="15" font-weight="800" fill="var(--nhip)">TRỤC NHỊP</text>
+        <text x="670" y="46" text-anchor="middle" font-size="12" fill="currentColor" opacity=".62">việc lặp lại, không có vạch đích</text>
+
+        <!-- cột ĐÍCH -->
+        <g fill="var(--dich-nen)" stroke="var(--dich)" stroke-width="1.2">
+          <rect x="90" y="70" width="280" height="54" rx="4"/>
+          <rect x="90" y="164" width="280" height="54" rx="4"/>
+          <rect x="90" y="258" width="280" height="54" rx="4"/>
+          <rect x="90" y="352" width="280" height="54" rx="4"/>
+        </g>
+        <g text-anchor="middle" font-family="Be Vietnam Pro, sans-serif" font-size="14" font-weight="700" fill="currentColor">
+          <text x="230" y="94">Dự án</text>
+          <text x="230" y="188">Milestone</text>
+          <text x="230" y="282">Cam kết</text>
+          <text x="230" y="376">Việc</text>
+        </g>
+        <g text-anchor="middle" font-size="11" fill="currentColor" opacity=".68" font-family="IBM Plex Mono, monospace">
+          <text x="230" y="112">muc_tieu · một người gánh cuối</text>
+          <text x="230" y="206">moc_du_an · 3 tới 7 mốc</text>
+          <text x="230" y="300">tieu_diem · một người, một tuần</text>
+          <text x="230" y="394">task</text>
+        </g>
+        <g stroke="var(--dich)" stroke-width="1.4" marker-end="url(#md)">
+          <line x1="230" y1="124" x2="230" y2="160"/>
+          <line x1="230" y1="218" x2="230" y2="254"/>
+          <line x1="230" y1="312" x2="230" y2="348"/>
+        </g>
+        <g text-anchor="start" font-size="11" fill="var(--dich)" font-family="Be Vietnam Pro, sans-serif">
+          <text x="240" y="147">chia thành</text>
+          <text x="240" y="241">được gánh bởi</text>
+          <text x="240" y="335">vỡ thành</text>
+        </g>
+
+        <!-- cột NHỊP -->
+        <g fill="var(--nhip-nen)" stroke="var(--nhip)" stroke-width="1.2">
+          <rect x="530" y="70" width="280" height="54" rx="4"/>
+          <rect x="530" y="164" width="280" height="54" rx="4"/>
+          <rect x="530" y="258" width="280" height="54" rx="4"/>
+          <rect x="530" y="352" width="280" height="54" rx="4"/>
+        </g>
+        <g text-anchor="middle" font-family="Be Vietnam Pro, sans-serif" font-size="14" font-weight="700" fill="currentColor">
+          <text x="670" y="94">Khối chức năng</text>
+          <text x="670" y="188">Danh mục việc cố định</text>
+          <text x="670" y="282">Nhịp tuần của một người</text>
+          <text x="670" y="376">Số làm được mỗi ngày</text>
+        </g>
+        <g text-anchor="middle" font-size="11" fill="currentColor" opacity=".68" font-family="IBM Plex Mono, monospace">
+          <text x="670" y="112">chuc_nang · sáu khối</text>
+          <text x="670" y="206">viec_co_dinh · một mã đi suốt đời</text>
+          <text x="670" y="300">nhip · năm nhịp một tuần</text>
+          <text x="670" y="394">so_ngay</text>
+        </g>
+        <g stroke="var(--nhip)" stroke-width="1.4" marker-end="url(#mn)">
+          <line x1="670" y1="124" x2="670" y2="160"/>
+          <line x1="670" y1="218" x2="670" y2="254"/>
+          <line x1="670" y1="312" x2="670" y2="348"/>
+        </g>
+        <g text-anchor="start" font-size="11" fill="var(--nhip)" font-family="Be Vietnam Pro, sans-serif">
+          <text x="680" y="147">sở hữu</text>
+          <text x="680" y="241">chép về tuần này</text>
+          <text x="680" y="335">đếm mỗi ngày</text>
+        </g>
+
+        <!-- trục SỨC -->
+        <rect x="250" y="470" width="400" height="62" rx="4" fill="var(--suc-nen)" stroke="var(--suc)" stroke-width="1.2"/>
+        <text x="450" y="494" text-anchor="middle" font-family="Be Vietnam Pro, sans-serif" font-size="15" font-weight="800" fill="var(--suc)">TRỤC SỨC</text>
+        <text x="450" y="514" text-anchor="middle" font-size="12" fill="currentColor" opacity=".72">Phiên deep work — 30 phút là một cái cây</text>
+        <text x="450" y="552" text-anchor="middle" font-size="11" fill="currentColor" opacity=".6" font-family="IBM Plex Mono, monospace">phien_deepwork</text>
+
+        <!-- nối SỨC lên hai trục -->
+        <polyline points="250,501 40,501 40,379 86,379" fill="none" stroke="var(--suc)" stroke-width="1.4" marker-end="url(#ms)"/>
+        <polyline points="650,501 862,501 862,285 814,285" fill="none" stroke="var(--suc)" stroke-width="1.4" marker-end="url(#ms)"/>
+        <text x="52" y="440" font-size="11" fill="var(--suc)" font-family="IBM Plex Mono, monospace">task_id</text>
+        <text x="808" y="440" font-size="11" fill="var(--suc)" font-family="IBM Plex Mono, monospace" text-anchor="start">nhip_id</text>
+      </svg>
+    </div>
+    <figcaption><b>Hình 1.</b> Deep work không phải trục thứ ba của công việc — nó gắn được vào cả hai trục kia bằng hai khoá đã có sẵn trong bảng. Vì vậy nó không xứng một nơi chốn riêng, nhưng con số nó sinh ra thì xứng một bảng đo riêng.</figcaption>
+  </figure>
+
+  <div class="luoi ba">
+    <div class="the dich">
+      <span class="chip dich">TRỤC ĐÍCH</span>
+      <h3>Thuộc về con người</h3>
+      <p>Có ngày xong, có tiêu chí xong, có một người chịu trách nhiệm cuối. Xong là biến mất khỏi danh sách. Đo bằng phần trăm và ngày còn lại.</p>
+    </div>
+    <div class="the nhip">
+      <span class="chip nhip">TRỤC NHỊP</span>
+      <h3>Thuộc về cái ghế</h3>
+      <p>Không bao giờ xong, chỉ có giữ được hay đứt. Người nghỉ thì việc ở lại với khối chức năng. Đo bằng tỉ lệ giữ nhịp và chuỗi ngày.</p>
+    </div>
+    <div class="the suc">
+      <span class="chip suc">TRỤC SỨC</span>
+      <h3>Thuộc về cả hai</h3>
+      <p>Giờ tập trung đổ vào một việc hoặc một nhịp. Không phải loại việc, mà là đơn vị đo công sức thật sự bỏ ra. Đo bằng giờ và số cây sống.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ 3 ══════════════════ -->
+<section>
+  <div class="so-muc">03</div>
+  <h2>Tầng hai — phòng ban đứng ở đâu</h2>
+
+  <div class="hep">
+    <p>Đây là chỗ bản vẽ của bạn cần một đường ranh dứt khoát, vì hai trục quan hệ với phòng ban theo hai kiểu ngược nhau.</p>
+  </div>
+
+  <figure>
+    <div class="khung-hinh">
+      <svg class="hinh" viewBox="0 0 900 440" role="img"
+           aria-label="Sáu làn dọc là sáu khối chức năng. Kho việc cố định nằm gọn trong từng làn. Ba thanh ngang màu xanh là ba dự án, mỗi thanh vắt qua nhiều làn khác nhau.">
+        <defs>
+          <marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <!-- sáu làn -->
+        <g>
+          <rect x="30" y="46" width="130" height="330" rx="4" fill="var(--nhip-nen)" opacity=".5" stroke="var(--vien)"/>
+          <rect x="172" y="46" width="130" height="330" rx="4" fill="var(--nhip-nen)" opacity=".5" stroke="var(--vien)"/>
+          <rect x="314" y="46" width="130" height="330" rx="4" fill="var(--nhip-nen)" opacity=".5" stroke="var(--vien)"/>
+          <rect x="456" y="46" width="130" height="330" rx="4" fill="var(--nhip-nen)" opacity=".5" stroke="var(--vien)"/>
+          <rect x="598" y="46" width="130" height="330" rx="4" fill="var(--nhip-nen)" opacity=".5" stroke="var(--vien)"/>
+          <rect x="740" y="46" width="130" height="330" rx="4" fill="var(--nhip-nen)" opacity=".5" stroke="var(--vien)"/>
+        </g>
+        <g text-anchor="middle" font-family="Be Vietnam Pro, sans-serif" font-size="12.5" font-weight="700" fill="var(--nhip)">
+          <text x="95" y="34">CEO</text>
+          <text x="237" y="34">Vận hành</text>
+          <text x="379" y="34">Sản phẩm</text>
+          <text x="521" y="34">Kinh doanh</text>
+          <text x="663" y="34">Tài chính</text>
+          <text x="805" y="34">Trải nghiệm KH</text>
+        </g>
+
+        <!-- kho việc cố định trong từng làn -->
+        <g fill="var(--the)" stroke="var(--nhip)" stroke-width="1.2">
+          <rect x="44" y="66" width="102" height="42" rx="3"/>
+          <rect x="186" y="66" width="102" height="42" rx="3"/>
+          <rect x="328" y="66" width="102" height="42" rx="3"/>
+          <rect x="470" y="66" width="102" height="42" rx="3"/>
+          <rect x="612" y="66" width="102" height="42" rx="3"/>
+          <rect x="754" y="66" width="102" height="42" rx="3"/>
+        </g>
+        <g text-anchor="middle" font-size="11" fill="currentColor" font-family="Be Vietnam Pro, sans-serif" font-weight="600">
+          <text x="95" y="83">Kho việc</text><text x="95" y="98">cố định</text>
+          <text x="237" y="83">Kho việc</text><text x="237" y="98">cố định</text>
+          <text x="379" y="83">Kho việc</text><text x="379" y="98">cố định</text>
+          <text x="521" y="83">Kho việc</text><text x="521" y="98">cố định</text>
+          <text x="663" y="83">Kho việc</text><text x="663" y="98">cố định</text>
+          <text x="805" y="83">Kho việc</text><text x="805" y="98">cố định</text>
+        </g>
+
+        <!-- ba dự án vắt ngang -->
+        <rect x="44" y="170" width="528" height="40" rx="4" fill="var(--dich-nen)" stroke="var(--dich)" stroke-width="1.4"/>
+        <text x="60" y="195" font-family="Be Vietnam Pro, sans-serif" font-size="13" font-weight="700" fill="currentColor">Dự án — nâng cấp quy trình bán hàng</text>
+        <text x="556" y="195" text-anchor="end" font-size="11" fill="var(--dich)" font-family="IBM Plex Mono, monospace">PIC: Tracy</text>
+
+        <rect x="328" y="236" width="528" height="40" rx="4" fill="var(--dich-nen)" stroke="var(--dich)" stroke-width="1.4"/>
+        <text x="344" y="261" font-family="Be Vietnam Pro, sans-serif" font-size="13" font-weight="700" fill="currentColor">Dự án — ra mắt gói sản phẩm mới</text>
+        <text x="840" y="261" text-anchor="end" font-size="11" fill="var(--dich)" font-family="IBM Plex Mono, monospace">PIC: Andy</text>
+
+        <rect x="186" y="302" width="386" height="40" rx="4" fill="var(--dich-nen)" stroke="var(--dich)" stroke-width="1.4"/>
+        <text x="202" y="327" font-family="Be Vietnam Pro, sans-serif" font-size="13" font-weight="700" fill="currentColor">Dự án — dựng hệ đo lường</text>
+        <text x="556" y="327" text-anchor="end" font-size="11" fill="var(--dich)" font-family="IBM Plex Mono, monospace">PIC: Hafi</text>
+
+        <!-- chú giải -->
+        <rect x="30" y="398" width="14" height="14" rx="3" fill="var(--nhip-nen)" stroke="var(--nhip)"/>
+        <text x="52" y="410" font-size="12" fill="currentColor">Nhịp nằm TRONG một khối — người nghỉ thì việc ở lại với ghế</text>
+        <rect x="490" y="398" width="14" height="14" rx="3" fill="var(--dich-nen)" stroke="var(--dich)"/>
+        <text x="512" y="410" font-size="12" fill="currentColor">Đích VẮT NGANG các khối — thành viên đến từ nhiều nơi</text>
+      </svg>
+    </div>
+    <figcaption><b>Hình 2.</b> Cùng một công ty, hai cách gom việc. Đây là lý do màn Việc cố định xếp theo phòng ban còn màn Dự án thì không, và cũng là lý do một dự án không bao giờ có ô “thuộc phòng ban nào”.</figcaption>
+  </figure>
+
+  <div class="hep">
+    <p><b>Một câu để nhớ:</b> nhịp thuộc <b>cái ghế</b>, đích thuộc <b>con người</b>. Ai ngồi vào ghế Kinh doanh thì thừa kế nguyên kho việc cố định của khối đó. Còn một dự án thì đi theo người gánh cuối, kéo theo thành viên từ bất cứ khối nào.</p>
+  </div>
+
+  <div class="kiem">
+    <b>Tracy chốt 28/08 — mở tầm nhìn ra cả công ty</b>
+    <p style="margin:8px 0 0">Ai cũng thấy việc cố định của cả sáu khối. <i>“Sau này sẽ chuyên môn hoá, chỉ thấy của phòng mình thôi.”</i> Nên tầm nhìn phải là một <b>tham số có công tắc</b> ngay từ hôm nay, không phải một câu lệnh viết cứng — chi tiết ở mục 08.</p>
+  </div>
+</section>
+
+<!-- ══════════════════ 4 ══════════════════ -->
+<section>
+  <div class="so-muc">04</div>
+  <h2>Tầng ba — bốn màn là ba trục nhân hai phạm vi</h2>
+
+  <div class="hep">
+    <p>Bốn nút trên thanh tab không phải bốn loại việc. Chúng là bốn <b>mặt cắt</b> khác nhau qua cùng ba trục, xếp theo tầm nhìn xa dần: từ <i>bây giờ</i> ra <i>cả hành trình</i>.</p>
+  </div>
+
+  <figure>
+    <div class="khung-hinh">
+      <svg class="hinh" viewBox="0 0 900 300" role="img"
+           aria-label="Bốn màn xếp trên một trục tầm nhìn xa dần. Hôm nay là mặt cắt một ngày phạm vi tôi. Dự án là trục đích phạm vi cả đội. Việc cố định là trục nhịp phạm vi khối chức năng. Bảng đo là ba trục gộp lại, nhìn nhiều tuần.">
+        <defs>
+          <marker id="m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <line x1="40" y1="258" x2="856" y2="258" stroke="currentColor" stroke-width="1.2" opacity=".4" marker-end="url(#m3)"/>
+        <text x="40" y="282" font-size="12" fill="currentColor" opacity=".65">một ngày</text>
+        <text x="856" y="282" text-anchor="end" font-size="12" fill="currentColor" opacity=".65">nhiều tuần</text>
+        <text x="448" y="282" text-anchor="middle" font-size="11.5" fill="currentColor" opacity=".5" font-family="Be Vietnam Pro, sans-serif">tầm nhìn xa dần</text>
+
+        <!-- bốn màn -->
+        <g>
+          <rect x="40" y="60" width="186" height="150" rx="5" fill="var(--the)" stroke="currentColor" stroke-width="1.3"/>
+          <rect x="248" y="60" width="186" height="150" rx="5" fill="var(--the)" stroke="currentColor" stroke-width="1.3"/>
+          <rect x="456" y="60" width="186" height="150" rx="5" fill="var(--the)" stroke="currentColor" stroke-width="1.3"/>
+          <rect x="664" y="60" width="192" height="150" rx="5" fill="var(--the)" stroke="currentColor" stroke-width="1.3"/>
+        </g>
+
+        <g text-anchor="middle" font-family="Be Vietnam Pro, sans-serif" font-size="15" font-weight="800" fill="currentColor">
+          <text x="133" y="92">Hôm nay</text>
+          <text x="341" y="92">Dự án</text>
+          <text x="549" y="92">Việc cố định</text>
+          <text x="760" y="92">Bảng đo</text>
+        </g>
+        <g text-anchor="middle" font-size="11.5" fill="currentColor" opacity=".68">
+          <text x="133" y="112">Bây giờ tôi làm gì</text>
+          <text x="341" y="112">Ta đi tới đâu, ai gánh</text>
+          <text x="549" y="112">Nhịp có giữ được không</text>
+          <text x="760" y="112">Ai đang đuối, sức đổ đâu</text>
+        </g>
+
+        <!-- phạm vi -->
+        <g text-anchor="middle" font-size="11" font-family="IBM Plex Mono, monospace" fill="currentColor" opacity=".72">
+          <text x="133" y="40">phạm vi: TÔI</text>
+          <text x="341" y="40">phạm vi: CẢ ĐỘI</text>
+          <text x="549" y="40">phạm vi: KHỐI</text>
+          <text x="760" y="40">phạm vi: CẢ ĐỘI</text>
+        </g>
+
+        <!-- dải trục mỗi màn -->
+        <g>
+          <rect x="56" y="140" width="50" height="9" rx="2" fill="var(--dich)"/>
+          <rect x="112" y="140" width="50" height="9" rx="2" fill="var(--nhip)"/>
+          <rect x="168" y="140" width="42" height="9" rx="2" fill="var(--suc)"/>
+          <text x="133" y="172" text-anchor="middle" font-size="11" fill="currentColor" opacity=".6">cả ba trục, mặt cắt hôm nay</text>
+
+          <rect x="264" y="140" width="154" height="9" rx="2" fill="var(--dich)"/>
+          <text x="341" y="172" text-anchor="middle" font-size="11" fill="currentColor" opacity=".6">chỉ trục đích</text>
+
+          <rect x="472" y="140" width="154" height="9" rx="2" fill="var(--nhip)"/>
+          <text x="549" y="172" text-anchor="middle" font-size="11" fill="currentColor" opacity=".6">chỉ trục nhịp</text>
+
+          <rect x="680" y="140" width="52" height="9" rx="2" fill="var(--dich)"/>
+          <rect x="738" y="140" width="52" height="9" rx="2" fill="var(--nhip)"/>
+          <rect x="796" y="140" width="44" height="9" rx="2" fill="var(--suc)"/>
+          <text x="760" y="172" text-anchor="middle" font-size="11" fill="currentColor" opacity=".6">cả ba trục, nhìn xu hướng</text>
+        </g>
+
+        <g text-anchor="middle" font-size="10.5" font-family="IBM Plex Mono, monospace" fill="currentColor" opacity=".55">
+          <text x="133" y="196">làm</text>
+          <text x="341" y="196">làm</text>
+          <text x="549" y="196">làm</text>
+          <text x="760" y="196">chỉ đọc</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption><b>Hình 3.</b> Hôm nay và Bảng đo cùng mang cả ba trục, nhưng khác nhau ở bề dày thời gian: một màn hỏi <i>hôm nay thế nào</i>, màn kia hỏi <i>mấy tuần nay thế nào</i>. Đó là đường ranh giữ cho hai màn không lặp lại nhau.</figcaption>
+  </figure>
+
+  <div class="cuon">
+    <table>
+      <thead>
+        <tr><th>Màn</th><th>Trục</th><th>Phạm vi</th><th>Bề dày thời gian</th><th>Vai</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Hôm nay</b></td>
+          <td><span class="chip dich">đích</span> <span class="chip nhip">nhịp</span> <span class="chip suc">sức</span></td>
+          <td>chỉ tôi</td><td>một ngày</td><td>màn thực thi</td>
+        </tr>
+        <tr>
+          <td><b>Dự án</b></td>
+          <td><span class="chip dich">đích</span></td>
+          <td>cả đội</td><td>cả đời dự án</td><td>màn dẫn đường</td>
+        </tr>
+        <tr>
+          <td><b>Việc cố định</b></td>
+          <td><span class="chip nhip">nhịp</span></td>
+          <td>theo khối chức năng</td><td>một tuần</td><td>màn giữ nhịp</td>
+        </tr>
+        <tr>
+          <td><b>Bảng đo</b></td>
+          <td><span class="chip dich">đích</span> <span class="chip nhip">nhịp</span> <span class="chip suc">sức</span></td>
+          <td>tôi, rồi cả đội</td><td>bốn tuần</td><td>màn nhìn lại, chỉ đọc</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="hep">
+    <p><b>Về cái tên ô thứ tư.</b> Bản vẽ của bạn ghi <i>Deepwork/ROVA</i>. Tên có dấu gạch chéo là dấu hiệu một nút đang gánh hai việc. Màn phiên deep work vốn không phải một nơi chốn — nó bật lên khi bấm giọt nước trên một việc, và đã chốt như vậy từ 26/08. Thứ còn lại xứng một nút là <b>bảng đo</b>. Tôi đề nghị gọi thẳng là <b>Bảng đo</b>, giữ <i>ROVA</i> làm tên khối bên trong nó.</p>
+  </div>
+</section>
+
+<!-- ══════════════════ 5 ══════════════════ -->
+<section>
+  <div class="so-muc">05</div>
+  <h2>Tầng bốn — luật bày màn: đầu ĐO, thân LÀM</h2>
+
+  <div class="hep">
+    <p>Bản vẽ của bạn đã tự đẻ ra luật này ở ba màn: một dải đo ở trên, một vùng làm ở dưới. Trong màn Việc cố định bạn còn lặp lại đúng khuôn ấy cho từng phòng ban. Nó đáng được đặt tên và áp cho cả bốn màn.</p>
+  </div>
+
+  <div class="luoi hai">
+    <div class="the">
+      <span class="chip dich">ĐẦU ĐO</span>
+      <h3>Máy chủ đếm, không ai gõ</h3>
+      <p>Hàng ô số cộng một ô “đang chờ”. Chỉ đọc, không nút nào. Trả lời câu hỏi <i>tình hình thế nào</i> trong một nhịp mắt, trước khi người dùng phải cuộn.</p>
+    </div>
+    <div class="the">
+      <span class="chip nhip">THÂN LÀM</span>
+      <h3>Mọi cửa sửa nằm ở đây</h3>
+      <p>Danh sách, thẻ, lưới, biểu mẫu. Mọi nút bấm sinh ra thay đổi đều nằm trong vùng này, không rơi lên đầu đo.</p>
+    </div>
+  </div>
+
+  <figure>
+    <div class="khung-hinh">
+      <svg class="hinh" viewBox="0 0 900 470" role="img"
+           aria-label="Bốn khung màn hình cạnh nhau, mỗi khung có một dải đầu đo tô đậm ở trên và vùng thân làm ở dưới. Màn Hôm nay, Dự án, Việc cố định lặp lại theo phòng ban, và Bảng đo.">
+        <g font-family="Be Vietnam Pro, sans-serif">
+
+          <!-- MÀN 1 -->
+          <rect x="24" y="46" width="196" height="404" rx="6" fill="var(--the)" stroke="currentColor" stroke-width="1.3"/>
+          <text x="122" y="34" text-anchor="middle" font-size="14" font-weight="800" fill="currentColor">Hôm nay</text>
+          <rect x="36" y="58" width="172" height="62" rx="4" fill="var(--dich-nen)" stroke="var(--dich)" stroke-width="1.1"/>
+          <text x="46" y="76" font-size="10.5" font-weight="700" fill="var(--dich)">ĐẦU ĐO</text>
+          <text x="46" y="93" font-size="10.5" fill="currentColor">Hiệu suất hôm nay</text>
+          <text x="46" y="109" font-size="10.5" fill="currentColor">Đang chờ tôi trả lời</text>
+          <g fill="var(--nen)" stroke="var(--vien)">
+            <rect x="36" y="132" width="172" height="30" rx="3"/>
+            <rect x="36" y="170" width="53" height="42" rx="3"/>
+            <rect x="95" y="170" width="54" height="42" rx="3"/>
+            <rect x="155" y="170" width="53" height="42" rx="3"/>
+            <rect x="36" y="220" width="172" height="28" rx="3"/>
+            <rect x="36" y="256" width="172" height="28" rx="3"/>
+            <rect x="36" y="292" width="172" height="120" rx="3"/>
+            <rect x="36" y="420" width="172" height="22" rx="3"/>
+          </g>
+          <g font-size="10" fill="currentColor" text-anchor="middle">
+            <text x="122" y="151">Việc cố định hôm nay</text>
+            <text x="62" y="195">Cam</text><text x="62" y="206">kết</text>
+            <text x="122" y="195">Cam</text><text x="122" y="206">kết</text>
+            <text x="181" y="195">Cam</text><text x="181" y="206">kết</text>
+            <text x="122" y="239">Kho cam kết + Kho việc</text>
+            <text x="122" y="275">Việc hôm nay</text>
+            <text x="122" y="356">Timeline</text>
+            <text x="122" y="435">Nghi thức hoàn tất</text>
+          </g>
+
+          <!-- MÀN 2 -->
+          <rect x="244" y="46" width="196" height="404" rx="6" fill="var(--the)" stroke="currentColor" stroke-width="1.3"/>
+          <text x="342" y="34" text-anchor="middle" font-size="14" font-weight="800" fill="currentColor">Dự án</text>
+          <rect x="256" y="58" width="172" height="62" rx="4" fill="var(--dich-nen)" stroke="var(--dich)" stroke-width="1.1"/>
+          <text x="266" y="76" font-size="10.5" font-weight="700" fill="var(--dich)">ĐẦU ĐO</text>
+          <text x="266" y="93" font-size="10.5" fill="currentColor">Dự án chạy, nghẽn, trễ</text>
+          <text x="266" y="109" font-size="10.5" fill="currentColor">Mốc tới hạn tuần này</text>
+          <g fill="var(--nen)" stroke="var(--vien)">
+            <rect x="256" y="132" width="54" height="56" rx="3"/>
+            <rect x="315" y="132" width="54" height="56" rx="3"/>
+            <rect x="374" y="132" width="54" height="56" rx="3"/>
+            <rect x="256" y="196" width="54" height="56" rx="3"/>
+            <rect x="315" y="196" width="54" height="56" rx="3"/>
+            <rect x="374" y="196" width="54" height="56" rx="3"/>
+            <rect x="256" y="260" width="54" height="56" rx="3"/>
+            <rect x="315" y="260" width="54" height="56" rx="3"/>
+            <rect x="374" y="260" width="54" height="56" rx="3"/>
+          </g>
+          <g font-size="9.5" fill="currentColor" text-anchor="middle" opacity=".8">
+            <text x="283" y="164">Dự án</text><text x="342" y="164">Dự án</text><text x="401" y="164">Dự án</text>
+            <text x="283" y="228">Dự án</text><text x="342" y="228">Dự án</text><text x="401" y="228">Dự án</text>
+            <text x="283" y="292">Dự án</text><text x="342" y="292">Dự án</text><text x="401" y="292">Dự án</text>
+          </g>
+          <rect x="256" y="332" width="172" height="106" rx="3" fill="var(--nen)" stroke="var(--vien)" stroke-dasharray="4 3"/>
+          <text x="342" y="378" text-anchor="middle" font-size="10" fill="currentColor" opacity=".75">bấm một thẻ →</text>
+          <text x="342" y="394" text-anchor="middle" font-size="10" fill="currentColor" opacity=".75">hồ sơ một dự án</text>
+          <text x="342" y="412" text-anchor="middle" font-size="9.5" fill="currentColor" opacity=".55">cũng có đầu đo và thân làm</text>
+
+          <!-- MÀN 3 -->
+          <rect x="464" y="46" width="196" height="404" rx="6" fill="var(--the)" stroke="currentColor" stroke-width="1.3"/>
+          <text x="562" y="34" text-anchor="middle" font-size="14" font-weight="800" fill="currentColor">Việc cố định</text>
+          <rect x="476" y="58" width="172" height="46" rx="4" fill="var(--nhip-nen)" stroke="var(--nhip)" stroke-width="1.1"/>
+          <text x="486" y="76" font-size="10.5" font-weight="700" fill="var(--nhip)">ĐẦU ĐO</text>
+          <text x="486" y="93" font-size="10.5" fill="currentColor">Nhịp giữ được cả công ty</text>
+
+          <rect x="476" y="116" width="172" height="152" rx="4" fill="none" stroke="var(--nhip)" stroke-width="1.1"/>
+          <text x="486" y="133" font-size="10.5" font-weight="700" fill="var(--nhip)">Khối Vận hành</text>
+          <rect x="486" y="142" width="70" height="112" rx="3" fill="var(--nhip-nen)" stroke="var(--vien)"/>
+          <rect x="566" y="142" width="72" height="112" rx="3" fill="var(--nen)" stroke="var(--vien)"/>
+          <text x="521" y="200" text-anchor="middle" font-size="9.5" fill="currentColor">đo khối</text>
+          <text x="602" y="200" text-anchor="middle" font-size="9.5" fill="currentColor">lưới việc</text>
+
+          <rect x="476" y="280" width="172" height="152" rx="4" fill="none" stroke="var(--nhip)" stroke-width="1.1"/>
+          <text x="486" y="297" font-size="10.5" font-weight="700" fill="var(--nhip)">Khối Kinh doanh</text>
+          <rect x="486" y="306" width="70" height="112" rx="3" fill="var(--nhip-nen)" stroke="var(--vien)"/>
+          <rect x="566" y="306" width="72" height="112" rx="3" fill="var(--nen)" stroke="var(--vien)"/>
+          <text x="521" y="364" text-anchor="middle" font-size="9.5" fill="currentColor">đo khối</text>
+          <text x="602" y="364" text-anchor="middle" font-size="9.5" fill="currentColor">lưới việc</text>
+
+          <!-- MÀN 4 -->
+          <rect x="684" y="46" width="196" height="404" rx="6" fill="var(--the)" stroke="currentColor" stroke-width="1.3"/>
+          <text x="782" y="34" text-anchor="middle" font-size="14" font-weight="800" fill="currentColor">Bảng đo</text>
+          <rect x="696" y="58" width="172" height="62" rx="4" fill="var(--suc-nen)" stroke="var(--suc)" stroke-width="1.1"/>
+          <text x="706" y="76" font-size="10.5" font-weight="700" fill="var(--suc)">ĐẦU ĐO</text>
+          <text x="706" y="93" font-size="10.5" fill="currentColor">Giờ tập trung cả đội</text>
+          <text x="706" y="109" font-size="10.5" fill="currentColor">Việc quá hạn, người đuối</text>
+          <g fill="var(--nen)" stroke="var(--vien)">
+            <rect x="696" y="132" width="172" height="96" rx="3"/>
+            <rect x="696" y="238" width="172" height="112" rx="3"/>
+            <rect x="696" y="360" width="172" height="78" rx="3"/>
+          </g>
+          <g font-size="10" fill="currentColor" text-anchor="middle">
+            <text x="782" y="176">Hành trình của tôi</text>
+            <text x="782" y="192" font-size="9" opacity=".65">chuỗi, giờ, bốn tuần</text>
+            <text x="782" y="290">Bảng người ROVA</text>
+            <text x="782" y="306" font-size="9" opacity=".65">một dòng một người</text>
+            <text x="782" y="398">Đường giờ bốn tuần</text>
+            <text x="782" y="414" font-size="9" opacity=".65">cả đội</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <figcaption><b>Hình 4.</b> Cùng một khuôn lặp bốn lần, và lặp thêm một lần nữa cho mỗi phòng ban bên trong màn Việc cố định. Học một lần, dùng ở mọi màn — kể cả màn hồ sơ một dự án mở ra từ cú bấm vào thẻ.</figcaption>
+  </figure>
+
+  <div class="canh-bao">
+    <p><b>Một chỗ tôi thấy nên đổi trong bản vẽ của bạn.</b> <i>Nghi thức hoàn tất</i> đang nằm ở góc trên bên phải, ngay cạnh ô hiệu suất. Nó là hành động <b>đóng ngày</b> — đặt ở đầu màn là mời người bấm nhầm vào lúc 9 giờ sáng. Trong hình trên tôi trả nó về đáy màn Hôm nay, đúng chỗ nó vốn ở. Ô bên cạnh hiệu suất nên là <i>Thông báo đang chờ</i>, vì đó mới là thứ cần trả lời ngay lúc mở app.</p>
+  </div>
+</section>
+
+<!-- ══════════════════ 6 ══════════════════ -->
+<section>
+  <div class="so-muc">06</div>
+  <h2>Tầng năm — ba đường đi của người dùng</h2>
+
+  <div class="hep">
+    <p>Cấu trúc chỉ đứng được nếu ba đường đi này chạy trơn. Cả ba đi qua đúng chuỗi đối tượng ở Hình 1, chỉ khác chiều và khác người.</p>
+  </div>
+
+  <figure>
+    <div class="khung-hinh">
+      <svg class="hinh" viewBox="0 0 900 430" role="img"
+           aria-label="Chuỗi năm ô ngang: Dự án, Milestone, Cam kết, Việc, Phiên deep work. Đường điều hành đi từ Dự án tới Cam kết rồi tới màn Hôm nay của người nhận. Đường làm việc đi từ Hôm nay qua Việc tới Phiên rồi tick xong. Đường truy nguyên đi ngược từ Việc về Dự án, vẽ nét đứt vì chưa soi trong mã.">
+        <defs>
+          <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--dich)"/>
+          </marker>
+          <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--suc)"/>
+          </marker>
+          <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--nhip)"/>
+          </marker>
+        </defs>
+
+        <!-- chuỗi đối tượng -->
+        <g fill="var(--the)" stroke="currentColor" stroke-width="1.3">
+          <rect x="30" y="180" width="140" height="58" rx="4"/>
+          <rect x="200" y="180" width="140" height="58" rx="4"/>
+          <rect x="370" y="180" width="140" height="58" rx="4"/>
+          <rect x="540" y="180" width="140" height="58" rx="4"/>
+          <rect x="710" y="180" width="160" height="58" rx="4"/>
+        </g>
+        <g text-anchor="middle" font-family="Be Vietnam Pro, sans-serif" font-size="13.5" font-weight="700" fill="currentColor">
+          <text x="100" y="207">Dự án</text>
+          <text x="270" y="207">Milestone</text>
+          <text x="440" y="207">Cam kết</text>
+          <text x="610" y="207">Việc</text>
+          <text x="790" y="207">Phiên deep work</text>
+        </g>
+        <g text-anchor="middle" font-size="10.5" fill="currentColor" opacity=".6">
+          <text x="100" y="225">một người gánh cuối</text>
+          <text x="270" y="225">ba tới bảy mốc</text>
+          <text x="440" y="225">một người, một tuần</text>
+          <text x="610" y="225">việc con</text>
+          <text x="790" y="225">30 phút</text>
+        </g>
+        <g stroke="currentColor" stroke-width="1.2" opacity=".45">
+          <line x1="170" y1="209" x2="196" y2="209"/>
+          <line x1="340" y1="209" x2="366" y2="209"/>
+          <line x1="510" y1="209" x2="536" y2="209"/>
+          <line x1="680" y1="209" x2="706" y2="209"/>
+        </g>
+
+        <!-- đường 1: điều hành -->
+        <text x="30" y="58" font-family="Be Vietnam Pro, sans-serif" font-size="12.5" font-weight="700" fill="var(--dich)">① ĐƯỜNG ĐIỀU HÀNH — người giao việc</text>
+        <polyline points="100,176 100,96 440,96 440,176" fill="none" stroke="var(--dich)" stroke-width="1.6" marker-end="url(#a1)"/>
+        <text x="270" y="86" text-anchor="middle" font-size="11.5" fill="var(--dich)">mở dự án, khai mốc, gieo cam kết cho một người</text>
+        <polyline points="470,176 470,130 700,130 700,152" fill="none" stroke="var(--dich)" stroke-width="1.6" marker-end="url(#a1)"/>
+        <rect x="612" y="112" width="176" height="40" rx="4" fill="var(--dich-nen)" stroke="var(--dich)" stroke-width="1.2"/>
+        <text x="700" y="137" text-anchor="middle" font-family="Be Vietnam Pro, sans-serif" font-size="11.5" font-weight="700" fill="currentColor">Hôm nay của người nhận</text>
+        <text x="540" y="122" text-anchor="middle" font-size="11" fill="var(--dich)">hiện ở ô “đang chờ”</text>
+
+        <!-- đường 2: làm việc -->
+        <text x="30" y="300" font-family="Be Vietnam Pro, sans-serif" font-size="12.5" font-weight="700" fill="var(--suc)">② ĐƯỜNG LÀM VIỆC — người nhận việc</text>
+        <rect x="30" y="316" width="176" height="40" rx="4" fill="var(--suc-nen)" stroke="var(--suc)" stroke-width="1.2"/>
+        <text x="118" y="341" text-anchor="middle" font-family="Be Vietnam Pro, sans-serif" font-size="11.5" font-weight="700" fill="currentColor">Hôm nay của tôi</text>
+        <polyline points="206,336 610,336 610,242" fill="none" stroke="var(--suc)" stroke-width="1.6" marker-end="url(#a2)"/>
+        <text x="400" y="328" text-anchor="middle" font-size="11.5" fill="var(--suc)">nhận việc, chọn một việc để làm</text>
+        <polyline points="640,242 640,290 790,290 790,242" fill="none" stroke="var(--suc)" stroke-width="1.6" marker-end="url(#a2)"/>
+        <text x="716" y="306" text-anchor="middle" font-size="11.5" fill="var(--suc)">bấm giọt nước, chạy phiên, đóng phiên, tick xong</text>
+
+        <!-- đường 3: truy nguyên -->
+        <text x="30" y="392" font-family="Be Vietnam Pro, sans-serif" font-size="12.5" font-weight="700" fill="var(--nhip)">③ ĐƯỜNG TRUY NGUYÊN — hỏi ngược lên</text>
+        <polyline points="590,242 590,410 130,410 130,242" fill="none" stroke="var(--nhip)" stroke-width="1.6"
+                  stroke-dasharray="6 4" marker-end="url(#a3)"/>
+        <text x="380" y="404" text-anchor="middle" font-size="11.5" fill="var(--nhip)">việc này phục vụ cam kết nào, cam kết này phục vụ dự án nào</text>
+        <text x="622" y="392" font-size="10.5" fill="var(--nhip)" font-style="italic">nét đứt: chưa soi trong mã</text>
+      </svg>
+    </div>
+    <figcaption><b>Hình 5.</b> Đường ① và ② là hai nửa của cùng một lời hứa: một người giao, một người nhận, không có đồng hồ tự động nào gật thay. Đường ③ là thứ giữ cho người làm biết vì sao mình đang làm việc này — và là chỗ duy nhất trong ba đường tôi chưa kiểm được trong mã.</figcaption>
+  </figure>
+</section>
+
+<!-- ══════════════════ 7 ══════════════════ -->
+<section>
+  <div class="so-muc">07</div>
+  <h2>Bốn luật giữ cho nó không rối lại</h2>
+
+  <div class="cuon">
+    <table>
+      <thead><tr><th style="width:34%">Luật</th><th>Nói gì</th><th style="width:26%">Kiểm bằng gì</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>Một khối một địa chỉ</b></td>
+          <td>Nơi khác muốn nhắc tới thì hiện bản rút gọn kèm đường bấm về địa chỉ gốc. Hôm nay hiện ba cam kết, nhưng nơi quản chúng là chỗ khác.</td>
+          <td>Tìm xem có con số nào bày ở hai màn mà đếm bằng hai đường khác nhau</td>
+        </tr>
+        <tr>
+          <td><b>Phạm vi do nơi đứng quyết định</b></td>
+          <td>Không có nút đổi chế độ nào. Đứng ở Hôm nay là của tôi, đứng ở Dự án là của cả đội.</td>
+          <td>Đếm số nút đổi phạm vi còn lại trên bốn màn — phải bằng không</td>
+        </tr>
+        <tr>
+          <td><b>Bảng đo chỉ đọc</b></td>
+          <td>Không một nút sinh ra thay đổi nào nằm trên màn thứ tư. Muốn sửa thì bấm sang màn làm tương ứng.</td>
+          <td>Đếm số nút bấm được trên màn Bảng đo — phải bằng không, trừ nút chuyển màn</td>
+        </tr>
+        <tr>
+          <td><b>Hôm nay đo một ngày, Bảng đo đo nhiều tuần</b></td>
+          <td>Đường ranh giữ cho hai màn cùng mang ba trục mà không lặp lại nhau.</td>
+          <td>Nhìn bề dày thời gian của từng ô số trên hai màn</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════ 8 ══════════════════ -->
+<section>
+  <div class="so-muc">08</div>
+  <h2>Ba quyết định Tracy chốt 28/08</h2>
+
+  <div class="hep">
+    <p>Ba câu chặn việc chuyển khối nay đã có lời. Hai câu chốt đúng phương án mặc định; câu thứ nhất Tracy trả lời rộng hơn mặc định, và chính chỗ rộng hơn ấy sinh ra một luật kiến trúc mới.</p>
+  </div>
+
+  <div class="hoi">
+    <div class="ma">K-01 · QUYỀN NHÌN — <b style="color:var(--dich)">CHỐT</b></div>
+    <h3>Hiện tại thấy tất cả sáu khối. Về sau chuyên môn hoá, chỉ thấy khối mình.</h3>
+    <p>Nguyên văn Tracy: <i>“hiện tại thấy tất cả nhé nhưng mà sau này sẽ chuyên môn hoá chỉ thấy của phòng mình thôi.”</i></p>
+    <p>Câu này có hai vế ở hai thời điểm, nên thứ phải dựng không phải một tầm nhìn mà là một <b>công tắc</b>. Luật kiến trúc rút ra: <b>tầm nhìn là một tham số, không phải một câu lệnh viết cứng.</b> Đúng một hàm quyết định phạm vi cho cả màn; hôm nay nó trả về sáu khối, ngày chuyên môn hoá thì nó trả về một, và không chỗ nào khác trong mã phải sửa theo.</p>
+    <p class="macdinh"><b>Hệ quả:</b> việc này rẻ hơn tôi tưởng lúc trình bản đầu. Máy chủ vốn đã cho mọi thành viên đọc cả sáu khối — bộ lọc hiện nay nằm ở <b>app</b>, không ở tầng quyền. Không cần một tệp SQL nào cho vế thứ nhất.</p>
+  </div>
+
+  <div class="canh-bao">
+    <p><b>Nhưng một cửa vẫn phải khoá, và nó không phải chuyện tuỳ chọn.</b> Máy chủ có một trạm gác từ chối xếp một việc cố định của khối khác vào tuần của một người, nguyên văn lỗi: <i>“Việc này thuộc khối chức năng khác — không xếp vào tuần của người này được.”</i> Vậy màn Việc cố định có <b>hai cửa khác nhau</b>, và chỉ một cửa nghe theo công tắc:</p>
+    <div class="cuon" style="margin:14px 0 0">
+      <table style="min-width:480px">
+        <thead><tr><th>Cửa</th><th>Làm gì</th><th>Phạm vi</th></tr></thead>
+        <tbody>
+          <tr><td><b>Cửa ĐỌC</b></td><td>Lưới nhịp, số giữ được, ai đứt chuỗi</td><td>cả sáu khối — <b>đây là chỗ công tắc cắm vào</b></td></tr>
+          <tr><td><b>Cửa CHỌN</b></td><td>Ô chọn việc khi tôi thêm nhịp cho tuần của mình</td><td><b>luôn</b> chỉ khối của mình — máy chủ ép, không lách được</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="hoi">
+    <div class="ma">K-02 · RANH GIỚI HAI TRỤC — <b style="color:var(--dich)">CHỐT</b></div>
+    <h3>Dự án không thuộc phòng ban.</h3>
+    <p>Giữ nguyên như cơ sở dữ liệu đang có: bảng dự án không mang cột khối chức năng, và sẽ không thêm. Hình 2 là bức tranh đúng — nhịp nằm trong làn, dự án vắt ngang các làn.</p>
+    <p class="macdinh"><b>Hệ quả:</b> mọi bảng đo dự án gom theo <b>người gánh cuối</b>, không bao giờ gom theo phòng ban. Câu hỏi “khối nào đang gánh nhiều dự án nhất” không có lời đáp trong app này, và đó là chủ ý.</p>
+  </div>
+
+  <div class="hoi">
+    <div class="ma">K-03 · MÀN THỨ TƯ — <b style="color:var(--dich)">CHỐT</b></div>
+    <h3>Bảng đo chứa hai khối chồng nhau, không nút đổi chế độ.</h3>
+    <p><i>Hành trình của tôi</i> đứng trên, <i>Bảng người ROVA</i> đứng dưới. Nút thứ tư đổi tên thành <b>Bảng đo</b>, bỏ tên có gạch chéo <i>Deepwork/ROVA</i>.</p>
+    <p class="macdinh"><b>Hệ quả:</b> màn này chỉ đọc, không một nút sinh ra thay đổi nào. Và nó chỉ đo bề dày <b>bốn tuần</b> — con số của một ngày thuộc về màn Hôm nay.</p>
+  </div>
+
+  <div class="hep">
+    <p><b>Kiến trúc khoá lại ở đây.</b> Ba trục, hai phạm vi, bốn màn, bốn luật giữ, cộng một công tắc tầm nhìn. Bước tiếp theo là chuyển khối trong mã theo bảng này — không còn câu hỏi nào chặn nữa.</p>
+  </div>
+
+<!-- ══════════════════ 9 ══════════════════ -->
+<section>
+  <div class="so-muc">09</div>
+  <h2>Bản này cố ý để ngoài</h2>
+
+  <ul class="gon">
+    <li><b>Mã trong <code>public/index.html</code></b> — chưa chạm một dòng nào. Bản này là kiến trúc trên giấy.</li>
+    <li><b>Hai tệp SQL đang chờ chạy</b> — <code>nang-cap-doi-ten-trang-thai-task.sql</code> rồi <code>nang-cap-giao-cam-ket.sql</code>, đúng thứ tự đó. Khối Kho cam kết trong bản vẽ của bạn chỉ sáng lên sau khi chúng chạy.</li>
+    <li><b>Bên trong màn phiên deep work</b> — nó là một hành động, không phải một nơi chốn, nên nằm ngoài bàn kiến trúc này.</li>
+    <li><b>Bố cục chi tiết từng khối</b> — bao nhiêu cột ở bề ngang nào, ô nào gấp mặc định. Việc đó làm sau khi bốn màn đã chốt.</li>
+    <li><b>Tầng OGSM và mục tiêu công ty</b> — chưa nằm trong bốn màn này.</li>
+    <li><b>Vế thứ hai của K-01</b> — ngày chuyên môn hoá, thu tầm nhìn về một khối. Lần này chỉ dựng công tắc và để nó ở nấc “thấy cả sáu”; gạt công tắc là việc của một phiên sau, khi Tracy nói.</li>
+  </ul>
+
+  <div class="chan">
+    <p><b>Nền của bản này:</b> <span class="mono">schema.sql</span>, <span class="mono">nang-cap-danh-muc-viec-co-dinh.sql</span>, <span class="mono">nang-cap-mang-du-an.sql</span>, <span class="mono">nang-cap-deepwork-tu-do.sql</span> đọc trực tiếp trên máy — mọi tên bảng và tên cột trong bản này đều lấy từ đó, không phải từ trí nhớ. Cấu trúc bốn màn kế thừa bản chốt 26/08 trong <span class="mono">CAU-TRUC-APP.md</span>; ba đường đi kế thừa <span class="mono">bai-dao-tao-nguyen-ly-cam-ket-va-task.md</span>.</p>
+    <p>Dựng 28/08/2026 · tiêu điểm G-01 quản lý công việc ROVA.</p>
+  </div>
+</section>
+
+</div>
