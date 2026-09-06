@@ -1,12 +1,18 @@
 # Khu Vườn Tỉnh Thức
 
-> **Bản công khai để đọc.** Kho này là bản chiếu của kho phát triển riêng tư, dựng để chia sẻ mã và cách làm. Dữ liệu thật của đội không nằm ở đây: mọi địa chỉ email trong `schema.sql` và các tệp mẫu đều là chỗ giữ chỗ dạng `ten@vidu.com`.
-
 Web app quản lý **cam kết** cho doanh nghiệp nhỏ làm việc online — không phải một chỗ ghi danh sách việc.
 
 Khác biệt nằm ở đúng một chữ. Danh sách việc trả lời được câu *"làm cái này lúc nào"*. Cam kết trả lời câu khó hơn: *"tôi hứa nộp cái gì, cho ai, trước ngày nào, và bằng chứng xong là gì"*. App lấy cam kết làm đơn vị; danh sách việc chỉ là thứ đẻ ra từ nó.
 
 Lõi một câu của cả sản phẩm: **biến cam kết thành kết quả.**
+
+> ### 🔑 Đọc trước khi bấm link
+>
+> App thật chạy ở **`https://rovatinhthuc.tranmaitrang-hup.workers.dev`**, nhưng cửa vào là Google OAuth đối chiếu **danh sách trắng email**. Người ngoài mở link sẽ bị chặn ở màn đăng nhập — **đó là app đang chạy đúng, không phải app hỏng.**
+>
+> Muốn xem bên trong thì có ba đường: đọc `spec.md` (bảy mục, bản mô tả sản phẩm) · mở `kien-truc-app.html` bằng trình duyệt (sơ đồ kiến trúc, không cần chạy gì) · hoặc dựng một bản của riêng mình theo mục *Chạy tại máy* bên dưới.
+>
+> Đây là **bản công khai** của một sản phẩm đang chạy thật trong nội bộ. Kho nội bộ giữ riêng tư vì chứa email thật của thành viên; kho này đã thay hết bằng chỗ giữ chỗ dạng `<ten>@vidu.com`.
 
 ---
 
@@ -289,33 +295,41 @@ python3 phuc-vu.py            # mở http://localhost:8082
 
 `phuc-vu.py` là đường lui cho `python3 -m http.server` — trên máy chủ dự án, lệnh sẵn có của Python ngã ngay lúc dựng bộ đọc tham số vì `os.getcwd()` bị chặn quyền, và ngã trước khi kịp truyền `--directory` nên không tham số nào cứu được. Script này khai thẳng thư mục gốc để đi vòng chỗ đó. Mặc định cổng 8082, thư mục `./public`.
 
-Muốn chạy với cơ sở dữ liệu của riêng mình thì cần thêm một project Supabase: chạy `schema.sql` rồi các tệp `nang-cap-*.sql` theo thứ tự, bật Google OAuth, điền `SUPABASE_URL` và `SUPABASE_ANON_KEY` vào đầu phần `<script>` của `public/index.html`. Từng cú bấm nằm trong `HUONG-DAN-TRIEN-KHAI.md`.
+Mở như thế là **thấy được giao diện**, nhưng chưa có dữ liệu — app cần một cơ sở dữ liệu Supabase phía sau và một tài khoản nằm trong danh sách trắng.
 
-## Bản đồ repo
+Dựng bản đầy đủ thì cần một project Supabase: chạy `schema.sql` để có 8 bảng nền, rồi chạy các tệp `nang-cap-*.sql` theo thứ tự thời gian để lên đủ **30 bảng và 19 khung nhìn**, bật đăng nhập Google, rồi điền `SUPABASE_URL` và `SUPABASE_ANON_KEY` vào đầu phần `<script>` của `public/index.html`. Từng cú bấm nằm trong `HUONG-DAN-TRIEN-KHAI.md`. Mọi địa chỉ email trong các tệp này là chỗ giữ chỗ dạng `<ten>@vidu.com` — thay bằng email thật của đội bạn ở bảng `nguoi`.
 
-Kho này gọn — **204 tệp, 15 MB** — và gần như tệp nào cũng đáng đọc. Các thư mục ảnh sprite và bản đồ vườn của lớp hiển thị đang gác không mang sang, nên không có gì để lướt qua:
+## Bản đồ kho
 
-| Nơi | Số file | Là gì |
+**199 tệp, 15 MB** — và gần như tệp nào cũng đáng đọc. Kho này không mang theo tài nguyên hình ảnh, nên thứ còn lại đều là mã, tài liệu, hoặc bài thử:
+
+| Nơi | Số | Là gì |
 |---|---:|---|
-| `public/` | 40 | **Toàn bộ thứ chạy được** — `index.html` là app, phần còn lại là ảnh và thư viện |
-| gốc kho | 164 | 87 tệp `.sql` (một tệp = một lần nâng cấp cơ sở dữ liệu) · **59 bài thử** · 10 tệp `.md` tài liệu · vài script Python công cụ |
+| `public/` | 40 | **Toàn bộ thứ chạy được.** `index.html` là app; `vendor/` giữ thư viện và font, **0 tên miền ngoài** |
+| gốc kho | 161 | **87** tệp `.sql` (một tệp = một lần nâng cấp cơ sở dữ liệu, đọc theo thứ tự là thấy cả lịch sử thiết kế) · **59** bài thử · **8** tệp `.md` tài liệu · 7 tệp cấu hình và script |
 
-Người mới vào chỉ cần bốn địa chỉ: `DOC-TRUOC.md` để biết đọc gì · `BAN-DO-INDEX.md` để tra hàm · `public/index.html` để sửa · `schema.sql` cùng các `nang-cap-*.sql` để hiểu dữ liệu.
+Mười tệp tài liệu: `spec.md` · `DOC-TRUOC.md` · `CAU-TRUC-APP.md` · `BAN-DO-INDEX.md` · `ho-so-khu-vuon-cho-ai.md` · `giai-phap-khu-vuon-tinh-thuc.md` · `HUONG-DAN-TRIEN-KHAI.md` · `dac-ta-van-de-lien-phong.md` · `LUAT-LAN.md` · `DANG-LAM.md`.
 
-⚠️ **`public/index.html` nặng 2,42 MB — khoảng nửa triệu token (đo 06/09) — đừng mở trọn file.** Tra `BAN-DO-INDEX.md` lấy số dòng rồi đọc đúng khúc cần.
+⚠️ **`public/index.html` là một app trong một tệp: 2,42 MB, 38.729 dòng, 1.204 hàm — đừng mở trọn nó.** Tra `BAN-DO-INDEX.md` lấy số dòng rồi đọc đúng khúc cần. Đây là lựa chọn có chủ ý chứ không phải nợ kỹ thuật: không bước dựng, không `node_modules`, mở tệp là chạy.
+
+Ba thứ **cố ý không có trong kho này**: bộ ảnh sprite nông trại (tài sản mua của bên thứ ba, chưa rõ giấy phép phát hành lại) · bản đồ vườn dựng bằng Tiled · và thư mục lưu trữ tài liệu đã hết hiệu lực.
 
 ## Bộ thử
 
-**59 bài thử** nằm ở gốc repo: 53 bài `.js` và 6 bài `.py`, tổng 457 câu khẳng định. Điểm đáng nói về cách viết: mỗi bài **tự cắt khối mã gốc ra từ `index.html`** rồi chạy trên đúng khối đó, nên bài thử không bao giờ trôi khỏi bản mã thật.
+**59 bài thử — đạt 58/59, và không bài nào chết lúc khởi động.**
 
 ```
-./chay-bo-thu.sh              # chạy trọn bộ
-node thu-cu-phap.js           # chạy một bài
+./chay-bo-thu.sh              # chạy trọn 59 bài, in "đạt x/59"
+node thu-cu-phap.js           # hoặc chạy lẻ một bài
 ```
 
-**Kết quả lần đo gần nhất: 58/59 bài đạt** — 52/53 bài `node`, 6/6 bài `python3`, và **không bài nào chết lúc khởi động**. Con số 0 ấy mới là con số đáng nhìn: một bài chết lúc khởi động làm mọi ca bên trong nó biến mất trong im lặng, nên nó nguy hơn một ca đỏ. Bài duy nhất chưa đạt là `thu-van-de.js`, đạt 128/129 ca.
+Con số **0 bài chết** đáng nói riêng một câu, vì một bài chết lúc khởi động thì mọi ca bên trong nó **im lặng biến mất** khỏi kết quả — nguy hơn hẳn một ca đỏ, vốn ít nhất còn kêu lên. Vì cùng lý do đó, bộ chạy đếm bằng **mã thoát** chứ không quét ký hiệu trong màn hình: có bài in dấu `✗` ngay trong phần mô tả, nên lối quét theo ký hiệu từng bỏ sót nguyên một bài đang hỏng.
 
-Không có `package.json` — mỗi bài chạy độc lập bằng `node` hoặc `python3`. `chay-bo-thu.sh` đếm bằng **mã thoát** chứ không tìm ký hiệu ❌ trong chữ in ra, vì có bài in `✗` nên lối quét theo ký hiệu từng bỏ sót nguyên một bài đang hỏng. Bài quan trọng nhất là `thu-cu-phap.js`: nó soát cú pháp mọi khối `<script>`, chặn lỗi dấu trong chú thích, và soát các chữ bị cấm dùng trong giao diện.
+Bài duy nhất chưa xanh là `thu-van-de.js`, đạt **128 trong 129 ca**.
+
+Điểm đáng nói về cách viết: mỗi bài **tự cắt khối mã gốc ra từ `index.html`** rồi chạy trên đúng khối đó. Nghĩa là bài thử không bao giờ trôi khỏi bản mã thật — sửa app mà quên sửa bài thử thì bài thử gãy ngay, chứ không lặng lẽ kiểm một bản chép cũ.
+
+Bài đáng chạy đầu tiên là `thu-cu-phap.js`: nó soát cú pháp mọi khối `<script>` trong app, chặn lỗi dấu tiếng Việt trong chú thích, và soát những chữ bị cấm dùng trong giao diện.
 
 ## Chỗ còn hở
 
@@ -323,8 +337,7 @@ Ghi thẳng, vì một README giấu chỗ hở thì không dùng được để
 
 - **Sao lưu là chỗ đau nhất.** Supabase gói Free không giữ bản dự phòng nào; bản sao chạy tay bằng `sao-luu.py` và mới phủ 12 trong 30 bảng — **18 bảng chưa có bản sao nào**.
 - **Đường giao cam kết chưa ai thử tay với dữ liệu thật** — mọi làn mới soi tới mức giao diện.
-- **Lớp vấn đề liên phòng ban đã lên sóng ở phần mã, nhưng bốn tệp SQL của nó chưa có dấu đã chạy trên máy chủ** — chưa chạy thì lớp này chưa sống.
-- **`thu-van-de.js` đỏ một ca**, ở cả bản trên đĩa lẫn `origin/main`: *"câu viết 5 giờ sáng hôm nay vẫn đọc là hôm nay"*. Đã loại được hai giả thuyết dễ tin nhất — không phải do cây lệch mốc, và không phải lỗi cắt chuỗi giờ quốc tế vì hàm `d2s` đã dùng đúng giờ địa phương. Nguyên nhân thật **chưa rõ**, nhiều khả năng nằm ở cách bài thử dựng hộp chạy từ một lát cắt của `index.html`.
+- **Lớp vấn đề liên phòng ban đã lên sóng ở phần mã nhưng chưa được kích hoạt trên máy chủ** — giao diện đã có, tầng dữ liệu thì chưa bật.
 - **Chuông tỉnh thức hiện không phát ra tiếng** — nút câm, mới đếm số lần bấm.
 - App mới hiện thực hoá khoảng **42% (22/52)** số cơ chế của bản giải pháp đầy đủ. Chỗ trống lớn nhất: **chưa có luật nào ràng buộc người GIAO việc** — cả tám triết lý hiện chỉ ràng buộc người nhận.
 
@@ -333,14 +346,17 @@ Ghi thẳng, vì một README giấu chỗ hở thì không dùng được để
 | File | Nội dung |
 |---|---|
 | `spec.md` | Spec một trang — bảy mục |
-| `DOC-TRUOC.md` | **Cửa vào mọi phiên sửa app** — loại việc nào đọc file nào |
-| `giai-phap-khu-vuon-tinh-thuc.md` | Tám triết lý, mỗi triết lý có nguyên lý · bằng chứng · công thức · bảng tính năng |
 | `ho-so-khu-vuon-cho-ai.md` | Hồ sơ toàn cảnh: triết lý, thiết kế, tầng kỹ thuật |
 | `CAU-TRUC-APP.md` | Bốn mục, flow năm cấp, và bộ luật trình bày giao diện |
 | `kien-truc-app.html` | Sơ đồ kiến trúc, mở bằng trình duyệt |
+| `nguyen-ly-va-kien-truc.html` | **Bản vẽ một trang**: bốn trụ nguyên lý nối xuống tên bảng và tên trigger thật, vòng đời một việc qua sáu chặng, bốn luồng việc hợp lưu |
+| `giai-phap-khu-vuon-tinh-thuc.md` | Tám triết lý, mỗi cái có nguyên lý · bằng chứng · công thức · bảng tính năng |
 | `BAN-DO-INDEX.md` | Bản đồ hàm của `public/index.html` — tra trước, đọc sau |
-| `DANG-LAM.md` · `LUAT-LAN.md` | Bảng chia làn khi nhiều phiên cùng sửa app |
-| `schema.sql` | Bảng gốc |
+| `HUONG-DAN-TRIEN-KHAI.md` | Các bước dựng lần đầu — Supabase, Google OAuth, phát hành |
+| `schema.sql` | Lược đồ gốc (8 bảng nền — xem cảnh báo ở mục *Chạy tại máy*) |
+| `.env.example` | Tên các biến môi trường, không chứa giá trị nào |
+
+Đọc theo thứ tự này là nhanh nhất: `spec.md` để biết sản phẩm là gì → `nguyen-ly-va-kien-truc.html` để nhìn nguyên lý nối xuống cấu trúc thật → `kien-truc-app.html` để nhìn nó chạy thế nào → `ho-so-khu-vuon-cho-ai.md` khi muốn biết vì sao từng cơ chế được thiết kế như vậy.
 
 ## Luật về khoá bảo mật
 
@@ -352,4 +368,4 @@ Ghi thẳng, vì một README giấu chỗ hở thì không dùng được để
 
 ---
 
-*Cập nhật 06/09/2026. Ba câu la bàn của sản phẩm: mỗi ngày mở app phải thấy vườn khác hôm qua · không trừng phạt, chỉ mời gọi · cơ chế giữ được ba tháng, câu chuyện giữ được ba năm.*
+*Bản công khai, cập nhật 06/09/2026. Ba câu la bàn của sản phẩm: mỗi ngày mở app phải thấy vườn khác hôm qua · không trừng phạt, chỉ mời gọi · cơ chế giữ được ba tháng, câu chuyện giữ được ba năm.*

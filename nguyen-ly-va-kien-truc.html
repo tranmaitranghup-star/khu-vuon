@@ -1,0 +1,328 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Khu Vườn Tỉnh Thức — Nguyên lý và Kiến trúc</title>
+<style>
+:root{
+  --nen:#f7f5f0; --the:#fff; --muc:#18211f; --mo:#6b7a76; --vien:#e2e8e5; --nhat:#f1f5f3;
+  --t1:#c47f2a; --t1n:#fdf3e4;   /* tỉnh thức */
+  --t2:#2f7d4f; --t2n:#e9f5ee;   /* deep work */
+  --t3:#7b5ea8; --t3n:#f1ecf9;   /* integrity */
+  --t4:#2c6b93; --t4n:#e8f1f7;   /* mục tiêu  */
+  --may:#2e4a42; --maychu:#eaf1ee;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media(prefers-color-scheme:dark){:root{
+  --nen:#121a18; --the:#1a2422; --muc:#dfe7e4; --mo:#8fa09b; --vien:#2b3936; --nhat:#202c29;
+  --t1:#e0a758; --t1n:#33261480; --t2:#63b585; --t2n:#16301f80;
+  --t3:#a992d6; --t3n:#241c3480; --t4:#68a5cd; --t4n:#132a3a80;
+  --may:#0d1614; --maychu:#cfdcd7;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--nen);color:var(--muc);font:15px/1.65 var(--sans);
+-webkit-text-size-adjust:100%}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+
+/* ── đầu trang ── */
+header{background:var(--may);color:var(--maychu);padding:54px 0 46px;margin-bottom:34px}
+header .nhan{font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;opacity:.6;margin:0 0 18px}
+header h1{margin:0;font-size:clamp(1.8rem,4.4vw,2.7rem);font-weight:250;line-height:1.14;letter-spacing:.01em}
+header p{margin:16px 0 0;max-width:62ch;opacity:.78;font-weight:300;font-size:1.02rem}
+
+section{margin:0 0 46px}
+h2{font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mo);
+margin:0 0 6px;font-weight:700}
+h2+.de{margin:0 0 22px;font-size:1.34rem;font-weight:600;line-height:1.32;max-width:40ch}
+.ghi{color:var(--mo);font-size:.92rem;max-width:74ch;margin:0 0 20px}
+
+/* ── bốn trụ ── */
+.trus{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:900px){.trus{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.trus{grid-template-columns:1fr}}
+.tru{background:var(--the);border:1px solid var(--vien);border-top:4px solid var(--c);
+padding:16px 15px 17px;border-radius:3px}
+.tru .so{font:700 .64rem/1 var(--sans);letter-spacing:.18em;color:var(--c);text-transform:uppercase}
+.tru h3{margin:9px 0 7px;font-size:1.03rem;font-weight:650;line-height:1.3}
+.tru p{margin:0;font-size:.86rem;color:var(--mo);line-height:1.56}
+.tru .nguon{margin-top:10px;padding-top:9px;border-top:1px dashed var(--vien);
+font-size:.74rem;color:var(--mo);opacity:.9}
+
+/* ── cột sống: nguyên lý → cơ chế → chỗ bị đóng thành luật ── */
+.song{border:1px solid var(--vien);border-radius:3px;overflow:hidden;background:var(--the)}
+.song .hang{display:grid;grid-template-columns:1.05fr 1.25fr 1.15fr;gap:0;
+border-top:1px solid var(--vien)}
+.song .hang:first-child{border-top:0}
+.song .dau{background:var(--nhat);font:700 .64rem/1.4 var(--sans);letter-spacing:.16em;
+text-transform:uppercase;color:var(--mo)}
+.song .o{padding:13px 15px;border-left:1px solid var(--vien);font-size:.89rem;line-height:1.55}
+.song .o:first-child{border-left:0}
+.song .hang:not(.dau) .o:first-child{border-left:4px solid var(--c);padding-left:12px;font-weight:600}
+.song .ma{display:block;margin-top:9px;padding-top:8px;border-top:1px dashed var(--vien);
+font-family:var(--mono);font-size:.73rem;color:var(--mo);word-break:break-word;line-height:1.5}
+.song .ma em{font-family:var(--sans);font-style:normal;font-size:.68rem;letter-spacing:.1em;
+text-transform:uppercase;font-weight:700;color:var(--mo);opacity:.75;margin-right:5px}
+@media(max-width:820px){
+  .song .hang{grid-template-columns:1fr}
+  .song .dau{display:none}
+  .song .o{border-left:0;border-top:1px dashed var(--vien)}
+  .song .hang:not(.dau) .o:first-child{border-top:0;border-left:4px solid var(--c)}
+}
+
+/* ── sáu chặng ── */
+.chang{display:grid;grid-template-columns:repeat(6,1fr);gap:9px}
+@media(max-width:1000px){.chang{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:620px){.chang{grid-template-columns:1fr}}
+.ch{background:var(--the);border:1px solid var(--vien);border-radius:3px;padding:13px 12px;
+position:relative;display:flex;flex-direction:column}
+.ch .n{font:700 .62rem/1 var(--sans);letter-spacing:.14em;color:var(--mo)}
+.ch h4{margin:8px 0 6px;font-size:.95rem;font-weight:650;line-height:1.28}
+.ch p{margin:0 0 10px;font-size:.81rem;color:var(--mo);line-height:1.52;flex:1}
+.ch .bang{font-family:var(--mono);font-size:.72rem;background:var(--nhat);
+padding:5px 7px;border-radius:2px;color:var(--muc);word-break:break-word;margin-bottom:6px}
+.ch .cham{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;color:var(--mo)}
+.ch .cham i{width:8px;height:8px;border-radius:50%;background:var(--c);display:inline-block}
+
+/* ── bốn luồng ── */
+.luongs{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px}
+@media(max-width:900px){.luongs{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.luongs{grid-template-columns:1fr}}
+.lu{background:var(--the);border:1px solid var(--vien);border-top:3px solid var(--c);
+border-radius:3px;padding:14px 13px}
+.lu .n{font:700 .62rem/1 var(--sans);letter-spacing:.14em;color:var(--c);text-transform:uppercase}
+.lu h4{margin:8px 0 4px;font-size:.96rem;font-weight:650}
+.lu .nhip{font-size:.72rem;color:var(--mo);margin-bottom:9px}
+.lu ol{margin:0;padding-left:1.05em;font-size:.81rem;color:var(--mo);line-height:1.5}
+.lu li{margin:.3em 0}
+.hoplu{background:var(--the);border:1px solid var(--vien);border-radius:3px;padding:16px}
+.hoplu .tit{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mo);
+font-weight:700;margin-bottom:12px}
+.khoi3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:620px){.khoi3{grid-template-columns:1fr}}
+.k{border:1px solid var(--vien);border-radius:3px;padding:12px;background:var(--nhat)}
+.k b{display:block;font-size:.95rem;margin-bottom:4px}
+.k span{font-size:.79rem;color:var(--mo)}
+
+/* ── hạ tầng ── */
+.ht{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
+@media(max-width:820px){.ht{grid-template-columns:1fr}}
+.tang{background:var(--the);border:1px solid var(--vien);border-radius:3px;padding:16px 15px}
+.tang .lop{font:700 .62rem/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--mo)}
+.tang h4{margin:9px 0 10px;font-size:1.02rem;font-weight:650}
+.tang ul{margin:0;padding-left:1.05em;font-size:.85rem;color:var(--mo);line-height:1.58}
+.tang li{margin:.34em 0}
+.tang .so{font-family:var(--mono);color:var(--muc);font-weight:600}
+.canh{margin-top:12px;padding:11px 13px;border-left:3px solid var(--t3);background:var(--t3n);
+font-size:.85rem;border-radius:0 3px 3px 0}
+
+/* ── chốt ── */
+.chot{background:var(--may);color:var(--maychu);border-radius:4px;padding:28px 26px;margin-bottom:16px}
+.chot p{margin:0 0 12px;font-size:1.06rem;line-height:1.6}
+.chot p:last-child{margin:0}
+.chot b{color:#fff;font-weight:650}
+@media(prefers-color-scheme:dark){.chot b{color:#f0f6f4}}
+footer{color:var(--mo);font-size:.8rem;padding:0 0 60px;line-height:1.7}
+@media print{
+  body{background:#fff}header,.chot{background:#f0f0f0;color:#000}
+  section{break-inside:avoid}
+}
+</style></head><body>
+
+<header><div class="wrap">
+<p class="nhan">Khu Vườn Tỉnh Thức · bản vẽ một trang</p>
+<h1>Nguyên lý ở trên, hạ tầng ở dưới,<br>và đường nối giữa hai thứ</h1>
+<p>Mỗi ô trạng thái trong app là một chỗ nguyên lý được đóng thành luật — không phải một nút bấm cho đẹp. Trang này vẽ đúng đường nối đó: bốn trụ nguyên lý ở trên, tên trigger và tên bảng thật trong cơ sở dữ liệu ở dưới. Màu đi theo trụ suốt cả trang.</p>
+</div></header>
+
+<div class="wrap">
+
+<section>
+<h2>Tầng 1 · Vì sao</h2>
+<p class="de">Bốn trụ, đi từ trong ra ngoài: một tâm trí → một giờ làm việc → một lời hứa → một doanh nghiệp.</p>
+<div class="trus">
+  <div class="tru" style="--c:var(--t1)">
+    <span class="so">Trụ 1</span><h3>Tỉnh thức</h3>
+    <p>Tỉnh thức là năng lực <b>nhận ra mình đã trôi</b>, không phải năng lực không trôi. Trôi là mặc định sinh học — đo nó là đo một hằng số.</p>
+    <p class="nguon">Hasenkamp, <i>NeuroImage</i> 2011 · Killingsworth &amp; Gilbert, <i>Science</i> 2010 — 46,9% giờ thức</p>
+  </div>
+  <div class="tru" style="--c:var(--t2)">
+    <span class="so">Trụ 2</span><h3>Deep work và entropy</h3>
+    <p>Hỗn loạn là <b>trạng thái mặc định của tâm trí</b>. Trật tự không tự sinh, phải kiến tạo. Nên đây là bài toán chủ quyền, không phải quản lý thời gian.</p>
+    <p class="nguon">Csikszentmihalyi — psychic entropy · Newport — <i>thành quả = thời gian × cường độ</i></p>
+  </div>
+  <div class="tru" style="--c:var(--t3)">
+    <span class="so">Trụ 3</span><h3>Integrity</h3>
+    <p>Tuyên bố → nguyên vẹn → vận hành được → hiệu suất. Thác đổ <b>một chiều</b>, không nhảy nấc. Integrity là yếu tố sản xuất, không phải đức tính.</p>
+    <p class="nguon">Erhard – Jensen – Zaffron, HBS · <i>The Three Laws of Performance</i></p>
+  </div>
+  <div class="tru" style="--c:var(--t4)">
+    <span class="so">Trụ 4</span><h3>Chồng mục tiêu</h3>
+    <p>Dòng chảy không có hướng chỉ là <b>tốc độ</b>. Mười hai người vào phiên sâu vẫn có thể là đội đứng yên nếu mười hai mũi tên chỉ mười hai hướng.</p>
+    <p class="nguon">OGSM · Locke &amp; Latham 2002 (d = 0,42–0,80) · Rocks (Wickman)</p>
+  </div>
+</div>
+</section>
+
+<section>
+<h2>Tầng 2 · Thành cái gì, và bị đóng ở đâu</h2>
+<p class="de">Cột phải là chỗ phân biệt app này với một lời khuyên hay: nguyên lý nằm trong <i>cơ sở dữ liệu</i>, không nằm trên màn hình.</p>
+<p class="ghi">Một luật đặt ở giao diện thì lách được bằng cách mở công cụ lập trình của trình duyệt. Một luật đặt ở tầng máy chủ thì không. Dưới đây là tên thật của từng <b>trigger</b> — đoạn luật máy chủ tự chạy trước khi cho ghi dữ liệu — mở <code>schema.sql</code> và các tệp <code>nang-cap-*.sql</code> là đối chiếu được từng dòng.</p>
+<div class="song">
+  <div class="hang dau"><div class="o">Nguyên lý</div><div class="o">Thành cơ chế gì</div><div class="o">Máy chủ chặn thế nào</div></div>
+
+  <div class="hang" style="--c:var(--t1)">
+    <div class="o">Đếm lần quay về, không đếm lần trôi</div>
+    <div class="o">Chuông tỉnh thức: mỗi lần nhận ra mình trôi thì bấm một tiếng. Luôn là điểm cộng, vĩnh viễn không vào công thức chấm điểm ngày.</div>
+    <div class="o">Mỗi tiếng chuông là một dòng riêng trong máy chủ, ghi lại lúc bấm. Con số này <b>cố ý không có mặt</b> trong phép tính điểm ngày — nên không ai được lợi bằng cách trôi nhiều rồi bấm nhiều.<span class="ma"><em>trong mã</em>bảng tieng_chuong</span></div>
+  </div>
+
+  <div class="hang" style="--c:var(--t2)">
+    <div class="o">Giờ phải là giờ thật</div>
+    <div class="o">Một phiên tập trung là khối thời gian có nghi thức vào và nghi thức ra. Đồng hồ <b>đếm lên</b>, không đếm ngược — vì thứ cần đo là giờ đã làm, không phải cái khung 25 phút.</div>
+    <div class="o">Giờ bắt đầu và kết thúc do máy chủ tự đóng dấu, máy người dùng không gửi giờ lên được. Máy chủ cũng chặn một người mở hai phiên cùng lúc, và chặn ghi phiên vào tên người khác.<span class="ma"><em>trong mã</em>bảng phien_deepwork · trigger kiem_phien_dung_chu</span></div>
+  </div>
+
+  <div class="hang" style="--c:var(--t2)">
+    <div class="o">Mục tiêu rõ là vế thứ nhất của phép nhân</div>
+    <div class="o">Đồng hồ không bao giờ chạy trong chân không: phải bấm 💧 trên <b>một việc cụ thể</b> mới mở được phiên. Thiếu vế mục tiêu rõ thì tích của phép nhân bằng 0.</div>
+    <div class="o">Không chọn việc thì không mở được phiên. Máy chủ kiểm việc ấy có thật thuộc về người đang bấm hay không trước khi cho đồng hồ chạy.<span class="ma"><em>trong mã</em>trigger task_dong_bo_cam_ket</span></div>
+  </div>
+
+  <div class="hang" style="--c:var(--t3)">
+    <div class="o">Xong là có người thứ ba nhận được thứ mình để lại</div>
+    <div class="o">Đóng cam kết bắt buộc nộp output bằng chữ. Người ký <i>đã nhận</i> là cấp trên trực tiếp, luôn khác chủ cam kết.</div>
+    <div class="o">Bấm đóng một cam kết mà chưa điền output thì máy chủ <b>đá về</b>, không phải giao diện nhắc rồi cho qua. Người ký nhận buộc phải là người khác chủ cam kết.<span class="ma"><em>trong mã</em>trigger kiem_output_cam_ket</span></div>
+  </div>
+
+  <div class="hang" style="--c:var(--t3)">
+    <div class="o">Nghẽn phải nói ra, và nói ra thì phải có lối gỡ</div>
+    <div class="o">Khai nghẽn thì app sinh một việc con gỡ nghẽn đứng cạnh; việc cha giữ nguyên ô nghẽn chứ không đóng lại.</div>
+    <div class="o">Khai một việc là <i>nghẽn</i> mà không nêu việc gỡ thì máy chủ không nhận. Tương tự, chuyển hướng một việc mà không sinh việc thay thế cũng không nhận.<span class="ma"><em>trong mã</em>kiem_nghen_co_viec_go · kiem_da_chuyen</span></div>
+  </div>
+
+  <div class="hang" style="--c:var(--t3)">
+    <div class="o">Mốc nghĩa vụ là lúc BIẾT, không phải lúc đến hạn</div>
+    <div class="o">Dời hạn thì máy chủ tự đếm số lần và số ngày trượt so với hạn gốc. Hạn gốc bất biến, không ai sửa lại lịch sử được.</div>
+    <div class="o">Mỗi lần dời hạn, máy chủ tự cộng thêm một lượt và tự tính số ngày trượt so với hạn <b>gốc</b>. Hạn gốc không ai sửa được, và ngày đã chốt thì đóng lại — không sửa lại lịch sử được.<span class="ma"><em>trong mã</em>trigger doi_han · ngay_hen_dau · ràng buộc chi_chot_hom_nay</span></div>
+  </div>
+
+  <div class="hang" style="--c:var(--t3)">
+    <div class="o">Im lặng gây hụt y như thất hứa</div>
+    <div class="o">Việc giao phải được ký nhận hoặc từ chối tường minh; từ chối bắt buộc khai lý do. Mọi thứ đang chờ tên mình gom về một hộp duy nhất.</div>
+    <div class="o">Việc giao đi phải được người nhận bấm nhận hoặc bấm từ chối; từ chối mà bỏ trống lý do thì máy chủ đá về. Bảy loại việc đang chờ tên một người được máy chủ gom sẵn về một hộp.<span class="ma"><em>trong mã</em>trigger kiem_giao_cam_ket · bảng gom cho_ban</span></div>
+  </div>
+
+  <div class="hang" style="--c:var(--t4)">
+    <div class="o">Hết luống là hết đất</div>
+    <div class="o">Trần ba cam kết đang chạy mỗi người, CEO năm. Muốn gieo mới phải đóng một cái cũ. Kho cam kết cũng có trần riêng.</div>
+    <div class="o">Trần được lưu thành một con số riêng của từng người. Gieo cam kết thứ tư khi đang có ba cái chạy thì máy chủ từ chối ghi — <b>mở công cụ lập trình của trình duyệt cũng không lách được</b>.<span class="ma"><em>trong mã</em>cột so_cam_ket_toi_da · trigger kiem_tran_cam_ket</span></div>
+  </div>
+
+  <div class="hang" style="--c:var(--t4)">
+    <div class="o">Một cam kết chỉ đứng dưới đúng một mục tiêu còn sống</div>
+    <div class="o">Không gắn được cam kết vào một mục tiêu đã đóng. Tiến độ dự án được máy chủ cộng ngược lên, không ai gõ phần trăm.</div>
+    <div class="o">Không gắn được cam kết vào một mục tiêu đã đóng. Phần trăm tiến độ do máy chủ tự cộng từ các cam kết trỏ về — app <b>không có ô nào cho ai gõ phần trăm vào</b>.<span class="ma"><em>trong mã</em>trigger kiem_muc_tieu_con_mo · bảng tính tien_do_muc_tieu</span></div>
+  </div>
+
+  <div class="hang" style="--c:var(--t4)">
+    <div class="o">Việc lặp thuộc vị trí, không thuộc người</div>
+    <div class="o">Nhịp lặp gắn vào khối chức năng. Người nghỉ thì việc vẫn có chủ. Không xếp được việc của khối khác vào nhịp của mình.</div>
+    <div class="o">Danh mục việc lặp thuộc về khối chức năng, không thuộc về một người. Máy chủ chặn xếp việc của khối khác vào nhịp của mình.<span class="ma"><em>trong mã</em>bảng chuc_nang · viec_co_dinh · trigger nhip_dong_dau</span></div>
+  </div>
+</div>
+</section>
+
+<section>
+<h2>Tầng 3 · Chạy ra sao</h2>
+<p class="de">Vòng đời một việc — sáu chặng. Chấm màu ở mỗi chặng là trụ đứng sau nó.</p>
+<div class="chang">
+  <div class="ch" style="--c:var(--t4)"><span class="n">Chặng ①</span><h4>Sinh ra</h4>
+    <p>Vào hệ qua đúng bốn cửa: mục tiêu · nhịp lặp · phát sinh (bộ lọc 15 phút) · ý tưởng (chờ buổi duyệt). Lặp từ ba lần trở lên thì nó là nhịp, không phải việc.</p>
+    <div class="bang">muc_tieu · nhip</div><span class="cham"><i></i>Trụ 4</span></div>
+
+  <div class="ch" style="--c:var(--t3)"><span class="n">Chặng ②</span><h4>Viết và gieo</h4>
+    <p>Cam kết viết dạng <i>danh từ + số + hạn</i>; việc viết dạng <i>làm gì, xong lúc nào</i>. Gieo là một lời tuyên bố, nên phải công khai.</p>
+    <div class="bang">tieu_diem → task</div><span class="cham"><i></i>Trụ 3</span></div>
+
+  <div class="ch" style="--c:var(--t3)"><span class="n">Chặng ③</span><h4>Vào ngày</h4>
+    <p>Lên màn Hôm nay kèm thời lượng dự kiến. Ước không nổi nghĩa là còn quá to, chia nhỏ tiếp. Lời hứa cần một khoảng thời gian thật trong lịch.</p>
+    <div class="bang">task.ngay · lich_chung</div><span class="cham"><i></i>Trụ 3</span></div>
+
+  <div class="ch" style="--c:var(--t2)"><span class="n">Chặng ④</span><h4>Phiên deep work</h4>
+    <p>Đồng hồ đếm lên, 5 đến 180 phút. Kết thúc phải đi qua một trong ba cửa — không có cửa kết thúc mơ hồ. Trong phiên, chuông đếm số lần quay về.</p>
+    <div class="bang">phien_deepwork · tieng_chuong</div><span class="cham"><i></i>Trụ 1 và 2</span></div>
+
+  <div class="ch" style="--c:var(--t3)"><span class="n">Chặng ⑤</span><h4>Nghi thức hoàn tất</h4>
+    <p>Cuối ngày tự tay chốt từng việc, mỗi ô có một câu bắt buộc khai. Người tự chốt thì sáng mai đi thẳng vào việc; để máy đoán thì sáng phải dọn.</p>
+    <div class="bang">task.trang_thai · nop_ngay</div><span class="cham"><i></i>Trụ 3</span></div>
+
+  <div class="ch" style="--c:var(--t3)"><span class="n">Chặng ⑥</span><h4>Nghiệm thu</h4>
+    <p>Đóng cam kết bắt buộc có output bằng chữ. Cấp trên ký <i>đã nhận</i>. Không ai tự chấm mình xong.</p>
+    <div class="bang">tieu_diem.output_chu · da_nhan_boi</div><span class="cham"><i></i>Trụ 3</span></div>
+</div>
+</section>
+
+<section>
+<h2>Tầng 3 · tiếp</h2>
+<p class="de">Bốn luồng việc của doanh nghiệp, hợp lưu vào đúng ba khối của màn Hôm nay.</p>
+<div class="luongs">
+  <div class="lu" style="--c:var(--t4)"><span class="n">Luồng 1</span><h4>Mục tiêu</h4><p class="nhip">nhịp quý, tháng</p>
+    <ol><li>Mục tiêu cấp công ty</li><li><i>đàm phán CEO ↔ leader</i></li><li>Mục tiêu phòng ban</li><li><i>đàm phán leader ↔ nhân sự</i></li><li><b>Kết quả then chốt cá nhân — tự nhận, tự viết</b></li></ol></div>
+  <div class="lu" style="--c:var(--t2)"><span class="n">Luồng 2</span><h4>Nhịp vận hành</h4><p class="nhip">nhịp ngày, tuần</p>
+    <ol><li>Của từng vị trí</li><li>Checklist ngày kèm mục tiêu và đơn vị đo</li><li>Điền số trước 24h</li></ol></div>
+  <div class="lu" style="--c:var(--t1)"><span class="n">Luồng 3</span><h4>Phát sinh</h4><p class="nhip">nhịp bất kỳ</p>
+    <ol><li>Việc đột ngột đến</li><li><b>Bộ lọc 15 phút</b> — làm luôn hay ghi vào bảng</li><li>Việc lẻ</li></ol></div>
+  <div class="lu" style="--c:var(--t3)"><span class="n">Luồng 4</span><h4>Ý tưởng</h4><p class="nhip">nhịp theo buổi duyệt</p>
+    <ol><li>Ý tưởng, đề xuất</li><li>Phiếu đề xuất</li><li><i>buổi duyệt</i></li><li>Thành dự án · để lại chờ · hoặc loại bỏ</li></ol></div>
+</div>
+<div class="hoplu">
+  <div class="tit">↓ Hợp lưu — màn Hôm nay, đúng ba khối app đang có</div>
+  <div class="khoi3">
+    <div class="k"><b>🌳 Cây</b><span>Việc luồng ①, làm bằng phiên deep work</span></div>
+    <div class="k"><b>💧 Tưới nước và làm cỏ</b><span>Checklist luồng ②, điền số mỗi ngày</span></div>
+    <div class="k"><b>🪴 Chậu lẻ</b><span>Việc luồng ③, phát sinh trong ngày</span></div>
+  </div>
+  <p class="ghi" style="margin:14px 0 0">Vòng phản hồi đi ngược lên: báo cáo ngày → họp tuần → duyệt danh mục tháng → chỉnh lại mục tiêu và quy trình ở đầu các luồng.</p>
+</div>
+</section>
+
+<section>
+<h2>Tầng 4 · Chạy trên cái gì</h2>
+<p class="de">Ba lớp hạ tầng. Chỗ đặt luật quyết định luật đó có lách được hay không.</p>
+<div class="ht">
+  <div class="tang"><span class="lop">Lớp 1 · trình duyệt</span><h4>Một tệp HTML tĩnh</h4>
+    <ul>
+      <li><span class="so">2,42 MB</span> · <span class="so">38.729</span> dòng · <span class="so">1.204</span> hàm · <span class="so">13</span> màn</li>
+      <li>Không bước dựng, không <code>node_modules</code> — mở tệp là chạy</li>
+      <li>Thư viện và phông nằm trong <code>vendor/</code>, <span class="so">0</span> tên miền ngoài</li>
+      <li><b>Luật đặt ở đây thì lách được</b> — nên chỉ để luật trình bày</li>
+    </ul></div>
+  <div class="tang"><span class="lop">Lớp 2 · máy chủ</span><h4>Supabase — Postgres</h4>
+    <ul>
+      <li><span class="so">30</span> bảng · <span class="so">19</span> khung nhìn · <span class="so">80</span> hàm · <span class="so">53</span> trigger</li>
+      <li>Phân quyền từng dòng bật trên <span class="so">cả 30</span> bảng, <span class="so">97</span> chính sách</li>
+      <li>Cả đội đọc được của nhau; mỗi người chỉ sửa dòng của mình; ngày đã chốt thì không sửa không xoá</li>
+      <li>Mọi con số app bày ra đều được <b>gộp sẵn ở đây</b>, không kéo dòng về rồi đếm</li>
+    </ul></div>
+  <div class="tang"><span class="lop">Lớp 3 · phát hành</span><h4>Cloudflare Workers</h4>
+    <ul>
+      <li>Đẩy nhánh <code>main</code> → tự phát hành sau 36–60 giây</li>
+      <li>Chỉ thư mục <code>public/</code> ra web — mọi tệp <code>.sql</code> và <code>.md</code> nằm ngoài</li>
+      <li>Đăng nhập Google, đối chiếu danh sách trắng email</li>
+      <li>Bộ thử <span class="so">59</span> bài, đạt <span class="so">58/59</span>, <b>0 bài chết</b></li>
+    </ul></div>
+</div>
+<div class="canh"><b>Đây là câu trả lời cho câu hỏi hay bị bỏ qua nhất:</b> vì sao trần ba cam kết lại nằm trong cơ sở dữ liệu chứ không nằm ở màn hình? Vì một lời khuyên trên màn hình bị quên sau ba ngày, còn một trigger nằm trong máy chủ thì không. Trong sáu app đầu ngành đã đối chiếu, <b>không app nào dám chặn quá tải bằng luật</b> — tất cả chỉ đổi màu cảnh báo.</div>
+</section>
+
+<section>
+<div class="chot">
+  <p><b>Integrity dựng nền · Workability là số nước đi còn lại trên nền đó · Performance là điểm số.</b> Không nhảy qua nấc nào được.</p>
+  <p>Nguyên lý không có cơ chế thì chỉ là khẩu hiệu. Cơ chế không có nguyên lý thì chỉ là tính năng chờ bị lách.</p>
+</div>
+<footer>
+Khu Vườn Tỉnh Thức · bản vẽ ngày 06/09/2026. Số cơ sở dữ liệu đếm từ 87 tệp <code>.sql</code> trong kho; số phiên và số giờ lấy từ bản sao dữ liệu ngày 05/09.<br>
+Đọc kèm: <code>spec.md</code> (bản mô tả sản phẩm) · <code>ho-so-khu-vuon-cho-ai.md</code> (hồ sơ toàn cảnh) · <code>kien-truc-app.html</code> (kiến trúc bốn màn) · <code>so-do-luong-task.html</code> (sơ đồ luồng chi tiết).
+</footer>
+</section>
+
+</div></body></html>
