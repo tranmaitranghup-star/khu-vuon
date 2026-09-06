@@ -301,12 +301,12 @@ Dựng bản đầy đủ thì cần một project Supabase: chạy `schema.sql`
 
 ## Bản đồ kho
 
-**199 tệp, 15 MB** — và gần như tệp nào cũng đáng đọc. Kho này không mang theo tài nguyên hình ảnh, nên thứ còn lại đều là mã, tài liệu, hoặc bài thử:
+**200 tệp, 15 MB** — và gần như tệp nào cũng đáng đọc. Kho này không mang theo tài nguyên hình ảnh, nên thứ còn lại đều là mã, tài liệu, hoặc bài thử:
 
 | Nơi | Số | Là gì |
 |---|---:|---|
-| `public/` | 40 | **Toàn bộ thứ chạy được.** `index.html` là app; `vendor/` giữ thư viện và font, **0 tên miền ngoài** |
-| gốc kho | 161 | **87** tệp `.sql` (một tệp = một lần nâng cấp cơ sở dữ liệu, đọc theo thứ tự là thấy cả lịch sử thiết kế) · **59** bài thử · **8** tệp `.md` tài liệu · 7 tệp cấu hình và script |
+| `public/` | 34 | **Toàn bộ thứ chạy được.** `index.html` là app; `vendor/` giữ thư viện và font, **0 tên miền ngoài** |
+| gốc kho | 166 | **87** tệp `.sql` (một tệp = một lần nâng cấp cơ sở dữ liệu, đọc theo thứ tự là thấy cả lịch sử thiết kế) · **59** bài thử · **10** tệp `.md` tài liệu · 10 tệp sơ đồ, cấu hình và script |
 
 Mười tệp tài liệu: `spec.md` · `DOC-TRUOC.md` · `CAU-TRUC-APP.md` · `BAN-DO-INDEX.md` · `ho-so-khu-vuon-cho-ai.md` · `giai-phap-khu-vuon-tinh-thuc.md` · `HUONG-DAN-TRIEN-KHAI.md` · `dac-ta-van-de-lien-phong.md` · `LUAT-LAN.md` · `DANG-LAM.md`.
 
