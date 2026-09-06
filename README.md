@@ -335,7 +335,7 @@ Bài đáng chạy đầu tiên là `thu-cu-phap.js`: nó soát cú pháp mọi 
 
 Ghi thẳng, vì một README giấu chỗ hở thì không dùng được để ra quyết định:
 
-- **Sao lưu là chỗ đau nhất.** Supabase gói Free không giữ bản dự phòng nào; bản sao chạy tay bằng `sao-luu.py` và mới phủ 12 trong 30 bảng — **18 bảng chưa có bản sao nào**.
+- **Sao lưu là chỗ đau nhất.** Supabase gói Free không giữ bản dự phòng nào; bản sao chạy tay bằng một script nằm ngoài kho này, và mới phủ 12 trong 30 bảng — **18 bảng chưa có bản sao nào**.
 - **Đường giao cam kết chưa ai thử tay với dữ liệu thật** — mọi làn mới soi tới mức giao diện.
 - **Lớp vấn đề liên phòng ban đã lên sóng ở phần mã nhưng chưa được kích hoạt trên máy chủ** — giao diện đã có, tầng dữ liệu thì chưa bật.
 - **Chuông tỉnh thức hiện không phát ra tiếng** — nút câm, mới đếm số lần bấm.
@@ -350,6 +350,7 @@ Ghi thẳng, vì một README giấu chỗ hở thì không dùng được để
 | `CAU-TRUC-APP.md` | Bốn mục, flow năm cấp, và bộ luật trình bày giao diện |
 | `kien-truc-app.html` | Sơ đồ kiến trúc, mở bằng trình duyệt |
 | `nguyen-ly-va-kien-truc.html` | **Bản vẽ một trang**: bốn trụ nguyên lý nối xuống tên bảng và tên trigger thật, vòng đời một việc qua sáu chặng, bốn luồng việc hợp lưu |
+| `so-do-luong-task.html` | Sơ đồ luồng một task đi qua hệ thống |
 | `giai-phap-khu-vuon-tinh-thuc.md` | Tám triết lý, mỗi cái có nguyên lý · bằng chứng · công thức · bảng tính năng |
 | `BAN-DO-INDEX.md` | Bản đồ hàm của `public/index.html` — tra trước, đọc sau |
 | `HUONG-DAN-TRIEN-KHAI.md` | Các bước dựng lần đầu — Supabase, Google OAuth, phát hành |

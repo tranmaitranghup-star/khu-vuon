@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Luồng của một task — Khu Vườn Tỉnh Thức</title>
+<!--
+  BẢN RỜI của hai sơ đồ, đồng thời là NGUỒN CHÈN cho hai tài liệu đào tạo.
+  Vùng giữa <!==KHOI-BAT-DAU==> và <!==KHOI-KET-THUC==> được
+  `xuat-html.py` lấy nguyên khối khi gặp dòng  <!==CHEN so-do-luong-task.html==>
+  trong file .md. Nên SỬA SƠ ĐỒ CHỈ Ở ĐÂY, rồi chạy lại hai bộ xuất bản.
+  Mọi định kiểu trong vùng ấy đều đứng sau `.sodo` để không đụng chữ của
+  tài liệu chủ.
+-->
+<style>
+:root{
+  --rung:#2e4a42; --the:#fff; --sage-mo:#eef2f0; --muc:#18211f; --mo:#6e7c78;
+  --nhan:#3d6b5c; --vien:#e3e9e7;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --serif:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+}
+@media(prefers-color-scheme:dark){:root{
+  --rung:#101a17; --the:#1a2622; --sage-mo:#202d29; --muc:#dde5e2; --mo:#8d9c97;
+  --nhan:#7fb8a4; --vien:#2b3a35;
+}}
+:root[data-theme=light]{--rung:#2e4a42;--the:#fff;--sage-mo:#eef2f0;--muc:#18211f;
+  --mo:#6e7c78;--nhan:#3d6b5c;--vien:#e3e9e7}
+:root[data-theme=dark]{--rung:#101a17;--the:#1a2622;--sage-mo:#202d29;--muc:#dde5e2;
+  --mo:#8d9c97;--nhan:#7fb8a4;--vien:#2b3a35}
+*{box-sizing:border-box}
+body{margin:0;background:var(--rung);color:var(--muc);font:16px/1.7 var(--sans);
+  -webkit-text-size-adjust:100%}
+.dau{max-width:1180px;margin:0 auto;padding:60px 36px 48px;color:#eaf1ee}
+@media(prefers-color-scheme:dark){.dau{color:#cfdcd7}}
+:root[data-theme=dark] .dau{color:#cfdcd7}
+:root[data-theme=light] .dau{color:#eaf1ee}
+.dau h1{font:600 clamp(2rem,5vw,3.1rem)/1.14 var(--serif);margin:0 0 14px;letter-spacing:-.01em}
+.dau .phu{font-size:1.06rem;max-width:62ch;opacity:.92;margin:0 0 22px}
+.dau .meta{font-size:.76rem;letter-spacing:.13em;text-transform:uppercase;opacity:.66}
+.giay{background:var(--the);max-width:1180px;margin:0 auto;padding:40px 36px 60px}
+.dan{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 34px;padding-bottom:24px;
+  border-bottom:1px solid var(--vien)}
+.dan a{font-size:.82rem;text-decoration:none;color:var(--nhan);border:1px solid var(--vien);
+  padding:7px 14px;border-radius:100px;background:var(--sage-mo)}
+.chan{max-width:1180px;margin:0 auto;padding:24px 36px 64px;color:#a9bcb6;font-size:.8rem;
+  line-height:1.7}
+@media(prefers-color-scheme:dark){.chan{color:#6f817c}}
+:root[data-theme=dark] .chan{color:#6f817c}
+:root[data-theme=light] .chan{color:#a9bcb6}
+.chan a{color:inherit}
+@media(max-width:900px){.dau,.giay,.chan{padding-left:20px;padding-right:20px}}
+@media print{
+  body{background:#fff}.dau{color:#18211f;padding:0 0 16px}.giay{padding:0;max-width:none}
+  .chan{color:#6e7c78;padding:0}.dan{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="dau">
+  <h1>Luồng của một task</h1>
+  <p class="phu">Một việc đi qua những chặng nào, ở mỗi chặng nó mang trạng thái gì, luật nào ép nó phải bước tiếp, và ai ký nhận ở cuối đường.</p>
+  <p class="meta">Khu Vườn Tỉnh Thức · gửi coreteam · 13/08/2026 · vẽ theo luật thật đang chạy trên máy chủ</p>
+</header>
+
+<main class="giay">
+  <nav class="dan">
+    <a href="bai-dao-tao-nguyen-ly-cam-ket-va-task.html">Nguyên lý của Cam kết và Task ↗</a>
+    <a href="huong-dan-viet-cam-ket-va-viec.html">Viết cam kết và viết việc ↗</a>
+  </nav>
+
+<!--KHOI-BAT-DAU-->
+<style>
+.sodo{
+  --sd-the:#fff; --sd-muc:#18211f; --sd-mo:#6e7c78; --sd-nhan:#3d6b5c;
+  --sd-vien:#e3e9e7; --sd-canh:#c9d5d1; --sd-sage:#dde4e1; --sd-sagemo:#eef2f0;
+  --sd-rung:#2e4a42; --sd-luu:#8a5a3c; --sd-luumo:#f3e9e2; --sd-qua:#3f7d55;
+  --sd-tim:#7b6ea8; --sd-vang:#f0e3c8; --sd-vangchu:#5d4a1e; --sd-lam:#2e4a42;
+  --sd-lamchu:#eaf1ee;
+  --sd-sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --sd-serif:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+  font-family:var(--sd-sans);color:var(--sd-muc);line-height:1.7;display:block;margin:0;
+  container-type:inline-size
+}
+@media(prefers-color-scheme:dark){.sodo{
+  --sd-the:#1a2622; --sd-muc:#dde5e2; --sd-mo:#8d9c97; --sd-nhan:#7fb8a4;
+  --sd-vien:#2b3a35; --sd-canh:#3a4d47; --sd-sage:#25342f; --sd-sagemo:#202d29;
+  --sd-rung:#101a17; --sd-luu:#c89873; --sd-luumo:#2e2620; --sd-qua:#6fae86;
+  --sd-tim:#a99ad2; --sd-vang:#3b3320; --sd-vangchu:#e0cb92; --sd-lam:#7fb8a4;
+  --sd-lamchu:#0d1613;
+}}
+:root[data-theme=dark] .sodo{
+  --sd-the:#1a2622; --sd-muc:#dde5e2; --sd-mo:#8d9c97; --sd-nhan:#7fb8a4;
+  --sd-vien:#2b3a35; --sd-canh:#3a4d47; --sd-sage:#25342f; --sd-sagemo:#202d29;
+  --sd-rung:#101a17; --sd-luu:#c89873; --sd-luumo:#2e2620; --sd-qua:#6fae86;
+  --sd-tim:#a99ad2; --sd-vang:#3b3320; --sd-vangchu:#e0cb92; --sd-lam:#7fb8a4;
+  --sd-lamchu:#0d1613;
+}
+:root[data-theme=light] .sodo{
+  --sd-the:#fff; --sd-muc:#18211f; --sd-mo:#6e7c78; --sd-nhan:#3d6b5c;
+  --sd-vien:#e3e9e7; --sd-canh:#c9d5d1; --sd-sage:#dde4e1; --sd-sagemo:#eef2f0;
+  --sd-rung:#2e4a42; --sd-luu:#8a5a3c; --sd-luumo:#f3e9e2; --sd-qua:#3f7d55;
+  --sd-tim:#7b6ea8; --sd-vang:#f0e3c8; --sd-vangchu:#5d4a1e; --sd-lam:#2e4a42;
+  --sd-lamchu:#eaf1ee;
+}
+.sodo *{box-sizing:border-box}
+.sodo .sd-dan{background:var(--sd-sagemo);border-left:3px solid var(--sd-nhan);
+  padding:17px 21px;margin:0 0 40px;font-size:.95rem;line-height:1.68}
+.sodo .sd-dan b{color:var(--sd-nhan)}
+.sodo .sd-khoi{margin:0 0 60px}
+.sodo .sd-khoi:last-child{margin-bottom:0}
+.sodo .sd-nhan{font:600 .7rem/1.3 var(--sd-sans);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--sd-mo);margin:0 0 9px}
+.sodo h3.sd-ten{font:600 clamp(1.3rem,2.8vw,1.85rem)/1.24 var(--sd-serif);margin:0 0 8px;
+  letter-spacing:-.005em;color:var(--sd-muc)}
+.sodo .sd-phu{color:var(--sd-mo);font-size:.94rem;max-width:74ch;margin:0 0 26px}
+
+/* ── sơ đồ A: dải sáu chặng ──
+   Số cột tính theo BỀ RỘNG CỦA KHỐI, không theo bề rộng màn hình. Lý do: cùng
+   một khối này nằm trong cột chữ hẹp của hai tài liệu đào tạo (khoảng 810px) và
+   nằm trong trang rời rộng 1100px. Đo theo màn hình thì bản trong tài liệu tràn
+   ra ngoài lề. Mặc định một cột — trình xem nào chưa biết @container thì rơi về
+   bản xếp dọc, vẫn đọc được, không bao giờ tràn. */
+.sodo .sd-ray{display:grid;grid-template-columns:1fr;gap:10px;align-items:stretch}
+.sodo .chang{border:1px solid var(--sd-vien);padding:19px 17px 17px;
+  background:var(--sd-the);position:relative;display:flex;flex-direction:column}
+.sodo .chang::after{display:none}
+@container (min-width:480px){.sodo .sd-ray{grid-template-columns:repeat(2,1fr)}}
+@container (min-width:620px){.sodo .sd-ray{grid-template-columns:repeat(3,1fr)}}
+@container (min-width:1140px){
+  /* đủ rộng cho cả sáu chặng trên một hàng: bỏ khe, nối liền thành một dải,
+     và bật mũi chỉ hướng đi giữa các chặng */
+  .sodo .sd-ray{grid-template-columns:repeat(6,1fr);gap:0}
+  .sodo .chang{border-right:none}
+  .sodo .chang:last-child{border-right:1px solid var(--sd-vien)}
+  .sodo .chang::after{content:"";display:block;position:absolute;right:-7px;top:42px;
+    width:12px;height:12px;border-top:2px solid var(--sd-canh);
+    border-right:2px solid var(--sd-canh);transform:rotate(45deg);
+    background:var(--sd-the);z-index:2}
+  .sodo .chang:last-child::after{display:none}
+}
+.sodo .chang .no{font:700 1.45rem/1 var(--sd-sans);color:var(--sd-canh);margin-bottom:8px}
+.sodo .chang h4{font:600 1rem/1.32 var(--sd-sans);margin:0 0 4px;color:var(--sd-muc)}
+.sodo .chang .ai{font-size:.71rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--sd-mo);margin:0 0 12px}
+.sodo .chang ul{margin:0 0 14px;padding-left:16px;font-size:.85rem;line-height:1.58}
+.sodo .chang ul li{margin-bottom:7px}
+.sodo .chang .visao{margin:auto 0 0;font-size:.755rem;line-height:1.55;color:var(--sd-mo);
+  border-top:1px dashed var(--sd-vien);padding-top:11px}
+.sodo .chang .visao b{color:var(--sd-nhan);font-weight:600}
+
+.sodo .o{display:inline-block;font:600 .715rem/1 var(--sd-sans);letter-spacing:.06em;
+  padding:5px 9px;border-radius:3px;margin:0 5px 6px 0;white-space:nowrap}
+.sodo .o-cho{background:var(--sd-sage);color:var(--sd-muc)}
+.sodo .o-lam{background:var(--sd-lam);color:var(--sd-lamchu)}
+.sodo .o-xong{background:var(--sd-qua);color:#fff}
+.sodo .o-chua{background:var(--sd-vang);color:var(--sd-vangchu)}
+.sodo .o-nghen{background:var(--sd-luumo);color:var(--sd-luu);border:1px solid var(--sd-luu)}
+.sodo .o-dong{background:transparent;color:var(--sd-mo);border:1px dashed var(--sd-mo)}
+
+.sodo .nhanh{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:15px;
+  margin-top:24px}
+.sodo .nb{border:1px solid var(--sd-vien);border-top:3px solid var(--sd-luu);padding:15px 17px;
+  background:var(--sd-sagemo)}
+.sodo .nb.quaydau{border-top-color:var(--sd-nhan)}
+.sodo .nb h4{font:600 .94rem/1.3 var(--sd-sans);margin:0 0 8px;color:var(--sd-muc)}
+.sodo .nb p{margin:0 0 8px;font-size:.85rem;line-height:1.6}
+.sodo .nb p:last-child{margin:0}
+.sodo .nb .luat{font-size:.765rem;color:var(--sd-mo)}
+.sodo .nb .luat b{color:var(--sd-luu)}
+.sodo .nb.quaydau .luat b{color:var(--sd-nhan)}
+
+/* ── sơ đồ B: bốn luồng ── */
+.sodo .luongwrap{overflow-x:auto;padding-bottom:6px}
+.sodo .luong{display:grid;grid-template-columns:repeat(4,minmax(210px,1fr));gap:14px;
+  min-width:880px}
+.sodo .lg{border:1px solid var(--sd-vien);border-top:4px solid var(--sd-nhan);
+  background:var(--sd-the);padding:15px 15px 17px}
+.sodo .lg.l1{border-top-color:var(--sd-rung)}
+.sodo .lg.l2{border-top-color:var(--sd-nhan)}
+.sodo .lg.l3{border-top-color:var(--sd-luu)}
+.sodo .lg.l4{border-top-color:var(--sd-tim)}
+.sodo .lg .ten{font:600 .94rem/1.3 var(--sd-sans);margin:0 0 3px;color:var(--sd-muc)}
+.sodo .lg .nhip{font-size:.69rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--sd-mo);margin:0 0 13px}
+.sodo .buoc{font-size:.84rem;line-height:1.5;padding:9px 11px;background:var(--sd-sagemo);
+  border-radius:3px;margin:0 0 6px}
+.sodo .muitxuong{text-align:center;color:var(--sd-mo);font-size:.78rem;line-height:1.4;
+  margin:2px 0 6px}
+.sodo .hoiluu{margin-top:6px;background:var(--sd-rung);color:#eaf1ee;padding:19px 22px;
+  min-width:880px}
+:root[data-theme=dark] .sodo .hoiluu,
+.sodo .hoiluu{color:#eaf1ee}
+.sodo .hoiluu .ten{font:600 1.04rem/1.3 var(--sd-sans);margin:0 0 4px}
+.sodo .hoiluu .mo{font-size:.79rem;opacity:.74;margin:0 0 15px}
+.sodo .hoiluu .badiem{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));
+  gap:12px}
+.sodo .hoiluu .badiem div{background:rgba(255,255,255,.1);padding:12px 14px;border-radius:3px;
+  font-size:.845rem;line-height:1.5}
+.sodo .hoiluu .badiem b{display:block;margin-bottom:3px}
+.sodo .vong{min-width:880px;margin-top:6px;border:1px dashed var(--sd-nhan);padding:14px 19px;
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:.855rem;
+  background:var(--sd-sagemo)}
+.sodo .vong .nut{background:var(--sd-the);border:1px solid var(--sd-vien);padding:7px 13px;
+  border-radius:3px;font-weight:600}
+.sodo .vong .mui{color:var(--sd-canh)}
+.sodo .vong .quay{margin-left:auto;color:var(--sd-nhan);font-size:.79rem;font-weight:600}
+
+/* ── bảng riêng của sơ đồ ── */
+.sodo .sd-bang{overflow-x:auto;margin:24px 0 0;border:1px solid var(--sd-vien)}
+.sodo .sd-bang table{border-collapse:collapse;width:100%;min-width:620px;font-size:.875rem;
+  margin:0;background:var(--sd-the)}
+.sodo .sd-bang th{background:var(--sd-sagemo);text-align:left;font:600 .69rem/1.3 var(--sd-sans);
+  letter-spacing:.12em;text-transform:uppercase;padding:11px 13px;color:var(--sd-muc);
+  border:none;border-bottom:1px solid var(--sd-vien)}
+.sodo .sd-bang td{padding:11px 13px;border:none;border-top:1px solid var(--sd-vien);
+  vertical-align:top;line-height:1.55;color:var(--sd-muc)}
+.sodo .sd-bang tr:hover td{background:transparent}
+
+/* Bản đồ bốn luồng: khối hẹp thì xếp thành hai hàng hai luồng thay vì bắt người
+   đọc kéo ngang. Dưới 560px thì mỗi luồng một hàng. */
+@container (max-width:899px){
+  .sodo .luong{min-width:0;grid-template-columns:repeat(2,1fr)}
+  .sodo .hoiluu,.sodo .vong{min-width:0}
+}
+@container (max-width:559px){
+  .sodo .luong{grid-template-columns:1fr}
+  .sodo .vong .quay{margin-left:0}
+}
+@media print{
+  .sodo .sd-khoi{page-break-inside:avoid}
+  .sodo .sd-ray{grid-template-columns:repeat(3,1fr)}
+  .sodo .chang{border:1px solid var(--sd-vien)}
+  .sodo .chang::after{display:none}
+  .sodo .luongwrap{overflow:visible}
+  .sodo .luong,.sodo .hoiluu,.sodo .vong{min-width:0}
+  .sodo .luong{grid-template-columns:repeat(2,1fr)}
+  .sodo .sd-bang table{min-width:0}
+  .sodo .hoiluu{background:var(--sd-rung);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+
+<div class="sodo">
+
+  <p class="sd-dan">Hai sơ đồ vẽ cùng một hệ thống, khác nhau ở chỗ đứng nhìn. <b>Sơ đồ A</b> đi theo một việc từ lúc sinh ra tới lúc được ký nhận — dùng khi dạy người làm việc. <b>Sơ đồ B</b> nhìn từ trên xuống, thấy mọi việc trong doanh nghiệp chảy về đâu — dùng khi bàn cách tổ chức hệ thống. Bảng bảy ô trạng thái ở cuối dùng chung cho cả hai.</p>
+
+  <!-- ═══════════ SƠ ĐỒ A ═══════════ -->
+  <div class="sd-khoi">
+    <p class="sd-nhan">Sơ đồ A</p>
+    <h3 class="sd-ten">Vòng đời một task — sáu chặng</h3>
+    <p class="sd-phu">Đọc từ trái sang phải. Mỗi chặng có ba lớp: ô trạng thái thật trong app, luật ép nó bước tiếp, và một dòng vì sao chỉ về mục nguyên lý tương ứng.</p>
+
+    <div class="sd-ray">
+
+      <div class="chang">
+        <div class="no">①</div>
+        <h4>Sinh ra</h4>
+        <p class="ai">bốn cửa</p>
+        <ul>
+          <li><b>Mục tiêu</b> — từ KR cá nhân mình làm chủ</li>
+          <li><b>Nhịp lặp</b> — xuống Việc cố định, không nằm ở bảng task</li>
+          <li><b>Phát sinh</b> — qua bộ lọc 15 phút</li>
+          <li><b>Ý tưởng</b> — chờ buổi duyệt, không chen ngang</li>
+        </ul>
+        <p class="visao">Việc lặp lại từ ba lần trở lên thì nó là nhịp, không phải task. <b>Xem sơ đồ B</b></p>
+      </div>
+
+      <div class="chang">
+        <div class="no">②</div>
+        <h4>Viết và gieo</h4>
+        <p class="ai">dưới một cam kết</p>
+        <ul>
+          <li>Cam kết: <b>danh từ + số + hạn</b>. Trần ba chỗ mỗi người, CEO năm chỗ</li>
+          <li>Task: <b>Do What by When</b>, một động từ, ước lượng được 30 đến 120 phút</li>
+          <li>Máy chủ đóng dấu <b>ngày đầu tiên được hẹn</b> và giữ nguyên suốt đời task</li>
+        </ul>
+        <p class="visao">Lời tuyên bố khai sinh cái chưa có; mô tả chỉ vẽ lại cái đang có. <b>Nguyên lý §5 · ngôn ngữ tạo sinh</b></p>
+      </div>
+
+      <div class="chang">
+        <div class="no">③</div>
+        <h4>Vào ngày</h4>
+        <p class="ai">nằm ở màn Hôm nay</p>
+        <p><span class="o o-cho">Confirm</span></p>
+        <ul>
+          <li>Đã hẹn làm hôm nay, chưa bắt đầu</li>
+          <li>Có <b>thời lượng dự kiến</b> — không tính được nghĩa là còn quá to, chia nhỏ tiếp</li>
+        </ul>
+        <p class="visao">Một lời hứa cần một khoảng thời gian thật đặt trong lịch, không chỉ cần ý chí. <b>Luật viết §2 · năm luật viết việc</b></p>
+      </div>
+
+      <div class="chang">
+        <div class="no">④</div>
+        <h4>Phiên deepwork</h4>
+        <p class="ai">đồng hồ đếm lên</p>
+        <p><span class="o o-lam">Doing</span></p>
+        <ul>
+          <li>Sàn 5 phút, trần đếm <b>180 phút</b> một phiên</li>
+          <li>Kết thúc phải đi qua <b>một trong ba cửa</b>: xong · chưa xong · nghẽn</li>
+          <li>Không có cửa kết thúc mơ hồ</li>
+        </ul>
+        <p class="visao">Giờ đo bằng thời gian thật, không đóng khung năng lực ai. <b>Nguyên lý §7 · tính vận hành được</b></p>
+      </div>
+
+      <div class="chang">
+        <div class="no">⑤</div>
+        <h4>Nghi thức hoàn tất</h4>
+        <p class="ai">cuối ngày, tự tay chốt</p>
+        <p>
+          <span class="o o-xong">Done</span><span class="o o-chua">Chua_xong</span>
+          <span class="o o-nghen">Blocked</span><span class="o o-dong">Da_chuyen</span><span class="o o-dong">Da_huy</span>
+        </p>
+        <ul>
+          <li>Mỗi ô có <b>một câu bắt buộc phải khai</b> — máy chủ đá về nếu để trống</li>
+          <li>Người tự chốt thì sáng mai đi thẳng vào việc; để máy đoán thì sáng phải dọn</li>
+          <li>Gieo <b>mồi mai</b>: sáng mai việc đầu tiên là gì</li>
+        </ul>
+        <p class="visao">Viết ra kế hoạch cho việc dang dở là điều kiện để não buông được nó. <b>Nguyên lý §6 · cơ sở nghi thức hoàn tất</b></p>
+      </div>
+
+      <div class="chang">
+        <div class="no">⑥</div>
+        <h4>Nghiệm thu</h4>
+        <p class="ai">output nộp, cấp trên ký</p>
+        <ul>
+          <li>Đóng cam kết phải có <b>output bằng chữ</b> — bắt buộc, link kèm thì tuỳ</li>
+          <li>Người ký “Đã nhận” là <b>cấp trên trực tiếp</b>, luôn khác chủ cam kết</li>
+          <li>Máy chủ đóng dấu giờ nộp và giờ nghiệm thu, máy người không gửi giờ lên được</li>
+        </ul>
+        <p class="visao">Không ai tự chấm mình xong; xong là có người thứ ba nhận được thứ mình để lại. <b>Nguyên lý §17 · soi vào Khu Vườn</b></p>
+      </div>
+
+    </div>
+
+    <div class="nhanh">
+      <div class="nb">
+        <h4>🚧 Nhánh nghẽn — cha vẫn sống</h4>
+        <p>Khai tên thứ đang chặn, app sinh <b>task con gỡ nghẽn</b> đứng cạnh. Task cha giữ nguyên ô <span class="o o-nghen" style="margin:0">Blocked</span> chứ không đóng lại.</p>
+        <p class="luat"><b>Luật:</b> có việc nghẽn thì phải có việc gỡ nghẽn. Bị chặn quá một ngày thì phải nêu ra, không đứng chờ trong im lặng.</p>
+      </div>
+      <div class="nb">
+        <h4>🔀 Nhánh đổi hướng — con thay cha</h4>
+        <p>Chia nhỏ hoặc đổi cách làm thì sinh <b>task con thay thế</b>, cha đóng ở ô <span class="o o-dong" style="margin:0">Da_chuyen</span> và bắt buộc phải có con. Đổi hướng không đi qua cửa huỷ.</p>
+        <p class="luat"><b>Vì sao:</b> gộp cả đổi hướng vào con số huỷ thì con số ấy trộn ba chuyện khác nhau rồi mất nghĩa.</p>
+      </div>
+      <div class="nb quaydau">
+        <h4>🌅 Sáng hôm sau — dọn việc hôm qua</h4>
+        <p>Việc chưa đóng quay lại màn Dọn với <b>bốn hành động</b>: làm tiếp · chia nhỏ · về kho · chờ. Quá ba đêm thì cửa làm tiếp đóng lại, chỉ còn chia nhỏ, về kho hoặc dừng hẳn.</p>
+        <p class="luat"><b>Luật:</b> không để một task quá một ngày mà chưa đổi trạng thái.</p>
+      </div>
+      <div class="nb quaydau">
+        <h4>⏰ Nhánh biết mình sẽ trễ</h4>
+        <p>Làm ngay <b>lúc biết</b>, không chờ tới hạn: nói ra với mọi người đang chờ mình · đưa hạn mới cụ thể hoặc tuyên bố dừng · dọn phần đã ảnh hưởng tới người khác.</p>
+        <p class="luat">Dời hạn cam kết thì máy chủ tự đếm số lần và số ngày trượt so với hạn gốc. <b>Nguyên lý §11 · báo trễ sớm phải rẻ</b></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SƠ ĐỒ B ═══════════ -->
+  <div class="sd-khoi">
+    <p class="sd-nhan">Sơ đồ B</p>
+    <h3 class="sd-ten">Bản đồ bốn luồng — bốn nguồn nước, một hợp lưu</h3>
+    <p class="sd-phu">Bốn luồng chảy vào một chỗ duy nhất là khoảng thời gian làm việc trong ngày của từng người, rồi một vòng phản hồi quay ngược lên đầu các luồng. Trộn luồng là chỗ mọi bảng task phình rồi loạn.</p>
+
+    <div class="luongwrap">
+      <div class="luong">
+        <div class="lg l1">
+          <p class="ten">Luồng 1 · Mục tiêu</p>
+          <p class="nhip">nhịp quý, tháng</p>
+          <div class="buoc"><b>O và G</b> cấp công ty</div>
+          <div class="muitxuong">↓ đàm phán CEO và leader</div>
+          <div class="buoc"><b>G phòng ban</b>, mỗi G một phòng gánh chính</div>
+          <div class="muitxuong">↓ đàm phán leader và nhân sự</div>
+          <div class="buoc"><b>KR cá nhân</b> tự nhận, tự viết</div>
+          <div class="muitxuong">↓</div>
+          <div class="buoc">Task tự ghi</div>
+        </div>
+        <div class="lg l2">
+          <p class="ten">Luồng 2 · Nhịp vận hành</p>
+          <p class="nhip">nhịp ngày, tuần</p>
+          <div class="buoc"><b>SOW</b> của từng vị trí</div>
+          <div class="muitxuong">↓</div>
+          <div class="buoc">Dòng <b>checklist ngày</b> kèm mục tiêu và đơn vị đo</div>
+          <div class="muitxuong">↓</div>
+          <div class="buoc">Điền số trước 24h</div>
+        </div>
+        <div class="lg l3">
+          <p class="ten">Luồng 3 · Phát sinh</p>
+          <p class="nhip">nhịp bất kỳ</p>
+          <div class="buoc">Việc đột ngột đến</div>
+          <div class="muitxuong">↓</div>
+          <div class="buoc"><b>Bộ lọc 15 phút</b> — làm luôn hay ghi vào bảng</div>
+          <div class="muitxuong">↓</div>
+          <div class="buoc">Task lẻ</div>
+        </div>
+        <div class="lg l4">
+          <p class="ten">Luồng 4 · Ý tưởng</p>
+          <p class="nhip">nhịp theo buổi duyệt</p>
+          <div class="buoc">Ý tưởng, đề xuất</div>
+          <div class="muitxuong">↓</div>
+          <div class="buoc">Phiếu đề xuất</div>
+          <div class="muitxuong">↓ buổi duyệt</div>
+          <div class="buoc">Thành <b>dự án</b> · để lại chờ · hoặc loại bỏ</div>
+        </div>
+      </div>
+
+      <div class="hoiluu">
+        <p class="ten">↓&nbsp; Hợp lưu — khoảng thời gian làm việc trong ngày</p>
+        <p class="mo">Màn việc của tôi hôm nay, đúng ba khối app đang có</p>
+        <div class="badiem">
+          <div><b>🌳 Cây</b>Task luồng 1, làm bằng phiên deepwork</div>
+          <div><b>💧 Tưới nước và làm cỏ</b>Checklist luồng 2, điền số mỗi ngày</div>
+          <div><b>🪴 Chậu lẻ</b>Task luồng 3, việc phát sinh trong ngày</div>
+        </div>
+      </div>
+
+      <div class="vong">
+        <span class="nut">Báo cáo ngày</span><span class="mui">→</span>
+        <span class="nut">Họp tuần</span><span class="mui">→</span>
+        <span class="nut">Duyệt danh mục tháng</span>
+        <span class="quay">↺ quay lên đầu các luồng: chỉnh mục tiêu, chỉnh SOW, xử phần chờ duyệt</span>
+      </div>
+    </div>
+
+    <div class="sd-bang">
+      <table>
+        <thead><tr><th>Ba đường chuyển luồng</th><th>Điều kiện</th><th>Việc phải làm</th></tr></thead>
+        <tbody>
+          <tr><td><b>Luồng 3 sang 2</b></td><td>Việc phát sinh lặp lại từ ba lần trở lên, và mai vẫn còn phải làm lại</td><td>Đưa vào SOW, thành một dòng checklist</td></tr>
+          <tr><td><b>Luồng 3 sang 4</b></td><td>Việc quá 10 việc con, hoặc quá 2 người, hoặc quá 3 tuần</td><td>Không làm âm thầm — đưa qua buổi duyệt thành dự án</td></tr>
+          <tr><td><b>Luồng 2 sang máy</b></td><td>Nhịp lặp mà máy làm được</td><td>Tự động hoá, giao xuống, hoặc bỏ hẳn</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════ BẢNG BẢY Ô ═══════════ -->
+  <div class="sd-khoi">
+    <p class="sd-nhan">Dùng cho cả hai sơ đồ</p>
+    <h3 class="sd-ten">Bảy ô trạng thái và câu bắt buộc phải khai</h3>
+    <p class="sd-phu">Đây là bảy giá trị máy chủ nhận, không phải bảy cách nói. Ô nào cũng có một câu phải khai kèm theo, vì một trạng thái không giải thích được thì không ai gỡ được.</p>
+    <div class="sd-bang">
+      <table>
+        <thead><tr><th>Nhóm</th><th>Ô</th><th>Nghĩa</th><th>Câu bắt buộc khai</th><th>Còn sống</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="2">Trong ngày</td><td><span class="o o-cho" style="margin:0">Confirm</span></td><td>Đã hẹn hôm nay, chưa bắt đầu</td><td>—</td><td>còn</td></tr>
+          <tr><td><span class="o o-lam" style="margin:0">Doing</span></td><td>Đang trong phiên deepwork</td><td>—</td><td>còn</td></tr>
+          <tr><td rowspan="3">Chốt cuối ngày</td><td><span class="o o-xong" style="margin:0">Done</span></td><td>Xong, có thứ để lại</td><td><b>Output</b> — bằng chứng xong</td><td>đóng</td></tr>
+          <tr><td><span class="o o-chua" style="margin:0">Chua_xong</span></td><td>Có tiến độ, chưa tới đích</td><td><b>Tiến độ tới đâu</b> — phiên sau đọc lại là nhớ ngay</td><td>còn</td></tr>
+          <tr><td><span class="o o-nghen" style="margin:0">Blocked</span></td><td>Có thứ đang chặn</td><td><b>Thứ đang chặn</b> — và sinh task gỡ nghẽn</td><td>còn</td></tr>
+          <tr><td rowspan="2">Tuyên bố</td><td><span class="o o-dong" style="margin:0">Da_chuyen</span></td><td>Đã thay bằng task con</td><td>Bắt buộc có task con</td><td>đóng</td></tr>
+          <tr><td><span class="o o-dong" style="margin:0">Da_huy</span></td><td>Dừng hẳn</td><td><b>Lý do dừng</b>, không có task con</td><td>đóng</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+<!--KHOI-KET-THUC-->
+
+</main>
+
+<footer class="chan">
+  <p><b>Nguồn của bản vẽ.</b> Luật viết lấy từ <a href="huong-dan-viet-cam-ket-va-viec.html">Viết cam kết và viết việc — bản một trang</a>. Các dòng vì sao chỉ về <a href="bai-dao-tao-nguyen-ly-cam-ket-va-task.html">Nguyên lý của Cam kết và Task</a>. Bốn luồng và ba đường chuyển luồng lấy từ bản thiết kế Dòng chảy task ROVA (05/08). Bảy ô trạng thái, sàn và trần phiên, luật nghẽn, luật ba đêm và phân cấp nghiệm thu lấy đúng theo luật đang chạy trên máy chủ Khu Vườn Tỉnh Thức, cập nhật tới 12/08/2026.</p>
+  <p>Đây là <b>bản rời</b>, đồng thời là nguồn chèn của hai tài liệu trên: sửa sơ đồ ở file này rồi chạy lại <code>xuat-html.py</code> và <code>xuat-share.py</code> là cả hai bản kia tự có sơ đồ mới.</p>
+</footer>
+
+</body>
+</html>
