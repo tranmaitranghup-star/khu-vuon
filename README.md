@@ -301,7 +301,7 @@ Dựng bản đầy đủ thì cần một project Supabase: chạy `schema.sql`
 
 ## Bản đồ kho
 
-**200 tệp, 15 MB** — và gần như tệp nào cũng đáng đọc. Kho này không mang theo tài nguyên hình ảnh, nên thứ còn lại đều là mã, tài liệu, hoặc bài thử:
+**200 tệp, 10 MB** — và gần như tệp nào cũng đáng đọc. Kho này không mang theo tài nguyên hình ảnh, nên thứ còn lại đều là mã, tài liệu, hoặc bài thử:
 
 | Nơi | Số | Là gì |
 |---|---:|---|

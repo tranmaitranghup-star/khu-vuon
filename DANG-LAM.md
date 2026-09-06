@@ -589,9 +589,53 @@ Trong khối `COC` thì viết tên hàm trần, không bọc gì.
 Cùng họ với bẫy `await` ở tầng ngoài cùng ngay trên: cả hai đều là chuyện **văn bản của bài thử**,
 không phải chuyện hành vi của app — nên quét bằng **mã thoát**, đừng quét bằng ký hiệu.
 
+## ⚠️ `rtBanRon` CHỈ CHE CỬA SỔ NỔI — MÀN TOÀN TRANG PHẢI TỰ KÊ TÊN (làn NTH, 06/09)
+
+Tiếp mục realtime ngay trên, và đây là mặt hỏng thứ hai của cùng cơ chế. `rtBanRon` nhận đúng hai
+dấu hiệu: `.cua-noi-nen.hien` (khung chung của mười một cửa sổ nổi) và con trỏ đang nằm trong một ô
+nhập. **Màn `#don` không mang class ấy** — nó là màn toàn trang — nên nó vô hình với lá chắn, dù nó
+là chỗ giữ nháp NHIỀU việc cùng lúc trong `DON_TAM`.
+
+Hệ quả Tracy bắt được 06/09: *"tôi cứ ấn lưu 1 task là nó đóng cửa sổ trong khi còn nhiều task khác
+cần dọn dẹp"*. Đường đi đủ dài để không ai đọc mã mà thấy — **bảng `task` nằm trong `RT_BANG`, nên
+cú lưu của CHÍNH máy này bắn một tin về mình** → `rtTaiLai` → `taiHomNay` → `kiemDon`. Mà `kiemDon`
+viết cho màn sáng: nó đóng màn, đặt lại `DON_KIEU='sang'`, và xoá trắng `DON_TAM`.
+
+Ba thứ rút ra, cái thứ ba là cái đáng nhớ:
+
+- Thêm một màn toàn trang có nháp thì **kê tên nó vào `rtBanRon`**, đừng trông vào class chung.
+- Hàm nào chạy ở cuối `taiHomNay` thì từ 03/09 nó **không còn là hàm chỉ chạy lúc mở app** — nó chạy
+  sau mỗi cú ghi của mọi người, kể cả của chính mình. Đọc lại mọi hàm ở đó với giả định ấy.
+- `kiemDon` cũng **không được tin vào `NO_CU`** nữa: `taiHomNay` vừa dựng lại biến ấy từ khung nhìn
+  `viec_con_no`, tức chỉ còn NỢ CŨ, còn phần việc của hôm nay mà nghi thức đắp vào đã bay. Nên phần
+  gom việc tách thành `htGomViec()` để gọi lại được, và có `HT_DA_DON` giữ danh sách việc đã trả lời
+  — thiếu sổ này thì việc chọn "⏳ Chưa xong" hiện lại ngay lượt sau, vì `Chua_xong` vẫn nằm trong
+  `TT_MO`. Nhịp ③ tấm gương có cờ riêng `HT_GUONG`: cùng chế độ `'toi'` mà hai nhịp muốn hai thứ
+  khác nhau từ một lượt tải lại.
+
 ## 🟢 Làn đang mở
 
 *(Ai đang mở làn thì ghi mục của mình vào đây; xem nhanh bằng `python3 lan.py soi`.)*
+
+### Làn NTH — 06/09: nghi thức hoàn tất hẹn NGÀY MAI, và lưu một việc không đóng cửa (TRI-135)
+
+Hai lỗi Tracy nêu cùng lúc, hoá ra hai gốc rời nhau.
+
+**① Ngày hẹn lại mặc định sai chiều.** `donNgayHen` trả `homNay()` cho cả hai chế độ — đúng khi nó
+viết 16/08 (lúc ấy chỉ có màn sáng), sai từ khi cửa tối dựng 11/08 thừa hưởng mặc định ấy. Nay có
+`donNgayMoi()` làm **một nguồn chân lý cho cả ba ngày mà cửa này đặt ra**: ngày hẹn lại, hạn việc gỡ
+nghẽn, và ngày của việc báo lại người đang chờ. Chế độ `'sang'` → hôm nay; `'toi'` → ngày làm kế
+tiếp, **bước qua Chủ nhật** vì cả app coi Chủ nhật là ngày nghỉ (Tracy chốt 06/09). Chữ dưới ô hạn
+việc gỡ nay nói ra NGÀY (`mặc định thì sẽ là 07/09`) chứ không nói "hôm nay" — dòng cũ sẽ thành một
+lời nói dối ở chế độ tối.
+
+**② Cửa tự đóng sau mỗi cú lưu** — đường realtime, xem mục ⚠️ ngay trên.
+
+Bộ thử `thu-man-don.js` thêm hai khối (tổng 17 ca mới) và phải vá phần khung để chạy được chúng:
+`HOM_NAY` thành biến đổi được (cần thử ca tối thứ Bảy), DOM giả có vỏ `classList` cho `#don`, khai
+lại `rvCong`/`laCN`/`rvChuNgay`/`TT_MO`/`TASKS` vì chúng nằm ngoài lát mã, và một cần gạt `__ht` cho
+bốn thứ khai bằng `let` bên trong lát. Một ca cũ đổi lời: nhắc dưới ô hạn nay là "13/08" chứ không
+phải "hôm nay".
 
 ### Làn CGL — 05/09: gỡ hàng chú giải khỏi hai lưới mới
 

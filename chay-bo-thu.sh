@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 # Chạy TRỌN bộ thử của app Khu Vườn Tỉnh Thức.
 #
-# Đếm bằng MÃ THOÁT, không bằng cách tìm ký hiệu ❌ trong chữ in ra: có bài in
-# `✗` chứ không in `❌`, nên lối quét theo ký hiệu từng bỏ sót nguyên một bài
-# đang hỏng. Bài CHẾT lúc khởi động cũng nguy hơn ca đỏ, vì mọi ca bên trong nó
-# biến mất trong im lặng — mã thoát bắt được cả hai.
+# ĐẾM BẰNG MÃ THOÁT, KHÔNG BẰNG CÁCH TÌM KÝ HIỆU ❌ TRONG CHỮ IN RA.
+# Ngày 05/09 lối quét quen thuộc — chạy cả bộ rồi `grep "❌"` — báo 0 ca đỏ
+# trong khi `thu-tuan-o-ngay.js` đang hỏng 5 ca, chỉ vì bài ấy in `✓`/`✗` chứ
+# không in `✅`/`❌`. Mã thoát bắt được cả ca đỏ lẫn bài CHẾT lúc khởi động —
+# mà bài chết còn nguy hơn, vì mọi ca bên trong nó biến mất trong im lặng.
+#
+# ⚠️ ĐO THÌ ĐO TRÊN `origin/main`, ĐỪNG ĐO TRÊN ĐĨA. Cây trên đĩa hay chậm hơn
+#    vài mốc, và so hai bản cũ với nhau thì không chứng minh được gì.
+#    Cách sạch: `git archive origin/main | tar -x -C <thư mục tạm>` rồi chạy ở đó.
 cd "$(dirname "$0")" || exit 1
 dat=0; hong=()
 for f in thu-*.js; do node    "$f" >/dev/null 2>&1 && dat=$((dat+1)) || hong+=("$f"); done

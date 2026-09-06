@@ -32,14 +32,32 @@ const nguon = MOC.map(([a, b]) => {
 }).join('\n');
 
 /* DOM giả: các lát mã trên chỉ tính, phần chạm màn của chúng là nhánh vẽ lại.
-   Không có màn nào ở đây nên trả rỗng. */
-const document = {getElementById: () => null, querySelector: () => null,
+   Không có màn nào ở đây nên trả rỗng — TRỪ chính màn `#don`: `kiemDon` đọc
+   `classList` của nó để mở/đóng, nên nó cần một cái vỏ ghi lại được. */
+const manDon = {classList: {tap: new Set(),
+  add(c){ this.tap.add(c); }, remove(c){ this.tap.delete(c); },
+  contains(c){ return this.tap.has(c); }}};
+const document = {getElementById: id => id === 'don' ? manDon : null,
+                  querySelector: () => null,
                   querySelectorAll: () => [], addEventListener: () => {},
                   removeEventListener: () => {}};
 let ME = {id: 'toi'};
 let DON_TAM = {}, NO_CU = [];
 let GHI = [];            // mọi lệnh gửi lên máy chủ bị bắt lại ở đây
-const homNay = () => '2026-08-13';
+/* Ngày hôm nay ĐỔI ĐƯỢC giữa các ca: mặc định của cửa tối là ngày làm kế tiếp,
+   nên phải thử được cả ca "tối thứ Bảy → nhảy qua Chủ nhật". 13/08/2026 là thứ
+   Năm, 15/08 là thứ Bảy. */
+let HOM_NAY = '2026-08-13';
+const homNay = () => HOM_NAY;
+/* Ba tiện ích ngày của app, nằm ngoài lát mã nên phải khai lại ở đây — bản thật,
+   không phải bản giả: `donNgayMoi` tính mặc định bằng chúng. */
+const d2s = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const rvCong = (ds, n) => { const d = new Date(ds+'T00:00:00'); d.setDate(d.getDate()+n); return d2s(d); };
+const rvChuNgay = g => g.slice(8,10)+'/'+g.slice(5,7);
+const laCN = g => new Date(g+'T00:00:00').getDay() === 0;
+/* Việc của hôm nay mà `htGomViec` gom vào danh sách nghi thức. */
+const TT_MO = ['Chua_lam','Doing','Chua_xong','Blocked'];
+let TASKS = [], DA_CHOT_QUA = false;
 const timO = ma => ma ? {ma, ten: 'Cam kết ' + ma} : null;
 const toast = m => GHI.push({loai: 'toast', m});
 /* Phiên deepwork đi theo trạng thái việc (TRI-126): mọi cửa ghi trạng thái nay
@@ -64,8 +82,17 @@ const sb = {
 /* `DON_KIEU` khai bằng `let` BÊN TRONG khối vừa lát, nên nó nằm trong phạm vi
    của eval — gán từ ngoài không tới được nó. Nối thêm một cái cần gạt để phép
    thử đổi được chế độ sáng/tối. */
-eval(nguon + '\nglobalThis.__datDonKieu = v => { DON_KIEU = v; };');
+eval(nguon + `
+  globalThis.__datDonKieu = v => { DON_KIEU = v; };
+  globalThis.__ht = {
+    mo:     () => htMo(),
+    gom:    () => htGomViec(),
+    kiem:   () => kiemDon(),
+    daDon:  () => HT_DA_DON,
+    guong:  v  => { HT_GUONG = v; }
+  };`);
 const datDonKieu = v => globalThis.__datDonKieu(v);
+const ht = () => globalThis.__ht;
 veDon = () => {};        // bản thật đụng DOM, ở đây không cần
 
 let hong = 0;
@@ -114,7 +141,7 @@ console.log('\n── Ô DEADLINE CHO VIỆC GỠ NGHẼN (13/08) ──');
 DON_TAM = {7: {tt: 'Blocked'}};
 h = veDonDong(viec());
 kiem('Cửa Nghẽn có ô Deadline', h.includes('don-hango-7') && h.includes('>Deadline<'));
-kiem('Ô để trống → nhắc "mặc định thì sẽ là hôm nay"', h.includes('mặc định thì sẽ là hôm nay'));
+kiem('Ô để trống → nhắc đúng ngày mặc định (13/08)', h.includes('mặc định thì sẽ là 13/08'));
 
 DON_TAM = {7: {tt: 'Blocked', han_go: '2026-08-15'}};
 h = veDonDong(viec());
@@ -203,6 +230,99 @@ datDonKieu('sang');
   kiem('Hai con khác hạn nhau: việc gỡ 15/08, việc báo lại vẫn hôm nay',
        goNghen && baoLai && goNghen.ngay === '2026-08-15' && baoLai.ngay === '2026-08-13',
        JSON.stringify(r.con));
+
+  /* ══ NGÀY MẶC ĐỊNH THEO CHẾ ĐỘ (Tracy chốt 06/09) ══════════════════════════
+     Cửa sáng hẹn HÔM NAY, cửa tối hẹn NGÀY LÀM KẾ TIẾP. Ba chỗ phải cùng một
+     luật: ô ngày điền sẵn, chữ trên nút Lưu, và thứ chạy xuống máy chủ. */
+  console.log('\n── NGÀY MẶC ĐỊNH THEO CHẾ ĐỘ (06/09) ──');
+
+  datDonKieu('toi');
+  /* Phải chọn sẵn một cửa: phần ô ngày chỉ vẽ ra khi đã có trạng thái. */
+  DON_TAM = {7: {tt: 'Chua_xong'}}; NO_CU = [];
+  let ht2 = veDonDong(viec());
+  kiem('Cửa tối: ô ngày điền sẵn NGÀY MAI (14/08), không phải hôm nay',
+       ht2.includes('>14/08<') && !ht2.includes('>13/08<'), ht2.match(/>\d\d\/\d\d</g));
+  kiem('Cửa tối: nút Lưu nói đúng ngày mai', ht2.includes('▶️ Lưu và hẹn 14/08'));
+
+  DON_TAM = {7: {tt: 'Blocked'}};
+  kiem('Cửa tối: hạn việc gỡ để trống → nhắc 14/08',
+       veDonDong(viec()).includes('mặc định thì sẽ là 14/08'));
+
+  /* Tối thứ Bảy: mai là Chủ nhật, mà cả app coi Chủ nhật là ngày nghỉ (`laCN`
+     bỏ nó khỏi mẫu số và khỏi phép chấm) — nên bước tiếp sang thứ Hai. */
+  HOM_NAY = '2026-08-15';
+  DON_TAM = {7: {tt: 'Chua_xong'}};
+  ht2 = veDonDong(viec());
+  kiem('Cửa tối thứ Bảy: nhảy qua Chủ nhật, hẹn thứ Hai 17/08',
+       ht2.includes('>17/08<') && ht2.includes('▶️ Lưu và hẹn 17/08'), ht2.match(/>\d\d\/\d\d</g));
+  HOM_NAY = '2026-08-13';
+
+  r = await chay({tt: 'Chua_xong'});
+  kiem('Cửa tối: thứ chạy xuống máy chủ cũng là 14/08, không lệch với nút',
+       r.cha && r.cha.ngay === '2026-08-14', JSON.stringify(r.cha));
+
+  r = await chay({tt: 'Chua_xong', co_nguoi_cho: true});
+  kiem('Cửa tối: việc báo lại người đang chờ cũng hẹn 14/08',
+       r.con[0] && r.con[0].ngay === '2026-08-14', JSON.stringify(r.con));
+
+  r = await chay({tt: 'Blocked', ghi_chu: 'Xin chị Hà duyệt ngân sách'});
+  kiem('Cửa tối: việc gỡ nghẽn để trống hạn → hẹn 14/08',
+       r.con[0] && r.con[0].ngay === '2026-08-14', JSON.stringify(r.con));
+
+  datDonKieu('sang');
+  r = await chay({tt: 'Chua_xong'});
+  kiem('Cửa sáng KHÔNG đổi: vẫn hẹn hôm nay 13/08',
+       r.cha && r.cha.ngay === '2026-08-13', JSON.stringify(r.cha));
+
+  /* ══ LƯU MỘT VIỆC KHÔNG ĐƯỢC ĐÓNG CỬA SỔ (Tracy 06/09) ════════════════════
+     `kiemDon` chạy ở cuối `taiHomNay`, và từ đợt kênh tin máy chủ 03/09 thì
+     mỗi cú lưu tự gọi nó về. Nó phải KHÔNG chạm màn khi nghi thức đang mở. */
+  console.log('\n── LƯU MỘT VIỆC KHÔNG ĐÓNG CỬA SỔ (06/09) ──');
+
+  TASKS = [viec({id: 11, noi_dung: 'Việc A của hôm nay', ngay: '2026-08-13'}),
+           viec({id: 12, noi_dung: 'Việc B của hôm nay', ngay: '2026-08-13'}),
+           viec({id: 13, noi_dung: 'Việc đã xong',  ngay: '2026-08-13', trang_thai: 'Done'}),
+           viec({id: 14, noi_dung: 'Việc của mai',  ngay: '2026-08-14'})];
+  NO_CU = [];
+  ht().mo();
+  kiem('Mở nghi thức: gom việc hôm nay còn mở, bỏ việc đã xong và việc của mai',
+       NO_CU.length === 2 && NO_CU.every(t => [11, 12].includes(t.id)),
+       NO_CU.map(t => t.id).join(','));
+  kiem('Mở nghi thức: màn hiện lên', manDon.classList.contains('hien'));
+
+  /* Lưu việc 11 xong thì `taiHomNay` dựng lại `NO_CU` từ nợ cũ — ở đây là rỗng
+     — rồi gọi `kiemDon`. Bản cũ đóng màn ngay tại đây. */
+  DON_TAM = {11: {tt: 'Chua_xong', ngay: '2026-08-14'}};
+  await donHanhDong(11);
+  kiem('Đã lưu một việc → nó vào sổ đã dọn', ht().daDon().has(11));
+  NO_CU = [];                                    // taiHomNay: nợ cũ rỗng
+  ht().kiem();
+  kiem('Sau cú lưu, cửa nghi thức VẪN MỞ', manDon.classList.contains('hien'));
+  kiem('Sau cú lưu, việc chưa dọn được bày lại (còn việc B)',
+       NO_CU.length === 1 && NO_CU[0].id === 12, NO_CU.map(t => t.id).join(','));
+  kiem('Việc đã trả lời KHÔNG hỏi lại lần hai', !NO_CU.some(t => t.id === 11));
+
+  /* Việc 11 vừa được hẹn lại sang mai nên TASKS thật cũng đổi — kể cả khi nó
+     còn nằm ở hôm nay với trạng thái mở, sổ đã dọn vẫn phải giữ nó ngoài. */
+  TASKS = TASKS.map(t => t.id === 11 ? Object.assign({}, t, {trang_thai: 'Chua_xong'}) : t);
+  NO_CU = [];
+  ht().kiem();
+  kiem('Việc mở lại ở hôm nay vẫn không quay về danh sách nghi thức',
+       NO_CU.length === 1 && NO_CU[0].id === 12, NO_CU.map(t => t.id).join(','));
+
+  /* Tấm gương cuối ngày đang hiện thì một lượt tải lại không được vẽ đè lên. */
+  ht().guong(true);
+  NO_CU = [];
+  ht().kiem();
+  kiem('Tấm gương đang hiện → lượt tải lại không dựng lại danh sách',
+       NO_CU.length === 0, NO_CU.map(t => t.id).join(','));
+  ht().guong(false);
+
+  /* Màn SÁNG giữ nguyên nết cũ: hết nợ cũ thì đóng. */
+  datDonKieu('sang');
+  NO_CU = [];
+  ht().kiem();
+  kiem('Màn sáng hết nợ cũ → vẫn đóng như cũ', !manDon.classList.contains('hien'));
 
   console.log(hong ? `\n❌ ${hong} mục chưa đạt\n` : '\n✅ Tất cả đều đạt\n');
   process.exit(hong ? 1 : 0);

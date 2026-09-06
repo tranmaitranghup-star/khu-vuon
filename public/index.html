@@ -15861,11 +15861,18 @@ let RT_LUC  = 0;      // lúc tải lại gần nhất, để hai đường khô
    báo là mình đang nghe một bảng câm. */
 const RT_BANG = ['lich_chung', 'lich_chung_tham_du', 'lich_chung_ngoai_le', 'task'];
 
-/* Người dùng đang giữa chừng một việc gì đó chưa lưu. Hai dấu hiệu: một cửa sổ
-   nổi đang mở (`.cua-noi-nen.hien` — khung chung của mười một cửa sổ), hoặc con
-   trỏ đang nằm trong một ô nhập. */
+/* Người dùng đang giữa chừng một việc gì đó chưa lưu. Ba dấu hiệu: một cửa sổ
+   nổi đang mở (`.cua-noi-nen.hien` — khung chung của mười một cửa sổ), màn Dọn /
+   Nghi thức hoàn tất đang mở, hoặc con trỏ đang nằm trong một ô nhập.
+
+   `#don` phải kê tên RIÊNG vì nó là màn toàn trang, không mang class
+   `cua-noi-nen` như mười một cửa sổ kia — mà nó lại giữ nháp của nhiều việc
+   cùng lúc trong `DON_TAM`, tức đúng thứ luật ③ của cụm này sinh ra để che.
+   Thiếu dòng này thì mỗi lượt lưu trong nghi thức tự bắn một tin về mình rồi
+   vẽ đè lên tay người đang dọn (Tracy 06/09). */
 function rtBanRon(){
   if (document.querySelector('.cua-noi-nen.hien, .hoi-nen.hien')) return true;
+  if (document.getElementById('don')?.classList.contains('hien')) return true;
   const o = document.activeElement;
   return !!o && (o.tagName === 'INPUT' || o.tagName === 'TEXTAREA' || o.isContentEditable);
 }
@@ -32582,12 +32589,31 @@ function nhanNutDon(dinh, ngay, hanGo){
 
 function kiemDon(){
   const man = document.getElementById('don');
+  /* NGHI THỨC TỐI ĐANG MỞ THÌ HÀM NÀY KHÔNG ĐƯỢC CHẠM VÀO MÀN (Tracy 06/09:
+     *"tôi cứ ấn lưu 1 task là nó đóng cửa sổ trong khi còn nhiều task khác cần
+     dọn dẹp"*).
+
+     Hàm này viết cho màn SÁNG và được gọi ở cuối `taiHomNay()`. Nó vô hại khi
+     `taiHomNay` chỉ chạy lúc mở app — nhưng từ đợt dựng kênh tin máy chủ (03/09)
+     thì bảng `task` nằm trong `RT_BANG`, nên CÚ LƯU CỦA CHÍNH MÁY NÀY bắn một
+     tin về mình, và 400 mi-li-giây sau `rtTaiLai` → `taiHomNay` → tới đây. Hai
+     dòng đầu của bản cũ đóng màn và đặt lại `DON_KIEU='sang'`; dòng thứ ba xoá
+     trắng `DON_TAM`. Tức mỗi việc khép lời xong là cửa nghi thức sập lại, mang
+     theo cả nháp của những việc chưa lưu.
+
+     Nó cũng KHÔNG được tin vào `NO_CU` lúc này: `taiHomNay` vừa dựng lại biến ấy
+     từ khung nhìn `viec_con_no`, tức chỉ còn NỢ CŨ — phần việc của hôm nay mà
+     `htGomViec` đắp vào đã bay. Nên ở đây gọi lại chính nó rồi vẽ, thay vì đọc
+     một danh sách đã bị thay ruột. */
+  if (DON_KIEU === 'toi'){
+    if (HT_GUONG) return;      // tấm gương cuối ngày đang hiện — đừng vẽ danh sách lên nó
+    htGomViec(); veDon(); return;
+  }
   /* LƯỚI AN TOÀN (Tracy chốt 10/08): tối qua đã chạy nghi thức Hoàn thành thì
      sáng nay không chặn nữa — kết sổ rồi mà sáng vẫn bắt dọn lại là làm hai
      lần, và người ta sẽ bỏ nghi thức tối. Nợ cũ (nếu có) vẫn nằm ở mục "Còn
      nợ từ hôm trước" của màn Hôm nay, không biến mất đi đâu. */
-  if (!NO_CU.length || DA_CHOT_QUA){ man.classList.remove('hien'); DON_KIEU='sang'; return; }
-  DON_KIEU = 'sang';
+  if (!NO_CU.length || DA_CHOT_QUA){ man.classList.remove('hien'); return; }
   DON_TAM = {};
   man.classList.add('hien');
   veDon();
@@ -32669,9 +32695,9 @@ function veDonDong(t){
      sáng, bản cũ luôn hiện ô rỗng dù câu trả lời đã nằm sẵn trong cơ sở dữ
      liệu. `??` chứ không `||`: người ta xoá trắng ô là có ý, đừng điền lại. */
   const ghiChu = tam.ghi_chu ?? t.ghi_chu_chot ?? '';
-  /* Hạn của VIỆC GỠ sắp sinh ra — không phải hạn của việc đang đứng đây. Không
-     đặt mặc định sẵn: ô để trống thì việc gỡ vẫn hẹn hôm nay như trước 13/08,
-     nên thêm ô này không đổi hành vi của ai chưa chạm vào nó. */
+  /* Hạn của VIỆC GỠ sắp sinh ra — không phải hạn của việc đang đứng đây. Ô để
+     trống thì `donLuu` hẹn nó theo `donNgayMoi()`, tức cùng ngày mặc định với
+     việc đang đứng đây: hôm nay ở màn sáng, mai ở nghi thức tối. */
   const hanGo  = tam.han_go || '';
 
   return `
@@ -32697,7 +32723,7 @@ function veDonDong(t){
       ${!dinh.hanGo ? '' : `
         <div class="don-hang-ngay">
           ${oNgay('don-hango-' + t.id, 'Deadline', `donHanGo(${t.id}, this.value)`, hanGo)}
-          <span>${hanGo ? 'hạn của việc gỡ' : 'mặc định thì sẽ là hôm nay'}</span>
+          <span>${hanGo ? 'hạn của việc gỡ' : 'mặc định thì sẽ là ' + rvChuNgay(donNgayMoi())}</span>
         </div>`}
 
       ${!dinh.cho ? '' : `
@@ -32749,22 +32775,46 @@ function veODon(id, goi, chu){
   </div>`;
 }
 
-/* ── NGÀY HẸN LẠI: MẶC ĐỊNH LÀ HÔM NAY (Tracy chốt 16/08) ───────────────────
-   Nguyên văn: *"mặc định ngày dọn là hôm nay luôn, nta muốn chọn lại thì mới ấn
-   vào ngày đó để chọn lại, như vậy tiết kiệm 1 bước thao tác"*. Ca thường gặp
-   nhất ở màn này là "hôm qua chưa xong, hôm nay làm tiếp" — bắt chọn tay đúng
-   cái ngày mình đang đứng là một chạm thừa, mỗi việc một lần, mỗi sáng vài việc.
+/* ── NGÀY HẸN LẠI: MẶC ĐỊNH THEO CHẾ ĐỘ ĐANG MỞ ─────────────────────────────
+   Màn sáng mặc định HÔM NAY (Tracy chốt 16/08), màn tối mặc định NGÀY MAI
+   (Tracy chốt 06/09). Hai chế độ đứng ở hai phía của cùng một ngày, nên cùng
+   một câu hỏi "làm nốt khi nào" có hai câu trả lời khác nhau:
 
-   `??` chứ không `||`: `''` là câu trả lời CÓ Ý ("cho về kho"), phải giữ nguyên;
-   chỉ khi chưa ai chạm vào ô (`undefined`) mới điền hôm nay.
+     'sang' — 🧹 Dọn việc hôm qua. Nguyên văn 16/08: *"mặc định ngày dọn là hôm
+       nay luôn, nta muốn chọn lại thì mới ấn vào ngày đó để chọn lại, như vậy
+       tiết kiệm 1 bước thao tác"*. Ca thường gặp nhất ở đây là "hôm qua chưa
+       xong, hôm nay làm tiếp" — bắt chọn tay đúng cái ngày mình đang đứng là
+       một chạm thừa, mỗi việc một lần, mỗi sáng vài việc.
+
+     'toi'  — 🌾 Nghi thức hoàn tất. Nguyên văn 06/09: *"nếu mà tôi ấn nghi thức
+       đó trong ngày hôm nay thì mặc định task còn làm nốt vẫn hiện là HÔM NAY sẽ
+       làm nốt -> đáng ra nó f chạy mặc định là mai"*. Ngày hôm nay vừa được đóng
+       sổ ngay tại cửa này — hẹn làm nốt vào nó là một lời không giữ được, và một
+       lời không giữ được thì cửa này sinh ra để chặn chứ không phải để điền sẵn.
 
    MỘT nguồn chân lý cho cả lúc vẽ lẫn lúc lưu. Để hai chỗ tự đoán lấy mặc định
    là kiểu hỏng tệ nhất ở màn này: nút ghi "Lưu và hẹn 16/08" mà thứ chạy xuống
    máy chủ lại là `ngay: null` — việc lặng lẽ rơi vào kho, đúng thứ luật 3b
-   sinh ra để dừng. */
+   sinh ra để dừng. Nay `donNgayMoi()` là nguồn ấy cho CẢ BA ngày mà cửa này đặt
+   ra: ngày hẹn lại của việc đang đứng, hạn của việc gỡ nghẽn, và ngày của việc
+   báo lại người đang chờ. Ba chỗ cùng một luật thì đổi luật chỉ sửa một dòng.
+
+   Chủ nhật thì bước tiếp sang thứ Hai (Tracy chốt 06/09): cả app coi Chủ nhật là
+   ngày nghỉ — `laCN` bỏ nó khỏi mẫu số và khỏi phép chấm 💎/🪨 — nên điền sẵn một
+   việc vào đúng ngày ấy là tay phải đi sửa lại, tức mất đúng cái chạm mà mặc
+   định này sinh ra để tiết kiệm. Vẫn CHỌN được Chủ nhật bằng tay: đây là mặc
+   định, không phải hàng rào. */
+function donNgayMoi(){
+  if (DON_KIEU !== 'toi') return homNay();
+  const mai = rvCong(homNay(), 1);
+  return laCN(mai) ? rvCong(mai, 1) : mai;
+}
+
+/* `??` chứ không `||`: `''` là câu trả lời CÓ Ý ("cho về kho"), phải giữ nguyên;
+   chỉ khi chưa ai chạm vào ô (`undefined`) mới điền ngày mặc định. */
 function donNgayHen(t, tam){
   if (t.het_cua_hen_ngay) return '';   // quá ba lần hoãn: chỉ còn cửa về kho
-  return tam.ngay ?? homNay();
+  return tam.ngay ?? donNgayMoi();
 }
 
 /* Ba hàm dưới CHỈ ghi vào bộ nhớ tạm, không vẽ lại — vẽ lại giữa lúc gõ là
@@ -32792,19 +32842,23 @@ function donDatTT(id, tt){
 async function donLuu(id, patch, conMoi, ngayCon){
   const t = NO_CU.find(x => x.id === id); if (!t) return;
   if (conMoi && conMoi.length){
-    /* Con mặc định hẹn HÔM NAY, không hẹn theo ngày của cha. Việc gỡ chặn và
-       việc báo lại người đang chờ là việc của hôm nay — cha dời sang thứ Sáu
-       không có nghĩa là để người kia chờ tới thứ Sáu mới được báo. Chỉ việc
-       THAY THẾ mới đi theo ngày của cha, nên chỗ đó truyền ngày vào. */
+    /* Con hẹn theo NGÀY MẶC ĐỊNH CỦA CỬA (`donNgayMoi`), không hẹn theo ngày của
+       cha. Việc gỡ chặn và việc báo lại người đang chờ là việc của ngày làm sắp
+       tới — cha dời sang thứ Sáu không có nghĩa là để người kia chờ tới thứ Sáu
+       mới được báo. Chỉ việc THAY THẾ mới đi theo ngày của cha, nên chỗ đó
+       truyền ngày vào.
+       Ngày ấy là HÔM NAY ở màn sáng và NGÀY MAI ở nghi thức tối (Tracy 06/09) —
+       đẻ ra một việc rồi hẹn nó vào cái ngày mình vừa đóng sổ thì sáng mai nó đã
+       là việc quá hạn, ngay từ lúc sinh. */
     /* Một phần tử của `conMoi` là CHUỖI (tên việc, hẹn theo luật trên) hoặc một
        cặp `{nd, ngay}` khi cửa gọi tới đã hỏi hạn riêng cho đúng con ấy — cửa
        Nghẽn có ô Deadline từ 13/08. Đi đường object chứ không dùng `ngayCon`
        cho cả lượt, vì một lượt có thể đẻ HAI con khác hạn nhau: việc gỡ nghẽn
-       hẹn theo ô Deadline, còn việc báo lại người đang chờ vẫn là việc hôm nay. */
+       hẹn theo ô Deadline, còn việc báo lại người đang chờ vẫn hẹn ngày mặc định. */
     const rows = conMoi.map(c => {
       const con = typeof c === 'string' ? {nd: c} : c;
       return {
-        nguoi_id: ME.id, noi_dung: con.nd, ngay: con.ngay || ngayCon || homNay(),
+        nguoi_id: ME.id, noi_dung: con.nd, ngay: con.ngay || ngayCon || donNgayMoi(),
         tieu_diem_ma: t.tieu_diem_ma, task_cha: id
       };
     });
@@ -32814,6 +32868,7 @@ async function donLuu(id, patch, conMoi, ngayCon){
   const {error} = await sb.from('task').update(patch).eq('id', id);
   if (error) return toast('⚠️ ' + error.message);
   await dwTheoTrangThai(id, patch.trang_thai);   // phiên đi theo việc (TRI-126)
+  HT_DA_DON.add(id);                            // đã trả lời — đừng hỏi lại lượt sau
   NO_CU = NO_CU.filter(x => x.id !== id);
   delete DON_TAM[id];
   veDon();
@@ -32913,18 +32968,44 @@ function donDong(){
    cần". Khoa học đứng sau ô mồi mai: não không đòi việc phải XONG, não chỉ
    đòi việc phải CÓ CHỖ — viết kế hoạch cho việc dang dở là buông được nó
    (Masicampo & Baumeister, "Consider It Done"). ═══ */
-function htMo(){
-  DON_KIEU = 'toi';
-  DON_TAM  = {};
-  /* Khép lời cho CẢ việc hôm nay còn mở LẪN nợ cũ chưa dọn. Việc hôm nay lấy
-     từ TASKS đã nạp, đắp thêm hai trường mà khung nhìn viec_con_no tính sẵn
-     cho nợ cũ: tuổi 0 ngày, và cờ hết cửa hẹn ngày theo trần 3 lần hoãn. */
+/* Việc đã khép lời trong LƯỢT nghi thức này. Cần một sổ riêng vì `htGomViec`
+   chạy lại sau mỗi lượt tải, và một việc trả lời "⏳ Chưa xong" vẫn mang trạng
+   thái MỞ (`Chua_xong` nằm trong `TT_MO`) — không có sổ này thì việc vừa được
+   dọn xong lại hiện lên lần nữa, và người ta phải trả lời hai lần cho một việc.
+   Sổ sống theo lượt: `htMo` dựng lại từ đầu, `htThoat` không cần dọn vì lượt sau
+   sẽ ghi đè. */
+let HT_DA_DON = new Set();
+
+/* Tấm gương cuối ngày (nhịp ③) đang chiếm chỗ của danh sách việc. Cần cờ riêng
+   chứ không suy từ `DON_KIEU`: cả nhịp ① khép lời và nhịp ③ tấm gương đều chạy
+   ở chế độ `'toi'`, mà hai nhịp ấy muốn hai thứ khác nhau từ một lượt tải lại —
+   nhịp ① muốn danh sách vẽ lại cho khớp máy chủ, nhịp ③ muốn được để yên. */
+let HT_GUONG = false;
+
+/* Gom danh sách việc phải khép lời trong nghi thức: CẢ việc hôm nay còn mở LẪN
+   nợ cũ chưa dọn. Việc hôm nay lấy từ TASKS đã nạp, đắp thêm hai trường mà khung
+   nhìn viec_con_no tính sẵn cho nợ cũ: tuổi 0 ngày, và cờ hết cửa hẹn ngày theo
+   trần 3 lần hoãn.
+
+   Tách khỏi `htMo` để `kiemDon` dựng lại được sau mỗi lượt tải từ máy chủ — xem
+   chú thích ở đó. Đọc `NO_CU` rồi ghi lại chính nó, nên gọi bao nhiêu lần cũng
+   ra một kết quả. */
+function htGomViec(){
   const homNayMo = TASKS
     .filter(t => TT_MO.includes(t.trang_thai) && t.ngay === homNay())
     .map(t => Object.assign({}, t, {so_ngay_delay: 0,
       het_cua_hen_ngay: (t.so_lan_hoan || 0) >= 3, da_chot: false}));
   const daCo = new Set(NO_CU.map(t => t.id));
-  NO_CU = NO_CU.concat(homNayMo.filter(t => !daCo.has(t.id)));
+  NO_CU = NO_CU.concat(homNayMo.filter(t => !daCo.has(t.id)))
+               .filter(t => !HT_DA_DON.has(t.id));
+}
+
+function htMo(){
+  DON_KIEU  = 'toi';
+  DON_TAM   = {};
+  HT_DA_DON = new Set();
+  HT_GUONG  = false;
+  htGomViec();
   document.getElementById('don').classList.add('hien');
   veDon();
 }
@@ -32933,6 +33014,7 @@ function htMo(){
    trong lúc mở màn thì vẫn đã đóng — tải lại cho các màn khác khớp số. */
 function htThoat(){
   DON_KIEU = 'sang';
+  HT_GUONG = false;
   document.getElementById('don').classList.remove('hien');
   taiHomNay();
 }
@@ -32976,6 +33058,7 @@ async function htGuong(){
     : 'Hôm nay không có con số nào — có mặt để đóng sổ vẫn là một việc đã làm.';
   document.getElementById('don-phu').textContent = 'Mọi lời của hôm nay đã có câu trả lời.';
   document.getElementById('ht-them').style.display = 'none';
+  HT_GUONG = true;              // từ đây tới lúc bấm Đóng, không ai vẽ lên màn này
   document.getElementById('don-ds').innerHTML = `
     <div class="ht-guong">
       <div class="ht-guong-to">🌾 Ngày đã hoàn tất</div>
@@ -32987,6 +33070,7 @@ async function htGuong(){
   nut.textContent = 'Đóng';
   nut.onclick = function(){
     DON_KIEU = 'sang';
+    HT_GUONG = false;
     nut.onclick = donDong;
     document.getElementById('don').classList.remove('hien');
     taiHomNay();
@@ -37695,7 +37779,7 @@ function tmRuot(n){
   <div class="tm-nhom">Thông tin tài khoản</div>
 
   <div class="tm-o"><label>Email đăng nhập${them ? ' *' : ''}</label>
-    <input type="text" id="tm-email" value="${chuSach(g.email || '')}" placeholder="ten@vidu.com">
+    <input type="text" id="tm-email" value="${chuSach(g.email || '')}" placeholder="nguoi-08@vidu.com">
     <div class="tm-luuy">${them
       ? `Phải là <b>Gmail họ đang dùng</b>.`
       : `<b>Đây là cửa vào của người này.</b> Đổi email thì lần đăng nhập sau họ

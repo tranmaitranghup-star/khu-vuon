@@ -22,7 +22,7 @@
 4. New query → dán trọn **`nang-cap-deepwork-tu-do.sql`** → **Run** (lớp deepwork tự do:
    bỏ khung 30 phút, ba cửa ra, bấm giờ nhịp). **Phải chạy sau hai file trên.**
 5. New query → dán trọn `seed-danh-muc-nhip.sql` → **Run** (nạp 144 nhịp gợi ý).
-6. **Table Editor → nguoi** → sửa 11 dòng `nguoi-08@vidu.com` thành **email Google thật**
+6. **Table Editor → nguoi** → sửa 11 dòng `nguoi-04@vidu.com` thành **email Google thật**
    của từng người (hỏi trong nhóm Lark — ai đăng nhập bằng email nào thì điền đúng email đó).
 7. **Settings → API** → chép 2 thứ: `Project URL` và `anon public key`.
 
