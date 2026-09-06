@@ -1,3 +1,19 @@
+<!-- BẢN KHUÔN — ĐỪNG DIFF TỆP NÀY VỚI BẢN ĐÃ ĐĂNG RỒI TƯỞNG LÀ LỆCH.
+
+     Tệp này là NGUỒN phần chữ của README kho công khai `khu-vuon`. Khi
+     `dong-bo-cong-khai.py` chạy, nó chép tệp này thành `README.md` của kho công
+     khai RỒI GHI ĐÈ mọi khối số bằng số đếm được từ kho thật: tổng số tệp và
+     dung lượng · ô `public/` và ô `gốc kho` · số tệp `.sql` · số bài thử, số tệp
+     tài liệu · kết quả "đạt x/y". Nên bản đăng LUÔN khác tệp này ở mấy con số
+     ấy, và đó là đúng thiết kế chứ không phải trôi lệch.
+
+     ĐỪNG sửa tay mấy con số đó ở đây — sửa cũng bị ghi đè ở lượt đẩy kế tiếp.
+     Muốn biết số thật thì chạy `python3 dong-bo-cong-khai.py` (chạy trần là thử,
+     không đẩy), nó in ra bộ số hiện hành.
+
+     Phần CHỮ thì ngược lại: sửa ở đây, đừng sửa trong kho công khai — mọi thay
+     đổi bên đó sẽ bị lượt đẩy sau ghi đè. -->
+
 # Khu Vườn Tỉnh Thức
 
 Web app quản lý **cam kết** cho doanh nghiệp nhỏ làm việc online — không phải một chỗ ghi danh sách việc.
