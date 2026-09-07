@@ -1,7 +1,15 @@
-/* THỬ: CHỈ HOST MỚI ĐỔI ĐƯỢC THÔNG TIN VÀ THỜI GIAN CỦA MỘT SỰ KIỆN
+/* THỬ: AI ĐỔI ĐƯỢC THÔNG TIN VÀ THỜI GIAN CỦA MỘT SỰ KIỆN
    ─────────────────────────────────────────────────────────────────────────────
-   Tracy 04/09 (TRI-98): *"với các sự kiện thì chỉ có host mới có thể thay đổi
-   thông tin và thời gian"*.
+   Luật dựng dần qua ba lượt Tracy chốt, và BA VẾ ẤY KHÔNG ĐƯỢC GỘP:
+     · 04/09 (TRI-98) *"với các sự kiện thì chỉ có host mới có thể thay đổi
+       thông tin và thời gian"* — đóng cửa `la_lead`.
+     · 07/09 sáng *"Lead không sửa được mọi sự kiện trên lịch chung, chỉ có host
+       có quyền đó, và host cấp quyền cho khách thì khách được thôi"* — mở cửa
+       khách, đóng lại cửa lead mà một tệp chép nhầm vừa hé ra.
+     · 07/09 chiều (TRI-141) *"cho Tracy và Andy quyền chỉnh sửa toàn bộ sự kiện
+       dù không phải mình host"* — mở cửa QUẢN TRỊ, đúng hai người đang bật cờ
+       `la_quan_tri`, và chừa sự kiện loại cá nhân ra.
+   Ba cửa: HOST · QUẢN TRỊ · KHÁCH ĐƯỢC CẤP QUYỀN. Lead vẫn không có cửa nào.
 
    VÌ SAO CẦN BÀI THỬ, chứ không chỉ bấm thử một lượt: mọi máy trong đội hôm nay
    đều đang bật cờ `la_lead`, nên NGƯỜI THỬ LÚC NÀO CŨNG LÀ LEAD. Mở app ra bấm
@@ -17,7 +25,7 @@
        vì nó không có nút nào để nhìn thấy mà quên.
 
      · MẶT HÌNH KHÔNG PHẢI HÀNG RÀO. Giấu cái nút chỉ ngăn người ta bấm nhầm.
-       Hàng rào thật là ba chính sách RLS, và chúng phải hết nhắc `la_lead`.
+       Hàng rào thật là bốn chính sách RLS, và chúng phải hết nhắc `la_lead`.
 
      · QUYỀN ĐỌC KHÔNG ĐƯỢC SIẾT THEO. Cả đội vẫn phải thấy mọi lịch để tránh
        trùng giờ, và lead vẫn đọc được bảng điểm danh có tên. Siết nhầm sang
@@ -33,7 +41,9 @@ const path = require('path');
 const GOC = process.env.THU_GOC || __dirname;
 const SRC = fs.readFileSync(process.env.THU_FILE
   || path.join(GOC, 'public/index.html'), 'utf8');
-const SQL = fs.readFileSync(path.join(GOC, 'nang-cap-quyen-host-su-kien.sql'), 'utf8');
+/* Đọc tệp MỚI NHẤT chạm bốn chính sách ấy, không đọc tệp đầu tiên tìm thấy —
+   một tệp .sql là ảnh chụp của một ngày, không phải trạng thái hôm nay. */
+const SQL = fs.readFileSync(path.join(GOC, 'nang-cap-quyen-quan-tri-su-kien.sql'), 'utf8');
 
 function catKhoi(dau, cuoi){
   const i = SRC.indexOf(dau), j = SRC.indexOf(cuoi, i);
@@ -51,8 +61,25 @@ function la(ten, dieu, them){
 console.log('\n① Luật nằm ở đúng một chỗ — `lcDuocSua`');
 {
   const ham = catKhoi('function lcDuocSua(l){', '\n}');
-  la('lcDuocSua chỉ hỏi `tao_boi === ME.id`',
-     /return\s*!!\(ME\s*&&\s*l\s*&&\s*l\.tao_boi\s*===\s*ME\.id\);/.test(ham),
+  /* BA CỬA, không hai và không một. Vế khách đòi CẢ HAI điều kiện, đúng như
+     policy `sua_lich`: cờ `khach_sua` bật, VÀ người đang sửa có tên trong
+     `nguoi_ids` — bật cờ mà không mời ai thì không mở cửa cho ai, còn thiếu một
+     trong hai vế là mở toang cho cả đội. Vế quản trị đòi kèm `rieng_tu`: chính
+     sách `doc_lich` không cho quản trị ĐỌC sự kiện cá nhân của người khác, nên
+     bày nút sửa cho một dòng họ còn không thấy là dựng cửa ra bức tường. */
+  la('lcDuocSua có vế HOST', /l\.tao_boi\s*===\s*ME\.id/.test(ham),
+     'chủ sự kiện là cửa thứ nhất, không được mất');
+  la('vế khách đòi CẢ HAI: cờ bật VÀ có tên trong danh sách mời',
+     /khach_sua/.test(ham) && /nguoi_ids/.test(ham) && /&&/.test(ham),
+     'thiếu một vế là ai cũng sửa được sự kiện có bật cờ');
+  la('lcDuocSua có vế QUẢN TRỊ',
+     /ME\.la_quan_tri/.test(ham),
+     'Tracy và Andy phải sửa được sự kiện của người khác (TRI-141)');
+  la('vế quản trị chừa sự kiện loại cá nhân ra',
+     /ME\.la_quan_tri\s*&&\s*!l\.rieng_tu/.test(ham),
+     'thiếu vế này là bày nút sửa cho một dòng chính họ không đọc được');
+  la('không có cửa thứ tư nào ngoài ba cửa ấy',
+     !/la_lead|la_dieu_hanh/.test(ham),
      'còn vế nào khác là còn một đường vòng qua luật');
   la('lcDuocSua KHÔNG còn nhắc `la_lead`',
      !/la_lead/.test(ham),
@@ -82,6 +109,16 @@ console.log('\n② Bốn lối đổi một sự kiện đều gọi cùng một
   la('nút 🗑 Xoá đi cùng nút ✏️ trong đúng một nhánh quyền',
      /laHost[\s\S]{0,600}aria-label="Xoá sự kiện"/.test(cua),
      'xoá là một cách đổi sự kiện của người khác, chỉ bằng đường khác');
+}
+
+/* Chỗ vẽ lại RIÊNG khu ghi chú — lối thứ năm, và là lối đã cắn thật. Nó từng
+   chép tay `l.tao_boi === ME.id`, nên quản trị mở được ô mà vẽ lại một lượt là
+   ô tự đóng thành chỉ đọc; mà cú vẽ lại xảy ra ngay sau mỗi lần bấm nở ô. */
+{
+  const veLai = catKhoi('function lcVeLaiGhiChu(khi){', '\n}');
+  la('vẽ lại khu ghi chú cũng hỏi `lcDuocSua`',
+     /lcOThongBao\(id, ngay, lcDuocSua\(l\), khi\)/.test(veLai),
+     'chép tay ở đây thì ô ghi chú tự khoá lại ngay sau khi mở');
 }
 
 /* ── ③ KHÔNG CÒN CHỖ NÀO CHÉP TAY LUẬT SỬA ──────────────────────────────── */
@@ -123,14 +160,28 @@ console.log('\n④ Siết quyền SỬA, không siết quyền NHÌN');
 }
 
 /* ── ⑤ HÀNG RÀO THẬT — BA CHÍNH SÁCH Ở MÁY CHỦ ──────────────────────────── */
-console.log('\n⑤ Hàng rào máy chủ: ba chính sách, hết nhắc la_lead');
+console.log('\n⑤ Hàng rào máy chủ: bốn chính sách, có quản trị, hết nhắc la_lead');
 {
   const than = SQL.slice(SQL.indexOf('begin;'), SQL.indexOf('commit;'));
-  la('tệp SQL dựng lại cả ba chính sách ghi',
+  la('tệp SQL dựng lại cả BỐN chính sách ghi',
      /create policy sua_lich/.test(than)
      && /create policy xoa_lich/.test(than)
-     && /create policy ghi_lich_ngoai/.test(than),
-     'thiếu chính sách nào là còn một đường ghi chưa siết');
+     && /create policy ghi_lich_ngoai/.test(than)
+     && /create policy ghi_tb_buoi/.test(than),
+     'thiếu chính sách nào là còn một cửa nút hiện ra mà máy chủ chối');
+  /* Bốn lần, không ba: hai ô thông tin của buổi nằm ở bảng khác (`thong_bao_buoi`),
+     và đó đúng là chỗ dễ bỏ sót nhất vì nó không nằm trong `lich_chung`. */
+  la('cả bốn chính sách đều mở cho quản trị',
+     [...than.matchAll(/la_quan_tri_dang_nhap\(\)/g)].length >= 4,
+     'đếm được ' + [...than.matchAll(/la_quan_tri_dang_nhap\(\)/g)].length
+     + ' lần gọi — mỗi chính sách phải có ít nhất một');
+  la('mọi vế quản trị đều chừa sự kiện loại cá nhân',
+     than.split('la_quan_tri_dang_nhap()').slice(1)
+         .every(sau => /rieng_tu/.test(sau.slice(0, 40))),
+     'một vế quên `rieng_tu` là mở đúng cánh cửa `doc_lich` đang đóng');
+  la('vế khách trong sua_lich không bị nuốt mất',
+     /create policy sua_lich[\s\S]*?khach_sua/.test(than),
+     'dựng lại một chính sách mà quên vế cũ là lặng lẽ lấy đi quyền vừa trao');
   la('không chính sách nào trong tệp còn gọi `la_lead()`',
      !/la_lead\(\)/.test(than),
      'còn một lần gọi là còn cửa cho mọi người mang cờ lead');

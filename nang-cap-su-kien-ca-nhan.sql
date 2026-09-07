@@ -1,3 +1,16 @@
+-- ⛔ TỆP CŨ — ĐỪNG CHẠY LẠI MỘT MÌNH (dán 07/09) ─────────────────────────────
+-- Tệp này còn giữ vế `la_lead()` trong ba policy `sua_lich` · `xoa_lich` · `ghi_lich_ngoai`, tức bản luật TRƯỚC ngày
+-- 04/09 khi Tracy siết quyền sửa sự kiện về HOST. Chạy lại nó là lặng lẽ mở
+-- lại cánh cửa ấy, và không một dòng lỗi nào báo.
+-- Phải chạy thì chạy KÈM, theo đúng thứ tự, ngay sau nó:
+--     nang-cap-quyen-host-su-kien.sql  →  nang-cap-quyen-khach.sql
+--     →  nang-cap-doi-gio-viec-ca-doi.sql
+-- Rồi soi lại bằng `SO-SQL.sql`: bốn dòng "sự kiện: … chỉ host" phải ✅.
+-- Cũng đừng CHÉP policy từ tệp này sang tệp mới — một tệp .sql là ảnh chụp của
+-- một ngày, không phải trạng thái hôm nay. Đọc bản đang chạy:
+--     select policyname, qual from pg_policies where tablename = 'lich_chung';
+-- ─────────────────────────────────────────────────────────────────────────────
+
 -- ┌─ SỔ SQL ──────────────────────────────────────────────────────────────────
 -- │ Dấu vết riêng trên máy chủ: cột `lich_chung.nguoi_ids` (mảng uuid), và
 -- │ ràng buộc `lich_pham_vi_hop_le` có chứa chữ 'ca_nhan'.

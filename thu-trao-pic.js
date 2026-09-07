@@ -31,6 +31,10 @@ function catKhoi(dau, cuoi){
   return SRC.slice(i, j);
 }
 const NGUON = [
+  /* Cửa lọc ô chọn người — LẤY NGUYÊN VĂN TỪ `index.html`, không chép lại vào
+     cọc bên dưới. Chép lại là ngày cờ đổi tên thì bài thử vẫn xanh trên một
+     bản sao đã chết. `COC` chạy trước `NGUON` nên `DOI` đã có mặt lúc gọi. */
+  catKhoi("const DOI_CHON = () =>", ";"),
   catKhoi("function duMoSua(id){", "function duNutTrangThai(d){"),
   catKhoi("const CB_LOAI = {", "/* Dòng \"Chờ bạn\" đang mở hộp."),
   catKhoi("function cbPicMo(d){", "/* ── BẤM MỘT DÒNG \"CHỜ BẠN\""),

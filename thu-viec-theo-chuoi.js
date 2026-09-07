@@ -87,8 +87,38 @@ console.log('\n④ Đường máy chủ — việc của CẢ ĐỘI đi theo (T
 
   const sql = fs.readFileSync(path.join(__dirname, 'nang-cap-doi-gio-viec-ca-doi.sql'), 'utf8');
   la('hàm chạy bằng quyền định nghĩa', /security definer/.test(sql));
-  la('hàm TỰ KIỂM quyền sửa sự kiện', /la_lead\(\)[\s\S]{0,120}tao_boi/.test(sql),
+  /* SỬA 07/09 — ca này TỪNG ĐÒI vế `la_lead()` có mặt, tức nó canh đúng cái lỗ
+     hổng. Hàm chạy `security definer` nên RLS không chặn hộ; giữ vế lead trong
+     đó là bất kỳ ai đeo cờ lead đổi được giờ chuỗi sự kiện của người khác, đi
+     vòng qua chính hàng rào `nang-cap-quyen-host-su-kien.sql` vừa dựng. Nay ba
+     ca: có tự kiểm · đúng hai cửa của `sua_lich` · và lead không có cửa nào. */
+  la('hàm TỰ KIỂM quyền sửa sự kiện', /if not exists[\s\S]{0,200}tao_boi/.test(sql),
      'Một hàm security definer không tự kiểm quyền là một cánh cửa mở — RLS không chặn hộ nó.');
+  la('vế khách của nó đòi CẢ HAI, đúng như policy sua_lich',
+     /khach_sua[\s\S]{0,80}nguoi_ids/.test(sql),
+     'Hàm và policy lệch nhau là một trong hai chỗ nói dối.');
+  /* ⚠️ SOI PHẦN MÃ, KHÔNG SOI CHÚ THÍCH. Tệp này có mấy dòng `--` kể lại vì sao
+     vế `la_lead()` bị bỏ — dò thẳng trên cả tệp là bắt đúng câu chuyện về cái
+     lỗi rồi báo đỏ, tức phạt người đã ghi lại bài học. Bỏ dòng chú thích trước
+     khi dò; ❌ oan tệ hơn không kiểm, nó dạy người đọc thôi tin cả bảng. */
+  const sqlMa = sql.split('\n').filter(d => !/^\s*--/.test(d)).join('\n');
+  la('hàm KHÔNG còn nhắc `la_lead`', !/la_lead\(\)/.test(sqlMa),
+     'Bảy người trong đội đều bật cờ ấy — còn nó thì luật host không siết được gì.');
+
+  /* 🪤 SỔ SQL DÒ THEO TÊN HÀM, MÀ TỆP NÀY ĐẶT TÊN KHÁC TÊN TỆP. Dòng dò thêm
+     ngày 07/09 gọi `doi_gio_viec_ca_doi` — tên TỆP — nên `pg_proc` không có gì
+     khớp và câu ấy luôn trả '⬜ chưa có hàm' dù hàm đang chạy. Một ⬜ oan tệ hơn
+     không kiểm: nó dạy người đọc thôi tin cả bảng. Ca này bắt mọi tên hàm mà
+     `SO-SQL.sql` đi hỏi `pg_proc`, rồi đòi tên ấy có thật trong một tệp .sql. */
+  const so   = fs.readFileSync(path.join(__dirname, 'SO-SQL.sql'), 'utf8');
+  const moiSql = fs.readdirSync(__dirname).filter(f => f.endsWith('.sql'))
+                   .map(f => fs.readFileSync(path.join(__dirname, f), 'utf8')).join('\n');
+  const tenDo = [...so.matchAll(/proname\s*=\s*'([a-z0-9_]+)'/g)].map(m => m[1]);
+  const maDanh = tenDo.filter(t => !new RegExp('function\\s+' + t + '\\s*\\(').test(moiSql));
+  la('mọi tên hàm SO-SQL đi dò đều có thật trong một tệp .sql',
+     tenDo.length > 0 && maDanh.length === 0,
+     maDanh.length ? 'không tệp nào khai: ' + maDanh.join(', ')
+                   : 'không tìm thấy dòng dò nào — mốc cắt hỏng?');
   la('người đăng nhập gọi được', /grant execute on function doi_gio_viec_theo_chuoi/.test(sql));
   la('vẫn chừa buổi đã dời riêng', /lich_chung_ngoai_le[\s\S]{0,200}'doi'/.test(sql));
   la('vẫn chừa việc đã có phiên deep work', /phien_deepwork/.test(sql));

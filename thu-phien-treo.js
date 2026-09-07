@@ -64,6 +64,11 @@ const taiTaskList = async () => {};
    28/08, khi khối Hành trình deep work dời sang màn Bảng đo và có đường tải
    riêng. Bộ thử này chỉ soi thứ được ghi lên máy chủ, nên giả lập rỗng là đủ. */
 const taiHanhTrinh = async () => {};
+/* Từ 07/09 (làn QK) hai cửa ấy gọi thêm `cbTaiLai()`: phiên vừa khai xong thì
+   dòng mời khai trong khối Chờ bạn phải rụng ngay. Đếm số lần gọi để ca cuối
+   tệp này canh được rằng đường ấy không bị gỡ mất. */
+let SO_CB = 0;
+const cbTaiLai = async () => { SO_CB++; };
 const gioChu = p => `${p}′`;
 const baoLoiPhien = e => '⚠️ ' + (e && e.message || 'lỗi');
 
@@ -185,6 +190,13 @@ const datRa  = p => { GHI = []; NOI = []; PHIEN_TRA = p; };
   await dwLuuPhut(5);
   kiem('Khai dài hơn quãng đã trôi → rào cũ vẫn còn nguyên', !coGhi('update'), noiCuoi());
   O_PHUT.value = '30';
+
+  console.log('\n── DÒNG MỜI KHAI PHẢI RỤNG NGAY SAU KHI KHAI ── (07/09, QK)');
+  SO_CB = 0;
+  datRa({id:5, bat_dau:truoc(40), ket_qua:'heo', ket_thuc:truoc(10)});
+  await dwLuuPhut(5);
+  kiem('Khai xong thì khối Chờ bạn được soát lại, không đợi nhịp 5 phút',
+    coGhi('update') && SO_CB === 1, `ghi:${coGhi('update')} · soát:${SO_CB}`);
 
   console.log('\n── NÚT 🗑 KHÔNG ĐƯỢC XOÁ PHIÊN ĐANG SỐNG ──');
   datRa({id:5, bat_dau:truoc(40), ket_qua:'dang_chay', may_ma:'may-khac', nhip_cuoi:truoc(1)});

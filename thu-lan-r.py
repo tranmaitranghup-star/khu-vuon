@@ -38,7 +38,7 @@ cua_note = the('<div class="cua-noi-nen" id="dw-note"', '<!-- Lời của trạn
 HAM = '\n\n'.join([
     ham('oNgay'), ham('nhanNgay'), ham('moLich'),
     ham('dwNhanTheDi'), ham('dwThemVeDs'),
-    ham('donNgayHen'), ham('nhanNutDon'), ham('veDonDong'), ham('veODon'),
+    ham('donTT'), ham('donNgayHen'), ham('veDonDong'), ham('veODon'),
     ham('donNgay'), ham('donGhiChu'), ham('donHanGo'), ham('donCho'), ham('donDatTT'),
 ])
 DON_TT = re.search(r'const DON_TT = \[.*?\n\];', src, re.S).group(0)
@@ -169,7 +169,11 @@ function DO(){{
     k.donNgayChu = document.getElementById('don-ngay-1-chu')?.textContent;
     k.donNhac = hangNgay.querySelector('span')?.textContent;
     k.donNutKho = hangNgay.querySelector('.don-kho')?.textContent || '(không có)';
-    k.donNutChinh = document.querySelector('#don-ds .don-nut.mot button')?.textContent.trim();
+    /* Nút Lưu của từng dòng gỡ 06/09 (TRI-138) — cả màn nay một cú lưu ở cuối.
+       Vẫn đo, nhưng đo để canh nó ĐỪNG quay lại: hàng ngày là chỗ cuối cùng
+       nó từng đứng, và luật "một hàng chỉ một nút chính" sống ở đây. */
+    k.donNutChinh = document.querySelector('#don-ds .don-nut.mot button')
+      ? '❌ nút Lưu của dòng đã quay lại' : '✅ không còn (một cú lưu ở cuối màn)';
     k.donTamNgay = JSON.stringify(DON_TAM[1]?.ngay);
   }}
   return k;

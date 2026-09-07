@@ -88,11 +88,15 @@ with dau_vet(tep, loai, ten) as (values
   ('nang-cap-ban-tin.sql','table','ban_tin'),
   ('nang-cap-ban-tin-link.sql','col','ban_tin.link'),
   ('nang-cap-cam-ket-5-cua-ceo.sql','col','nguoi.so_cam_ket_toi_da'),
+  ('nang-cap-cap-dang-nhap.sql','func','cap_dang_nhap'),
+  ('nang-cap-rls-cam-ket.sql','func','thu_hang_rao_cap'),
+  ('nang-cap-bit-cua-tra-cuu-du-an.sql','func','toi_o_du_an'),
   ('nang-cap-cam-ket-va-muc-tieu.sql','table','muc_tieu'),
   ('nang-cap-checklist.sql','table','muc_viec'),
   ('nang-cap-cho-ban.sql','col','thanh_vien_du_an.da_xem_luc'),
   ('nang-cap-chot-chan-phien.sql','col','phien_deepwork.nghi_ms'),
   ('nang-cap-chot-su-kien.sql','col','lich_chung.da_chot'),
+  ('nang-cap-cat-chuoi-lich.sql','func','cat_chuoi_lich'),
   ('nang-cap-chuong-tinh-thuc.sql','table','tieng_chuong'),
   ('nang-cap-co-cau-to-chuc.sql','col','nguoi.ngay_nghi'),
   ('nang-cap-cong-gac-khung-nhin.sql','func','kiem_khung_nhin_thieu_quyen'),
@@ -117,6 +121,7 @@ with dau_vet(tep, loai, ten) as (values
   ('nang-cap-lap-buoc-va-so-lan.sql','col','lich_chung.so_lan'),
   ('nang-cap-lich-chung.sql','table','lich_chung'),
   ('nang-cap-lich-dieu-hanh.sql','col','nguoi.la_dieu_hanh'),
+  ('nang-cap-ngoai-bang-do.sql','col','nguoi.ngoai_bang_do'),
   ('nang-cap-lich-thu-n-thang.sql','col','lich_chung.tuan_thang'),
   ('nang-cap-loai-phien.sql','func','dat_co_cam_ket'),
   ('nang-cap-loai-viec-co-dinh.sql','col','task.loai_viec'),
@@ -130,6 +135,7 @@ with dau_vet(tep, loai, ten) as (values
   ('nang-cap-nghi-thuc-hoan-tat.sql','col','nop_ngay.moi_mai'),
   ('nang-cap-nhieu-khoi.sql','col','nguoi.chuc_nang_ids'),
   ('nang-cap-nhom-nhan-lich.sql','col','lich_chung.chuc_nang_ids'),
+  ('nang-cap-noi-chuoi-lich.sql','func','noi_chuoi_lich'),
   ('nang-cap-output-cam-ket.sql','trig','trg_kiem_output_cam_ket'),
   ('nang-cap-phan-cap-nghiem-thu.sql','col','nguoi.leader_id'),
   ('nang-cap-su-kien-ca-nhan.sql','col','lich_chung.nguoi_ids'),
@@ -140,6 +146,7 @@ with dau_vet(tep, loai, ten) as (values
   ('nang-cap-tu-sua-ho-so.sql','trig','tg_chan_tu_sua_co_cau'),
   ('nang-cap-van-de-giao-sau.sql','func','la_nguoi_cua_khoi'),
   ('nang-cap-van-de-lien-phong.sql','table','van_de'),
+  ('nang-cap-van-de-quan-tri-doi-nac.sql','con','van_de_dau_dong_khop_nac'),
   ('nang-cap-viec-cua-buoi.sql','col','task.lich_id'),
   ('nang-cap-xep-cam-ket-co-san.sql','func','xep_cam_ket_vao_du_an'),
   ('schema.sql','table','danh_muc_nhip'),
@@ -175,8 +182,14 @@ from (
       when 'func'  then exists (select 1 from pg_proc p
                                  join pg_namespace n on n.oid=p.pronamespace
                                 where n.nspname='public' and p.proname=ten)
-      when 'view'  then exists (select 1 from information_schema.views
-                                 where table_schema='public' and table_name=ten)
+      /* Ràng buộc bảng, thêm 06/09 cho `nang-cap-van-de-quan-tri-doi-nac.sql`.
+         Dò theo TÊN, không dò định nghĩa: Postgres không cất lại nguyên văn câu
+         `check` đã gõ, nó phân tích rồi in lại — từ khoá viết HOA, ngoặc thêm
+         vào, khoảng cách đổi — nên một mẫu `like` trên định nghĩa ra ⬜ oan.
+         Tên thì nó trả lại y nguyên. Cùng luật với bộ tự kiểm, DOC-TRUOC. */
+      when 'con'   then exists (select 1 from pg_constraint c
+                                 join pg_namespace n on n.oid=c.connamespace
+                                where n.nspname='public' and c.conname=ten)
     end as co
   from dau_vet
 ) x
@@ -239,6 +252,37 @@ select 'sự kiện: chỉ host mới sửa được (sua_lich)',
                           where tablename='lich_chung' and policyname='sua_lich'
                             and (coalesce(qual,'') || coalesce(with_check,'')) like '%la_lead%')
             then '🔴 CÒN MỞ CHO LEAD — chạy nang-cap-quyen-host-su-kien.sql'
+            else '✅ chỉ host' end
+union all
+-- Cùng câu hỏi ấy nhưng ở tầng HÀM, không tầng policy. `doi_gio_viec_theo_chuoi`
+-- chạy `security definer` nên RLS không chặn hộ nó: policy sạch mà hàm còn vế
+-- lead thì cánh cửa vẫn mở, chỉ là mở bằng đường khác. Bắt được đúng thế ngày
+-- 07/09. Dò trong chính thân hàm mà máy chủ đang giữ, không dò tên tệp.
+--
+-- 🪤 BẢN ĐẦU CỦA CHÍNH DÒNG NÀY GỌI NHẦM `doi_gio_viec_ca_doi` — đó là tên TỆP,
+-- không phải tên HÀM. `pg_proc` không có dòng nào tên vậy, nên câu này luôn trả
+-- '⬜ chưa có hàm' dù hàm đang chạy ngon lành: một ⬜ oan, đúng thứ đầu tệp này
+-- cảnh báo. Bẫy dễ mắc vì tệp và hàm ở đây đặt tên khác nhau. Thêm một dòng dò
+-- hàm thì `grep -n 'create or replace function'` trong tệp ấy trước đã.
+select 'sự kiện: hàm đổi giờ cả đội cũng chỉ host (doi_gio_viec_theo_chuoi)',
+       case when not exists (select 1 from pg_proc
+                              where proname = 'doi_gio_viec_theo_chuoi')
+            then '⬜ chưa có hàm — xem nang-cap-doi-gio-viec-ca-doi.sql'
+            when exists (select 1 from pg_proc
+                          where proname = 'doi_gio_viec_theo_chuoi'
+                            and pg_get_functiondef(oid) like '%la_lead%')
+            then '🔴 CÒN MỞ CHO LEAD — chạy lại nang-cap-doi-gio-viec-ca-doi.sql'
+            else '✅ chỉ host' end
+union all
+-- Cò giữ hai cột khỏi tay khách cũng phải nói cùng một câu: chỉ host đi qua.
+select 'sự kiện: cò chan_khach_sua_cot_cam không nể lead',
+       case when not exists (select 1 from pg_proc
+                              where proname = 'chan_khach_sua_cot_cam')
+            then '⬜ chưa có cò — chạy nang-cap-quyen-khach.sql'
+            when exists (select 1 from pg_proc
+                          where proname = 'chan_khach_sua_cot_cam'
+                            and pg_get_functiondef(oid) like '%la_lead%')
+            then '🔴 CÒN NỂ LEAD — chạy lại nang-cap-quyen-khach.sql'
             else '✅ chỉ host' end
 union all
 -- 🔴 Dòng quan trọng nhất khối này: một lỗi ĐANG SỐNG tính tới 01/09. Bảng chọn
@@ -315,7 +359,19 @@ select 'câu chữ lỗi dự án đã là đời mới chưa (kiem_du_an_du_o)'
             when (select string_agg(prosrc,'') from pg_proc p join pg_namespace n on n.oid=p.pronamespace
                    where n.nspname='public' and p.proname='kiem_du_an_du_o') like '%câu đọc lên hỏi%'
             then '✅ đời mới'
-            else '🟡 còn câu chữ cũ — chạy lại nang-cap-mang-du-an.sql (hoặc nang-cap-bo-tran-moc.sql, cũng mang câu mới)' end;
+            else '🟡 còn câu chữ cũ — chạy lại nang-cap-mang-du-an.sql (hoặc nang-cap-bo-tran-moc.sql, cũng mang câu mới)' end
+union all
+-- `nang-cap-hien-dien-theo-tran.sql` không dựng vật gì mới — nó chỉ viết lại
+-- `ai_dang_lam`, nên khối ① không hỏi được nó. Dấu vết là thứ ĐÃ MẤT khỏi định
+-- nghĩa: bản cũ hỏi `nhip_cuoi`, bản mới hỏi trần 180 phút. `nhip_cuoi` là TÊN
+-- CỘT nên Postgres in lại y nguyên — mẫu này không dính bẫy "in lại thì từ khoá
+-- viết HOA" mà `DOC-TRUOC.md` cảnh báo.
+select 'hàng hiện diện còn hỏi nhịp tim không (ai_dang_lam)',
+       case when to_regclass('public.ai_dang_lam') is null
+            then '⬜ chưa có khung nhìn — xem nang-cap-hien-dien-deepwork.sql'
+            when pg_get_viewdef('public.ai_dang_lam'::regclass) like '%nhip_cuoi%'
+            then '🔴 CÒN NGƯỠNG 5 PHÚT — người deep work tab chìm sẽ mất viền xanh, chạy nang-cap-hien-dien-theo-tran.sql'
+            else '✅ bám phiên, không bám nhịp tim' end;
 
 
 -- ─── ⛔ HAI TỆP KHÔNG ĐƯỢC CHẠY LẠI — chúng LÙI thứ đang chạy ──────────────
@@ -473,7 +529,68 @@ select 'quyền của khách như Lịch Google (lich_chung.khach_sua)',
                               where not tgisinternal
                                 and tgname='tg_chan_khach_sua_cot_cam')
             then '🔴 CÓ CỘT NHƯNG THIẾU CÒ — khách sửa được cả cờ riêng tư. Chạy lại trọn tệp'
-            else '✅ có' end;
+            else '✅ có' end
+union all
+-- ⬇ SIẾT RLS THEO CẤP (07/09, TRI-144). Ba tệp dưới đây VIẾT LẠI policy đã có
+-- chứ không dựng thứ gì mới, nên chúng không có chỗ ở khối ①: sự tồn tại của
+-- `doc_tieudiem` chỉ nói `schema.sql` đã chạy. Thứ đúng MỘT tệp dựng ra là một
+-- `doc_*` CÓ HỎI CẤP — nên hỏi theo nội dung, đúng lối của `sua_lich` ở trên.
+select 'nhát ① — cam kết Cả ROVA có hàng rào chưa (doc_tieudiem)',
+       case when not exists (select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+                              where n.nspname='public' and p.proname='la_member')
+            then '🔴 CHƯA CÓ la_member() — chạy nang-cap-cap-dang-nhap.sql (nhát ⓪) TRƯỚC'
+            when coalesce((select qual from pg_policies
+                            where tablename='tieu_diem' and policyname='doc_tieudiem'), '')
+                 not like '%la_member%'
+            then '🔴 CHƯA CHẠY — chạy nang-cap-rls-cam-ket.sql'
+            when coalesce((select qual from pg_policies
+                            where tablename='tieu_diem' and policyname='doc_tieudiem'), '')
+                 not like '%muc_tieu_id%'
+            then '🔴 CÓ HÀNG RÀO NHƯNG MẤT VẾ CHẶN NULL — la_thanh_vien_du_an(null,…) trả TRUE, cam kết không gắn dự án hở lại. Chạy lại nang-cap-rls-cam-ket.sql'
+            else '✅ có' end
+union all
+select 'nhát ② — dự án có hàng rào chưa (doc_muctieu · doc_thanhvien · doc_moc)',
+       case (select count(*) from pg_policies
+              where schemaname='public'
+                and policyname in ('doc_muctieu','doc_thanhvien','doc_moc')
+                and qual like '%la_member%')
+            when 3 then '✅ có đủ ba'
+            when 0 then '🔴 CHƯA CHẠY — chạy nang-cap-rls-du-an.sql'
+            else '🔴 MỚI MỘT PHẦN — chạy lại trọn nang-cap-rls-du-an.sql' end
+union all
+select 'nhát ③ — kho việc cố định có hàng rào chưa (doc_viec)',
+       case when coalesce((select qual from pg_policies
+                            where tablename='viec_co_dinh' and policyname='doc_viec'), '')
+                 not like '%la_member%'
+            then '🔴 CHƯA CHẠY — chạy nang-cap-rls-viec-co-dinh.sql'
+            else '✅ có' end
+union all
+-- Không phải câu hỏi "đã chạy chưa" mà là câu hỏi "có đi quá tay chưa". Tracy
+-- chốt 07/09: bảng đo mở cho MỌI cấp. `ket_qua_ngay` có một vế `exists` đứng
+-- trên `nhip`, nên hễ ai siết `doc_nhip` là dải 💎🪨💩 của người ngoài khối biến
+-- mất khỏi bảng đo của Member — mà không màn nào báo lỗi.
+select 'ranh giới: bảng đo KHÔNG được cắt theo cấp (doc_nhip · doc_songay)',
+       case when coalesce((select qual from pg_policies
+                            where tablename='nhip' and policyname='doc_nhip'), '')
+                 like '%la_member%'
+             or coalesce((select qual from pg_policies
+                            where tablename='so_ngay' and policyname='doc_songay'), '')
+                 like '%la_member%'
+            then '🔴 ĐÃ SIẾT — ket_qua_ngay đứng trên nhip, bảng đo của Member nay lệch số. Xem G-01.aq'
+            else '✅ chưa ai siết, đúng ranh giới' end
+union all
+-- TRI-148. Hỏi bằng DANH MỤC QUYỀN, không bằng chuỗi: `has_function_privilege`
+-- trả lời đúng cả khi quyền đến từ PUBLIC. Chỉ hỏi hai vai CÓ THẬT — `public`
+-- không phải một vai, hỏi nó là ném lỗi và làm chết cả bảng.
+select 'cửa tra cứu ai-gánh-dự-án-nào đã bịt chưa (la_thanh_vien_du_an)',
+       case when to_regprocedure('public.la_thanh_vien_du_an(bigint, uuid)') is null
+            then '⬜ chưa có hàm — kho chưa chạy nang-cap-mang-du-an.sql'
+            when has_function_privilege('anon', 'public.la_thanh_vien_du_an(bigint, uuid)', 'execute')
+              or has_function_privilege('authenticated', 'public.la_thanh_vien_du_an(bigint, uuid)', 'execute')
+            then '🔴 CÒN MỞ — ai cầm khoá công khai cũng dò ra trọn bảng thanh_vien_du_an. Chạy nang-cap-bit-cua-tra-cuu-du-an.sql'
+            when to_regprocedure('public.toi_o_du_an(bigint)') is null
+            then '🔴 ĐÃ RÚT QUYỀN NHƯNG THIẾU CỬA MỚI — năm policy sẽ ném permission denied. Chạy trọn nang-cap-bit-cua-tra-cuu-du-an.sql'
+            else '✅ đã bịt, và cửa mới toi_o_du_an có mặt' end;
 
 
 -- ─── ③ BỐN TỆP KHÔNG THUỘC SỔ ──────────────────────────────────────────────

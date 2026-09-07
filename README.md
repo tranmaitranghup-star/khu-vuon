@@ -24,7 +24,7 @@ Lõi một câu của cả sản phẩm: **biến cam kết thành kết quả.*
 
 > ### 🔑 Đọc trước khi bấm link
 >
-> App thật chạy ở **`https://rovatinhthuc.tranmaitrang-hup.workers.dev`**, nhưng cửa vào là Google OAuth đối chiếu **danh sách trắng email**. Người ngoài mở link sẽ bị chặn ở màn đăng nhập — **đó là app đang chạy đúng, không phải app hỏng.**
+> App thật chạy ở **[tinhthuc.rovateam.com](https://tinhthuc.rovateam.com)** — tên miền riêng, sống từ 06/09/2026; địa chỉ cũ [rovatinhthuc.tranmaitrang-hup.workers.dev](https://rovatinhthuc.tranmaitrang-hup.workers.dev) vẫn chạy song song làm cửa dự phòng. Cửa vào là Google OAuth đối chiếu **danh sách trắng email**. Người ngoài mở link sẽ bị chặn ở màn đăng nhập — **đó là app đang chạy đúng, không phải app hỏng.**
 >
 > Muốn xem bên trong thì có ba đường: đọc `spec.md` (bảy mục, bản mô tả sản phẩm) · mở `kien-truc-app.html` bằng trình duyệt (sơ đồ kiến trúc, không cần chạy gì) · hoặc dựng một bản của riêng mình theo mục *Chạy tại máy* bên dưới.
 >
@@ -317,12 +317,12 @@ Dựng bản đầy đủ thì cần một project Supabase: chạy `schema.sql`
 
 ## Bản đồ kho
 
-**200 tệp, 10 MB** — và gần như tệp nào cũng đáng đọc. Kho này không mang theo tài nguyên hình ảnh, nên thứ còn lại đều là mã, tài liệu, hoặc bài thử:
+**223 tệp, 11 MB** — và gần như tệp nào cũng đáng đọc. Kho này không mang theo tài nguyên hình ảnh, nên thứ còn lại đều là mã, tài liệu, hoặc bài thử:
 
 | Nơi | Số | Là gì |
 |---|---:|---|
 | `public/` | 34 | **Toàn bộ thứ chạy được.** `index.html` là app; `vendor/` giữ thư viện và font, **0 tên miền ngoài** |
-| gốc kho | 166 | **87** tệp `.sql` (một tệp = một lần nâng cấp cơ sở dữ liệu, đọc theo thứ tự là thấy cả lịch sử thiết kế) · **59** bài thử · **10** tệp `.md` tài liệu · 10 tệp sơ đồ, cấu hình và script |
+| gốc kho | 189 | **103** tệp `.sql` (một tệp = một lần nâng cấp cơ sở dữ liệu, đọc theo thứ tự là thấy cả lịch sử thiết kế) · **66** bài thử · **10** tệp `.md` tài liệu · 10 tệp sơ đồ, cấu hình và script |
 
 Mười tệp tài liệu: `spec.md` · `DOC-TRUOC.md` · `CAU-TRUC-APP.md` · `BAN-DO-INDEX.md` · `ho-so-khu-vuon-cho-ai.md` · `giai-phap-khu-vuon-tinh-thuc.md` · `HUONG-DAN-TRIEN-KHAI.md` · `dac-ta-van-de-lien-phong.md` · `LUAT-LAN.md` · `DANG-LAM.md`.
 
@@ -332,7 +332,7 @@ Ba thứ **cố ý không có trong kho này**: bộ ảnh sprite nông trại (
 
 ## Bộ thử
 
-**59 bài thử — đạt 58/59, và không bài nào chết lúc khởi động.**
+**66 bài thử — đạt 66/66, và không bài nào chết lúc khởi động.**
 
 ```
 ./chay-bo-thu.sh              # chạy trọn 59 bài, in "đạt x/59"

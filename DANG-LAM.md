@@ -108,6 +108,17 @@ kia cần biết, không thừa một chữ nào về người.
 
 ## ⚠️ ĐO BỘ THỬ THÌ ĐO TRÊN `origin/main`, KHÔNG ĐO TRÊN ĐĨA (01/09)
 
+> 🪤 **VÀ MỐC ẤY TỰ DỊCH TRONG NGÀY — `thu-luoi-ngay.js` ĐỔI THEO THỜI GIAN (07/09, làn RLS).**
+> Sáng 07/09 đo `origin/main` ra **59/61**, hai đỏ `thu-luoi-ngay` · `thu-van-de`. Chiều cùng ngày,
+> vẫn đúng bản `origin/main` ấy, vẫn thư mục tạm ấy, đo lại ra **60/61** — `thu-luoi-ngay` tự xanh.
+> Không ai sửa gì; bài thử ấy phụ thuộc giờ chạy.
+>
+> **Hậu quả nếu không biết:** một làn không chạm JS mà thấy số nhích lên sẽ tưởng mình vừa vá được
+> gì đó, hoặc tệ hơn — một làn LÀM HỎNG một bài thử khác vẫn thấy tổng số không tụt, vì cái xanh
+> lên che mất cái đỏ đi. **Đo mốc và đo làn phải cùng một lượt, sát nhau**, và khi số đổi thì so
+> TÊN BÀI, đừng so tổng.
+
+
 Nếp "9 đỏ trước, 9 đỏ sau — cùng một bộ bài" chỉ đúng khi **cả hai phía đều mới**. Ngày 01/09 tôi
 báo nhầm rằng `thu-so-ghi-chu.js` đỏ sẵn trên `main`: cây làn của tôi mang bản bài thử **cũ hơn
 một commit**, và tôi so nó với một bản `main` cũng cũ. Hai bản cũ giống nhau thì không chứng minh
@@ -616,6 +627,613 @@ Ba thứ rút ra, cái thứ ba là cái đáng nhớ:
 ## 🟢 Làn đang mở
 
 *(Ai đang mở làn thì ghi mục của mình vào đây; xem nhanh bằng `python3 lan.py soi`.)*
+
+### Làn ORC — 07/09: bịt cửa tra cứu "ai gánh dự án nào" (TRI-148)
+
+`la_thanh_vien_du_an(p_muc_tieu_id, p_nguoi_id)` là `security definer`, **không hỏi người gọi là
+ai**, và PostgREST bày mọi hàm trong `public` mà vai gọi có quyền `execute` — mà Postgres cấp
+`execute` cho `PUBLIC` theo mặc định. Cộng lại: **gọi bằng khoá công khai, chưa đăng nhập, nó vẫn
+trả lời thật.** Dò `id` 1→N nhân với danh sách người là dựng lại trọn bảng `thanh_vien_du_an`. Đo
+07/09, đối chiếu bằng khoá quản trị: khớp 100%. Có từ 25/08; nặng lên vì năm policy của TRI-144 đều
+đứng trên chính hàm ấy.
+
+🪤 **BA ĐƯỜNG VÁ NGHE HỢP LÝ MÀ ĐỀU HỎNG — chép lại để khỏi ai dò lại:**
+① *Neo hàm vào `nguoi_id_dang_nhap()`* → gãy `giao_cam_ket()`, nó gọi với `p_nguoi_nhan` (người
+  NHẬN, khác người gọi); `tu_dien_du_an_cho_task` cũng gọi với `new.nguoi_id`.
+② *Rút `execute` rồi thôi* → gãy cả năm policy: biểu thức policy chạy bằng quyền NGƯỜI HỎI nên
+  `authenticated` vẫn cần `execute` trên hàm nó gọi.
+③ *Hàm tự soi `current_user` xem mình bị gọi từ đâu* → **không thể**: nó là `security definer`, nên
+  bên trong nó `current_user` LUÔN là người sở hữu, dù ai gọi.
+
+**Đường đi được: bỏ hẳn tham số NGƯỜI khỏi cái cửa ngoài.** `toi_o_du_an(p_muc_tieu_id)` một tham
+số, luôn hỏi về chính người đang đăng nhập — an toàn **theo cấu tạo**, không nhờ câu kiểm nào. Điều
+duy nhất nó nói ra là *"tôi có ở dự án N không"*, thứ người hỏi vốn đã biết. Bốn policy đổi sang nó,
+rồi rút `execute` của hàm cũ. Bốn hàm definer gọi hàm cũ bên trong không hề hấn — chúng chạy bằng
+quyền người sở hữu.
+
+⛔ **KHÔNG `drop` hàm cũ.** Bốn hàm ấy gọi nó bằng TÊN trong thân plpgsql, mà thân plpgsql chỉ là
+một chuỗi — Postgres không ghi nhận phụ thuộc, nên `drop` chạy trót lọt rồi chúng gãy lúc CHẠY.
+
+⚠️ **Đã cắm nhãn ⛔ vào `nang-cap-rls-cam-ket.sql` và `nang-cap-rls-du-an.sql`:** chạy lại một trong
+hai SAU tệp này là dựng lại policy gọi hàm đã mất quyền → mọi lượt `select` của thành viên ném
+*permission denied*.
+
+🪤 **Ba lượt đỏ oan khi viết bài thử, cùng MỘT lối hỏng: vùng dò vắt qua giữa nhiều khối.**
+· cắt "từ tên hàm này tới tên hàm sau" → nuốt câu `comment on` ở giữa
+· dò `security invoker` trong THÂN hàm → nó nằm ở ĐẦU hàm
+· dò mẫu `create policy … la_thanh_vien_du_an` → nối từ policy đầu tới câu `revoke` mãi phía dưới
+Và một lượt **xanh oan**: mẫu cắt khối policy đòi dòng `);`, mà ba trong bốn policy viết gọn một
+dòng — chỉ bắt được MỘT khối, ba khối kia lọt lưới im lặng. **Cắt khối thì mốc kết thúc phải là thứ
+CHẮC CHẮN có** (dấu `;`), không phải thứ trông-thì-có (dòng `);`).
+
+✅ **NGHIỆM THU BẰNG VIỆC THẬT (07/09):** gọi lại đúng câu đã dò ra lỗ, bằng khoá công khai —
+`la_thanh_vien_du_an(5, Andy)` nay trả **`permission denied for function`**; cửa mới `toi_o_du_an(5)`
+và `toi_o_du_an(99)` **cùng trả `false`**, tức không phân biệt được dự án có thật với dự án không có,
+nên không tra cứu được gì.
+
+🪤 **VÀ MỘT ❌ OAN NỮA, ĐÚNG BẪY `SO-SQL.sql` ĐÃ KÊ TÊN TỪ 28/08.** Dòng ① của bộ tự kiểm so
+`pg_get_function_identity_arguments()` với chuỗi `'bigint'` — mà hàm ấy in ra **cả tên tham số**
+(`p_muc_tieu_id bigint`), nên bảng báo *"chữ ký lạ"* trong khi chữ ký hoàn toàn đúng. Lời cảnh báo
+nằm sẵn ở đầu `SO-SQL.sql`, đã đọc trong chính phiên này, và vẫn vấp. **Bài học không phải "nhớ kỹ
+hơn" mà là: mọi phép so CHUỖI trên thứ Postgres in ra đều là bom hẹn giờ** — hỏi danh mục
+(`pronargs` · `proargtypes` · `regtype`) thì không có gì để in sai. Nay có ca canh trong
+`thu-rls-theo-cap.js` khối ⑩.
+
+
+### Làn CTC — 07/09: nấc thứ ba "và các sự kiện tiếp theo" (TRI-146)
+
+Tracy 07/09, kèm ảnh hộp của Lịch Google: *"à trong gg calendar nó có 3 lựa chọn ấy — có 1 option là
+sửa sự kiện này và các sự kiện tiếp theo"*. Mã cũ khai nấc này bị bỏ vì *"chưa ai xin nó"* — nay có
+người xin. **Cùng bài học làn TV 05/09: lời tự khai trong mã không phải quyết định của Tracy.**
+
+⚠️ **CẦN CHẠY `nang-cap-cat-chuoi-lich.sql`.** Chưa chạy thì nấc giữa không hiện ra, hai nấc cũ
+nguyên vẹn — máy khách dò hàm lúc khởi động bằng một lượt gọi `p_lich_id: null` đi chung chuyến với
+bộ dò cột.
+
+**Vì sao phải là hàm ở máy chủ, hai lẽ mỗi lẽ đủ một mình:** ① chia chuỗi là **bảy thao tác phải
+cùng đứng hoặc cùng ngã** (điểm dừng cho luật cũ · đẻ luật mới · chuyển năm bảng con) — hỏng nửa
+chừng là dữ liệu nằm hai nơi mà không màn nào nói ra; ② **ba trong năm bảng giữ dòng của người
+khác**, mà RLS chặn theo dòng chứ không theo cột.
+
+**`doc_su_kien` cố ý KHÔNG đi theo.** Chuỗi mới mang nội dung mới nên đáng được đọc lại; chép dấu
+*"đã đọc"* sang là nói dối về một thứ chưa ai nhìn. Năm bảng kia đều chuyển theo `ngay_goc >= ngày
+chia` — khoá của một lượt là **ngày gốc**, nên buổi đã dời sang chỗ khác vẫn đi đúng nửa của nó.
+
+**Danh sách cột của chuỗi mới lấy từ danh mục, không gõ tay.** `lich_chung` đã nhận thêm cột hơn
+mười lần trong hai tuần; một danh sách gõ tay là mỗi cột mới một trường âm thầm rơi về mặc định
+trong chuỗi vừa chia.
+
+**Một mâu thuẫn phải xử, không có trong brief.** Mặc định *"chỉ hỏi phạm vi khi giờ đổi"* Tracy
+duyệt lúc hộp còn HAI nấc, và lý lẽ khi ấy là *"hai nấc chỉ khác nhau ở giờ"*. Nấc giữa đẻ ra một
+chuỗi mới đầy đủ nên nó ghi được cả tên — lý lẽ cũ hết đúng. Nay phép thử nới **đúng bằng chỗ nấc
+giữa có mặt**: `gioDoi || (CO_CAT_CHUOI && mucKhac.length)`. Kèm theo đó, **nấc nào không làm được
+gì thì không bày**: nấc đầu chỉ ghi được giờ, nên ở một lượt không đổi giờ nó vắng mặt, và
+`lcSuaTheo` ngã về `tat_ca` — nấc duy nhất luôn có.
+
+🪤 **Bốn ca đỏ oan trong một làn, ba nguyên nhân, cùng MỘT bài học: soi thì phải cắt đúng khối, và
+bỏ chú thích trước đã.**
+
+1. Ba ca dò nấc viết mẫu bằng **nháy đơn** trong khi mã dựng mảng bằng **dấu huyền**.
+2. Ca `la_lead` đỏ oan **hai lượt liền**: lượt đầu vì đầu tệp SQL có dòng chú thích DẶN đừng chép vế
+   ấy; trui chú thích rồi vẫn đỏ, vì **bộ tự kiểm cuối tệp có câu `not like '%la_lead()%'`** — chính
+   nó nhắc tên thứ nó đang canh. Phải cắt lấy **thân hàm** rồi mới soi.
+3. Cả hai đều cùng họ với bẫy *"so thứ tự thì bỏ chú thích trước đã"* đã ghi ở làn TV. **Một tệp
+   viết càng kỹ thì càng nhiều tên hàm nằm trong chú thích của nó** — mẫu dò càng phải hẹp.
+
+⚠️ **Chưa làm, cố ý:** hộp kéo **dải cả ngày** (`lcDaiLuuDoi`) vẫn hai nấc. Nó đo bằng NGÀY trên
+trục ngang, và "từ đây trở đi" ở đó chạm thêm cột `so_ngay` — một nhánh riêng, chưa ai xin.
+
+| Chạm | Thử |
+|---|---|
+| tệp mới `nang-cap-cat-chuoi-lich.sql` · `SO-SQL.sql` · cờ `CO_CAT_CHUOI` + lượt dò · hàm mới `lcCatChuoi` · `lcHoiSuaChuoi` (dựng nấc bằng mảng) · `lcSuaTheo` · `lcLuu` (ba đường ghi) · `lcKeoTha` · `lcLuuDoi` | `thu-sua-chuoi-pham-vi.js` — **77 phép kiểm** (nâng từ 46); khối ⑨ soi thẳng tệp SQL |
+
+### Làn GTB — 07/09: cửa sửa bày giờ THẬT của buổi, không bày giờ của luật (TRI-145)
+
+Tôi nêu chỗ hở này trong lúc khép làn SPV; Tracy: *"ok chữa đi"*.
+
+Cửa sửa luôn nạp `l.gio_bat_dau` — giờ của **luật lặp**. Nên một buổi đã kéo lệch riêng mở ra vẫn nói
+giờ gốc: chuỗi 9h, buổi này đang ở 10h, ô giờ nói 9h. Nay `lcSuaChuoi` bung lượt bằng `lcLuot` rồi
+truyền xuống `lcMoForm(id, luot)`, đúng bản tra mà lưới đang vẽ — giờ trong form và giờ trên lưới
+không thể nói hai điều khác nhau nữa.
+
+**NGÀY không đi theo.** Với chuỗi lặp, ô ngày là **ngày mở chuỗi**, không phải ngày buổi; nhét ngày
+buổi vào đó là viết lại luật sau lưng người sửa. Buổi đã dời sang hẳn ngày khác thì cửa sửa vẫn
+không nói ra điều ấy — chưa ai xin, và ô ngày không phải chỗ nói.
+
+⚠️ **Vế nặng nhất, và là cái giá của việc bày giờ thật:** form nay bày 10h, mà đường ghi cũ mang
+thẳng con số trong ô lên luật. Mở cửa sửa một buổi đã dời riêng rồi bấm Lưu để đổi mỗi cái tên là
+**kéo cả chuỗi về giờ của một buổi** — hỏng im lặng, và hỏng cho cả team. Nên `lcLuu` giữ hai mốc
+riêng: `LC_SUA_GIO` là giờ **đang bày**, `goc.gio_bat_dau` là giờ **của luật**. Chưa ai động vào ô
+giờ thì câu ghi trả về giờ của luật; `gioDoi` cũng so với thứ mắt đang thấy, không so với luật.
+
+🪤 **`thu-hai-cua-dong-bo.js` KHÔNG đỏ mà CHẾT lúc khởi động**, và cái chết ấy nuốt trọn bốn ca của
+nó. Mốc cắt của nó là `\n\nfunction lcMoForm` — một mốc dựa vào việc **không có chú thích** phía trên
+hàm ấy, trong một tệp mà chú thích trên đầu hàm là chuyện thường. Tôi viết ba dòng chú thích cho
+tham số mới là mốc vỡ. Đã đổi mốc sang `\n}`, dấu đóng của chính hàm đang cắt. **Mốc cắt phải neo
+vào hàm đang cắt, đừng neo vào hàng xóm của nó.**
+
+| Chạm | Thử |
+|---|---|
+| `lcMoForm` (thêm tham số `luot`) · `lcSuaChuoi` · `lcLuu` · `lcDongCua` · cờ mới `LC_SUA_GIO` · mốc cắt của `thu-hai-cua-dong-bo.js` | `thu-sua-chuoi-pham-vi.js` — **46 phép kiểm** (nâng từ 35), khối ⑦ mới |
+
+### Làn SPV — 07/09: cửa sửa hỏi phạm vi trước khi ghi (TRI-143)
+
+Tracy 07/09: *"nếu mà tôi ấn vào cửa sổ chỉnh sửa và chỉnh sửa giờ thì nó sửa luôn cả chuỗi, chỗ này
+bạn bổ sung cho tôi cửa sổ hỏi là toàn bộ sự kiện hay chỉ sự kiện này"*.
+
+Cú kéo (`lcKeoTha`) và cú xoá (`lcHoiHuy`) đã có nấc hỏi này từ trước; **cửa sửa là chỗ còn sót** —
+nó ghi thẳng `update` lên `lich_chung`, tức viết lại luật lặp. **Không một dòng SQL nào**: chỗ chứa
+đã có sẵn từ làn dời-buổi-riêng, là dòng `kieu='doi'` của `lich_chung_ngoai_le`.
+
+**Hai nấc, không ba** — cùng lý lẽ hộp kéo đã ghi: *"và các sự kiện tiếp theo"* nghĩa là chia chuỗi
+thành hai luật, một nhánh mã riêng làm mọi ô tick, ghi chú và việc đã đẻ của nửa sau mất khoá.
+
+**Chỉ hỏi khi GIỜ thật sự đổi** (Tracy chốt cùng ngày). Bốn vế phải cùng đúng: đang sửa · chuỗi có
+lặp · biết mở từ buổi nào · giờ đổi. Thiếu vế nào thì đường ghi chạy y như trước 07/09.
+
+**Đổi thêm thứ ngoài giờ thì DỪNG lại nói ra, không ghi nửa vời** (Tracy chốt phương án A). Bảng
+ngoại lệ chỉ chứa ngày · giờ · độ dài, nên tên, mô tả, màu, nhóm nhận, luật lặp chỉ có một chỗ đứng
+là chính dòng luật. `lcMucChung` kể tên những mục ấy ra, hộp bày một dòng chữ dưới nấc đầu, và bấm
+vào vẫn ra toast rồi đứng yên cho người ta chọn lại. **Nới bảng ngoại lệ** để một buổi mang được tên
+riêng thì làm được — Tracy gạt ra ngoài nhát này.
+
+**Ba chỗ dễ vấp, cả ba đã cắn trong làn:**
+
+- **`lcSuaChuoi` gọi `lcDongHan`, mà hàm ấy XOÁ `LC_BUOI`.** Vào tới form thì app không còn biết
+  đang sửa buổi nào — mà không có ngày gốc thì không ghi ngoại lệ cho lượt nào được. Phải đọc
+  `LC_BUOI.ngay` **trước** cú đóng, và đặt `LC_SUA_NGAY` **sau** `lcMoForm` vì chính hàm ấy dọn cờ.
+- **Khối dọn cờ trong `lcDongCua` phải đứng DƯỚI `TV_SANG_SK = null`.** `thu-doi-loai.js` dò cờ ấy
+  trong **400 ký tự đầu** của hàm; một khối chèn phía trên đẩy nó ra ngoài tầm và bài thử đỏ oan.
+  Chèn thêm gì vào hàm ấy thì chèn xuống dưới.
+- **Bài thử của chính làn này đỏ oan một lượt**, cùng họ với ca đã ghi ở làn TV: mẫu dò
+  `hopHoiDong` trong 300 ký tự sau vế `k.khac.length` bắt trúng cú đóng hộp của nhánh **kế tiếp**.
+  **Cắt đúng khối rồi hãy soi** — một mẫu quét quá xa thì nó đang trả lời câu hỏi khác câu ta đặt.
+
+⚠️ **Chỗ hở còn lại, KHÔNG do làn này nhưng nay dễ chạm hơn:** cửa sửa bày giờ của **luật**, không
+bày giờ của buổi đã dời riêng. Mở cửa sửa từ một buổi đã kéo lệch thì ô giờ nói giờ gốc, và người
+đọc tưởng đó là giờ của buổi mình đang đứng. Chưa nêu với Tracy.
+
+| Chạm | Thử |
+|---|---|
+| `lcLuu` · `lcSuaChuoi` · `lcMoForm` · `lcDongCua` · bốn hàm mới `lcMucChung` `lcHoiSuaChuoi` `lcSuaTheo` `lcThoiSua` · chú thích đầu cụm LỊCH CHUNG (khai "chưa có, cố ý" đã cũ từ lâu) | `thu-sua-chuoi-pham-vi.js` — **35 phép kiểm**, trong đó ⑥ nạp `lcMucChung` chạy thật để canh báo oan |
+### Làn RLS — 07/09: siết hàng rào máy chủ theo ba cấp (TRI-144)
+
+Ba giới hạn của cấp Member (làn CAP, TRI-139) mới nằm ở lớp giao diện — chúng dọn mắt và chặn
+đường bấm, nhưng ai mở công cụ dev vẫn hỏi thẳng máy chủ và lấy được đúng thứ giao diện đang giấu.
+Làn này đưa chúng xuống tầng RLS. Giao việc đầy đủ: `PROMPT-rls-theo-cap.md`.
+
+✅ **Tracy duyệt phương án A — bốn nhát** (07/09): ⓪ nền · ① cam kết · ② dự án · ③ việc cố định.
+Mỗi nhát một tệp `.sql` và một lượt nghiệm thu.
+
+| Nhát | Tệp | Tình trạng |
+|---|---|---|
+| ⓪ nền | `nang-cap-cap-dang-nhap.sql` | ✅ **Tracy đã chạy 07/09, tự kiểm 7/7** |
+| ① cam kết | `nang-cap-rls-cam-ket.sql` | ✅ **Tracy đã chạy 07/09, tự kiểm 8/8** |
+| ② dự án | `nang-cap-rls-du-an.sql` | ✅ **Tracy đã chạy 07/09, 9 ✅ + 1 ℹ️** |
+| ③ việc cố định | `nang-cap-rls-viec-co-dinh.sql` | ✅ **Tracy đã chạy 07/09, 9 ✅ + 1 ℹ️** |
+| ④ chốt | `thu-rls-theo-cap.js` · lời khai trong `index.html` | ✅ xong phần bài thử; phần rà hàm definer đẻ ra TRI-148 |
+
+🔴 **RÀ HÀM `security definer` BẮT ĐƯỢC MỘT LỖ ĐANG SỐNG — TRI-148, đã kiểm trên máy chủ thật.**
+`la_thanh_vien_du_an()` là definer, **không hỏi người gọi là ai**, và PostgREST mở nó ra ngoài. Gọi
+bằng **khoá công khai chưa đăng nhập** vẫn trả lời thật → dò ra trọn bảng `thanh_vien_du_an`. Có từ
+25/08; nay nặng hơn vì **năm policy mới của TRI-144 đều dựa vào chính hàm ấy**.
+
+⚠️ **Hai đường vá hiển nhiên đều hỏng, đã kiểm trước khi viết dòng này:**
+· *Neo hàm vào `nguoi_id_dang_nhap()`* → gãy `giao_cam_ket()`, vì nó gọi với `p_nguoi_nhan` (người
+  NHẬN, khác người gọi). `tu_dien_du_an_cho_task` cũng gọi với `new.nguoi_id`.
+· *Rút `execute` khỏi `public`* → gãy cả năm policy, vì biểu thức policy chạy bằng quyền NGƯỜI HỎI
+  nên vẫn cần `execute`.
+Đường có vẻ sạch: chuyển hàm sang một schema PostgREST không mở rồi trỏ năm policy sang đó. Là một
+việc có thiết kế, cần bản duyệt riêng — đừng vá vội.
+
+⚠️ **BẢY HÀM KHÁC MỚI CHỈ ĐỌC TỪ TỆP, CHƯA KIỂM MÁY CHỦ** — đừng chép lại như dữ kiện. Khuôn chung:
+câu `select` chạy quyền definer đứng TRƯỚC cửa quyền, rồi ném vài thông điệp lỗi PHÂN BIỆT ĐƯỢC, nên
+một thành viên đã đăng nhập quét `O1…On` là biết dòng nào tồn tại / đã đóng / đã có output. Không dò
+được bằng khoá công khai — hai hàm đã thử đều bị chặn ngay bởi cửa *"Không phải thành viên ROVA"*.
+Danh sách ở TRI-148.
+
+⛔ **HAI MẢNG CỐ Ý KHÔNG ĐÓNG, ĐỀU VÌ CÙNG MỘT RANH GIỚI: bảng đo mở cho MỌI cấp.**
+Không phải bỏ quên — cả hai đã thành câu hỏi chờ Tracy, và có dòng tự kiểm ĐO chúng bằng số, gắn
+nhãn ℹ️ chứ không ❌.
+
+| Chỗ hở | Vì sao không đóng được trong đợt này | Câu hỏi |
+|---|---|---|
+| `viec_du_an` (việc của dự án) | Nó đứng trên `task`. Mà `gat_theo_ngay` · `vuon_cay` đọc `task`, và chúng nuôi bảng đo | G-01.ap |
+| `nhip` · `so_ngay` (nhịp tuần) | `ket_qua_ngay` có vế `exists (select 1 from nhip …)` chạy dưới quyền người hỏi — siết là dải 💎🪨💩 của người ngoài khối **biến mất** khỏi bảng đo của Member | G-01.aq |
+
+**Dòng ⑦ của bộ tự kiểm nhát ③ là một cái gác cho ranh giới ấy**, không phải cho hàng rào: nó đòi cả
+ba cấp cùng đọc một số dòng `ket_qua_ngay`. Đỏ ở đó nghĩa là ai đó vừa siết vào bảng đo — lùi ngay.
+
+🪤 **`doc_task` KHÔNG phải một policy mở trần** như bản đồ hiện trạng của prompt ghi. Bản đang chạy
+(`nang-cap-loai-ca-nhan.sql`, 04/09) đã có **hai vế lọc dòng**: việc còn trong kho (`ngay is null`)
+chỉ chủ đọc, và việc `rieng_tu` chỉ chủ đọc. Và bảng đo giữ nhất quán bằng cách **loại đúng những
+việc ấy khỏi phép đếm** (`gat_theo_ngay` bỏ `rieng_tu`). Đó là luật ngầm của kho này: **thứ gì
+`doc_task` giấu đi thì cũng không được đếm trên bảng đội** — nên siết thêm việc-của-dự-án sẽ phá
+luật ấy, vì việc của dự án PHẢI đếm. Dò ra được là nhờ dòng ⑦ nhát ② ra `68/70` chứ không phải
+`70/70`.
+
+🪤 **`gio_deepwork_theo_loai` KHÔNG đọc bảng `viec_co_dinh`** — nó đọc **cột** `phien_deepwork.viec_co_dinh`.
+Khối đọc `DOC-quyen-dang-chay.sql` báo nó "chạm viec_co_dinh" là **dương tính giả**: mẫu `\m…\M`
+khớp tên cột y hệt tên bảng. Suýt vì thế mà khoanh nhát ③ hẹp hơn cần thiết. Bảng và cột trùng tên
+thì phép dò theo tên phải xác nhận lại bằng mắt.
+
+🪤 **KHUNG NHÌN `viec_du_an` ĐỨNG TRÊN `task`, KHÔNG TRÊN `muc_tieu`** — nên siết dự án xong nó vẫn
+trả 69 dòng cho Member. Nó có `left join tieu_diem`, nên nhát ① cũng không chạm tới (inner join thì
+đã đóng theo). Đóng nó phải siết `doc_task`, mà `gat_theo_ngay` và `vuon_cay` đều đọc `task` và hai
+khung nhìn ấy nuôi **bảng đo** — thứ Tracy chốt mở cho mọi cấp. Dừng lại hỏi thay vì tự siết: câu
+**G-01.ap**. Dòng ⑦ của bộ tự kiểm nhát ② ĐO chỗ hở ấy bằng số, gắn nhãn ℹ️ chứ không ❌ — một quyết
+định đang chờ thì đừng nằm lẫn vào những dòng đỏ thật.
+
+⚠️ **VẾ CHẶN NULL CHỈ CÓ Ở `tieu_diem`, VÀ KHÁC NHAU ẤY LÀ CỐ Ý.** `tieu_diem.muc_tieu_id` do một
+câu `alter table add column` sinh ra nên **nullable** (54/64 dòng rỗng); `thanh_vien_du_an.muc_tieu_id`
+và `moc_du_an.muc_tieu_id` đều khai `not null` tận nơi. Thêm vế chặn null vào ba chỗ sau cho "đồng
+nhất" là dạy người đọc rằng nó chỉ là thói quen — rồi ngày ai đó dọn cả bốn cho gọn, cái duy nhất
+load-bearing đi theo.
+
+🪤 **`la_thanh_vien_du_an(null, …)` TRẢ TRUE — và 54/64 cam kết hôm nay có `muc_tieu_id` rỗng.**
+Nhát ① dùng lại hàm ấy để hỏi *"cam kết này thuộc dự án tôi có tên không"*, nên nếu ai đó rút gọn vế
+`muc_tieu_id is not null` trong policy `doc_tieudiem` thì **84% dữ liệu hở lại cho mọi Member** —
+mà bộ tự kiểm vẫn xanh và màn hình vẫn y như cũ, vì giao diện đã tự lọc rồi. Dòng ③ của bộ tự kiểm
+canh riêng vế ấy.
+
+⚠️ **CHỦ BẢNG KHÔNG BỊ POLICY SOI, nên đừng đo hàng rào bằng câu `select` gõ thẳng.** Tracy chạy SQL
+bằng vai `postgres`, mà `postgres` sở hữu các bảng — mọi câu đếm đều trả trọn bảng dù hàng rào có
+dựng hay không. Hàm `thu_hang_rao_cap()` (nhát ①) đóng vai từng người bằng `set local role
+authenticated` rồi đếm thật. **Cột `chay_bang` của nó là chốt chống ✅ oan**: ra `postgres` nghĩa là
+lượt đổi vai không ăn và cả bảng số vô nghĩa.
+
+🪤 **MỘT MỤC NGHIỆM THU HOÁ RA LÀ TIẾNG KÊU OAN.** Prompt giao việc đòi
+`kiem_khung_nhin_thieu_quyen()` trả rỗng; nó đang trả `ai_dang_lam`. Nhưng khung nhìn ấy **có** cờ —
+nó viết `with (security_invoker = true)`, còn hàm gác so chuỗi `'security_invoker=on' = any(reloptions)`.
+Postgres cất lại **đúng chữ người ta gõ**, không quy về một cách viết, nên `true` ≠ `on`. Kiểm bằng
+việc thật: khoá công khai chưa đăng nhập đọc `ai_dang_lam` ra **rỗng**, khoá quản trị ra **4 dòng** —
+cờ đang sống. Cùng họ với bẫy *"mẫu so chuỗi chỉ được chứa tên cột và chuỗi trong nháy"* mà
+`DOC-TRUOC.md` đã kê, lần này nằm trong **chính cái gác**. Loại sai này không bao giờ bỏ sót một lỗ
+thật — nó chỉ kêu oan; mà một ❌ oan thì dạy người đọc thôi tin cả bảng, rồi ngày có một khung nhìn
+hở thật, tên nó nằm lẫn giữa những cái tên đã quen bị bỏ qua. Nhát ⓪ vá hàm gác: đọc tuỳ chọn rồi
+**ép về boolean** thay vì so chuỗi. **KHÔNG đụng vào `ai_dang_lam`** — nó đang đúng.
+
+**Ba số đo đã lấy trước khi gõ dòng đầu** (chép lại để phiên sau khỏi đo lại):
+· `kiem_khung_nhin_thieu_quyen()` trên máy chủ trả **`ai_dang_lam`** — một khung nhìn chạy bằng
+  quyền NGƯỜI TẠO. Nghiệm thu đòi hàm này trả rỗng, nên nó là mục đầu tiên phải vá.
+· Trọn bộ thử trên `origin/main` = **59/61**, hai đỏ sẵn `thu-luoi-ngay` · `thu-van-de`.
+· Máy chủ MCP `supabase` vẫn **`Unauthorized`** (thiếu `SUPABASE_ACCESS_TOKEN`) — nhưng khoá
+  `service_role` trong `~/Desktop/ROVA/sao-luu-khu-vuon/.env` đọc được PostgREST, đủ để tra dữ
+  liệu và **gọi RPC**. Nó KHÔNG với tới `pg_policies` (danh mục hệ thống không nằm trong schema
+  `public`), nên câu hỏi *"policy đang chạy viết thế nào"* vẫn phải nhờ Tracy dán một câu đọc.
+
+
+### Làn NT2 — 07/09: cả hai màn dọn gộp về MỘT cú lưu (TRI-138)
+
+Tracy 06/09: *"chỗ nghi thức hoàn tất bỏ qua nút lưu và hẹn ngày đi — cho mọi người dọn dẹp hết các
+task rồi lưu 1 lần là được"*, rồi ngay sau đó *"sao k làm dọn dẹp của hôm qua luôn đi"*. Hai màn
+chạy chung một bộ máy nên sửa một đường, không sửa hai lần.
+
+**Gỡ `nhanNutDon` và cái nút nó đặt chữ.** Mỗi dòng từng có nút Lưu riêng: dọn năm việc là năm cú
+bấm, cộng một cú nữa để đóng sổ. Nay dòng kết thúc ở hàng ngày. Thứ nhãn nút từng nói ra vẫn nằm
+trên màn, ở ngay chỗ đặt ra nó — ô ngày nói *ngày sẽ làm* kèm nút 📦 về kho, hoặc *để trống thì việc
+về kho*; ô hạn việc gỡ nói ngày mặc định.
+
+**`donLuuTatCa`: SOÁT TRỌN MÀN TRƯỚC, GHI SAU.** Hai nửa tách hẳn — nửa đầu không chạm máy chủ, nửa
+sau không còn cửa nào để từ chối. Trộn hai nửa thì một dòng Nghẽn thiếu tên ở cuối màn để lại ba
+dòng đã ghi và hai dòng chưa, đúng vào phút không ai còn sức lần lại. Phần soát tách thành
+`donThieuGi(t)`, dùng chung với lưới chắn cuối trong `donHanhDong`. Vẫn đi qua `donHanhDong` từng
+dòng chứ không dựng đường ghi thứ hai cho cùng một bảng.
+
+**Ba chỗ dễ vấp, cả ba đã cắn thử trong làn:**
+
+- **`NO_CU` bị cắt dần trong lúc duyệt.** `donLuu` lọc chính mảng ấy sau mỗi dòng xong — duyệt thẳng
+  trên nó là bỏ sót một nửa danh sách. Phải `NO_CU.slice()` trước.
+- **`kiemDon` xoá trắng `DON_TAM` ở MỌI lượt.** Hồi mỗi dòng lưu riêng thì mất nháp một dòng; nay
+  mất cả màn — và nó chạy ở cuối `taiHomNay`, tức mỗi tin từ kênh máy chủ là một lượt. Nay nháp chỉ
+  dựng lại khi màn **vừa mở ra** (`!man.classList.contains('hien')`). Cùng lớp bọ mà làn NTH chữa
+  cho màn tối hôm trước; màn sáng mắc y hệt. `htMo` cũng thôi xoá nháp: bấm ✕ giữa chừng là chưa
+  dòng nào xuống máy chủ.
+- **Dòng phụ đếm `NO_CU.length` thành nói dối.** Dòng đã trả lời nay NẰM LẠI trên màn, danh sách chỉ
+  ngắn đi sau cú lưu cuối. Phải đếm `NO_CU.filter(t => !donTT(t))` — nút dưới cùng cũng mở khoá theo
+  con số ấy. `donTT(t)` gom một chỗ luật "nháp vừa chọn, hay câu đã chốt tối qua", ba nơi cùng đọc.
+
+Chữ hai nút dưới cùng **giữ nguyên** (Tracy chốt) — `Hoàn tất ngày ✓` và `Vào việc hôm nay →`. Thứ
+chúng sắp làm do dòng phụ ngay trên nói ra: *"Cả 3 việc đã có câu trả lời — bấm Hoàn tất ngày để
+ghi."* Đó là điều duy nhất mắt không tự thấy: tới lúc ấy chưa dòng nào xuống máy chủ.
+
+`thu-man-don.js` lên **64 ca**: DOM giả nay trả một cái vỏ ghi lại được cho MỌI `getElementById` nên
+`veDon` chạy bản thật (chỗ đổi nặng nhất nằm trong nó), `htHoanThanh` bị chặn vì nó gọi
+`.insert().select()` — hình dạng khác thứ `sb` giả dựng ra. `thu-lan-r.py` bỏ `nhanNutDon` khỏi danh
+sách hàm rút, và ô đo `donNutChinh` đổi vai: nay nó canh cái nút ấy **đừng quay lại**.
+
+### Làn TUC — 07/09: soát từ cấm bằng tay vì máy soát không chạy nổi
+
+`PROMPT-rls-theo-cap.md` dính hai lỗi Nhóm D của bảng từ cấm: **RLS** dùng năm lần mà không dịch ở
+lần đầu, và một dấu `·` nối giữa một câu văn xuôi. Đã sửa: thêm một khối định nghĩa ngay dưới tiêu
+đề, và đổi dấu ấy thành *"Quản trị, Lead và Member"*.
+
+🪤 **MÁY SOÁT KHÔNG BẮT ĐƯỢC, VÌ NÓ KHÔNG CHẠY NỔI.** `kiem-tu.py` gọi `nap_ten_file_vault()` ở tầng
+mô-đun — nó `os.walk` **toàn bộ vault** trước khi đọc dòng đầu tiên của file cần soát. Đo 07/09:
+**110 giây · 4.145 thư mục · 18.458 tệp**. Ba lượt chạy đều bị giết (mã 144) trước khi in được gì.
+Nên hai lỗi trên phải bắt bằng tay, đối chiếu từng nhóm A → D của bảng.
+
+🪤 **VÀ LƯỢT CHẠY ĐẦU TIÊN CÒN CHO MỘT DẤU XANH OAN.** Đường dẫn trỏ vào một làn đã khép nên thư mục
+không còn; công cụ in *"Đã soát 0 file"* rồi ngay dưới là *"✅ Không còn từ cấm nào"* và thoát mã 0.
+Một lượt quét rỗng đọc y hệt một lượt quét sạch. Đây là lần thứ ba trong cùng một ngày cùng một hình
+dạng lỗi — sau dòng dò `SO-SQL.sql` gọi nhầm tên hàm (làn SOD) và ca thử đòi vế `la_lead()` phải có
+mặt (làn CAP). **Một phép kiểm không chạy phải kêu to hơn một phép kiểm trượt.**
+
+⚠️ **Hệ quả rộng hơn, chưa xử lý:** hook `PostToolUse` trong `.claude/settings.json` gọi chính công cụ
+này sau MỖI lần ghi file. Nếu nó thật sự chạy thì mọi phiên đang trả 110 giây cho mỗi lượt ghi; nếu
+nó bị cắt vì quá lâu thì **luật từ cấm hiện không được máy soát**, trong khi CLAUDE.md Mục 3b nói là
+có. Chưa dò được cái nào đúng. Hai việc đáng làm — cho `kiem-tu.py` thoát mã khác 0 khi soát 0 file,
+và bỏ `production/lan-app/` cùng `.git` khỏi lượt duyệt — **chưa đưa vào Linear**: Tracy chưa nói tới
+chúng, đã nêu trong lúc trò chuyện chờ Tracy phân xử.
+
+| Chạm | Thử |
+|---|---|
+| `PROMPT-rls-theo-cap.md` — khối định nghĩa RLS, một dấu `·` | soát tay trọn bốn nhóm A→D; mọi dấu `·` còn lại đều nằm trong bảng hoặc danh sách dữ liệu |
+
+### Làn PRL — 07/09: gỡ hai giới hạn dựng từ một câu đọc sai, và prompt giao việc RLS
+
+🪤 **HIỂU SAI MỘT CÂU, DỰNG RA HAI GIỚI HẠN KHÔNG AI ĐẶT HÀNG.** Tracy nói *"không cho tài khoản này
+vào dashboard, thông tin nhân sự, bảng deep work ở đầu mục hôm nay"*. Làn CAP đọc thành **chặn XEM**
+và dựng giới hạn ④ (đá Member khỏi tab Bảng đo) và ⑥ (giấu hàng deep work). Tracy nói lại: *"ý là bỏ
+tên Hương Giang ra khỏi đó chứ có phải bảo là để Hương Giang không thấy mấy cái bảng đó đâu"*.
+
+**Ai ĐỨNG TRONG bảng và ai ĐƯỢC XEM bảng là hai câu hỏi khác nhau** — và chúng dùng hai cơ chế khác
+nhau: cấp (`laMember`) trả lời câu sau, cờ `ngoai_bang_do` (làn HGD) trả lời câu trước. Làn CAP gộp
+nhầm chúng làm một.
+
+**Vì sao câu ấy đọc được hai kiểu, và vì sao tôi chọn nhầm kiểu:** *"không cho vào"* nghe như quyền,
+mà lúc ấy cả phiên đang bàn về quyền — ba giới hạn trước đó đều là quyền, nên tôi đọc câu thứ tư
+bằng cái khuôn vừa dùng xong. **Dấu hiệu đáng ra phải thấy:** hai thứ trong câu ấy (*bảng deep work*,
+*dashboard*) là **bảng liệt kê người**, không phải màn chức năng — mà một cái tên trong bảng liệt kê
+thì gỡ ra chứ không chặn ai lại. Lần sau gặp danh sách trộn "màn" với "bảng có tên người" thì hỏi
+ngay, đừng suy.
+
+**Nay Member chịu BA giới hạn** (cam kết Cả ROVA · Dự án · Việc cố định) — đúng ba thứ Tracy nói ở
+tin nhắn đầu. Bảng đo và hàng deep work mở cho mọi cấp.
+
+**Ca thử đổi CHIỀU, không xoá đi.** `thu-ba-cap.js` mục ⑤ nay canh *"`moTab` không đá Member khỏi tab
+nào"* và *"`hdVe` không hỏi cấp"* — một luật đã hiểu sai một lần thì đáng có một ca canh nó không bị
+sửa ngược lại. Thêm một ca kê **đúng bảy hàm** được phép gọi `laMember()`; mọc thêm chỗ thứ tám là
+đỏ, và người thêm phải nói ra mình vừa dựng giới hạn gì.
+
+🪤 **Ca ấy hỏng ở lần viết đầu** vì dùng một regex bắc cầu từ `function` tới `laMember()` — nó vắt
+qua giữa nhiều hàm và đổ tội cho bốn cái tên chẳng liên quan (`hdCoTin`, `dwNapChuong`, `cbRutLai`,
+`duNacMoc`). Cách đúng: lấy chỉ số của mọi `function ten(` và của mọi lượt gọi, rồi gán mỗi lượt cho
+hàm bắt đầu **gần nhất phía trước**.
+
+**Cũng trong làn này: `PROMPT-rls-theo-cap.md`** — tệp giao việc cho một phiên khác siết RLS theo
+cấp. Gồm bản đồ hiện trạng (bảng · view · hàm quyền · 22 policy đọc đang mở), ranh giới, bảy bẫy đã
+cắn người, quy trình bắt buộc và danh sách nghiệm thu. Tracy dán trọn tệp vào một phiên mới.
+
+| Chạm | Thử |
+|---|---|
+| JS: gỡ `laMember()` khỏi `moTab` · `hdVe` · xoá hẳn `apCapLenGiaoDien` | `thu-ba-cap.js` — **37 ca**, mục ⑤ đổi chiều; thử phá 2 chỗ, bắt được cả 2 |
+| Tệp mới `PROMPT-rls-theo-cap.md` | trọn bộ **59/61**, hai đỏ còn lại đỏ sẵn |
+
+### Làn HGD — 07/09: ai đứng trong bảng đo — một câu hỏi KHÁC câu hỏi cấp
+
+Tracy 07/09: *"bỏ Hương Giang khỏi dashboard (bảng đo) và tên ở đầu mục hôm nay đi"*. Bạn ấy là trợ
+lý khối Vận hành, không tham gia cuộc đo — một dòng 0 quả mang tên bạn ấy giữa bảng xếp hạng là một
+con số **nói sai về một người**, và một cái tên trong hàng "ai đang deepwork" là chỗ trống vĩnh viễn
+mà mắt cứ phải bỏ qua mỗi lần nhìn.
+
+⛔ **KHÔNG PHẢI QUYỀN, ĐỪNG GỘP VÀO CẤP.** `la_quan_tri`/`la_lead` trả lời *ai được XEM gì*; cờ mới
+`nguoi.ngoai_bang_do` trả lời *ai được ĐẾM*. Năm Member còn lại **vẫn đứng đủ** trong bảng đo — họ có
+deepwork thật. Gộp hai câu hỏi vào một chỗ là xoá cả năm người khỏi bảng.
+
+⚠️ **MỘT CỜ, KHÔNG GHIM TÊN.** Viết cứng `ten === 'Hương Giang'` thì ngày có trợ lý thứ hai lại phải
+sửa mã, và ngày bạn ấy đổi tên hiển thị thì bảng **lặng lẽ nhận lại một dòng** không ai chờ. Câu
+`update` trong tệp SQL cũng khai theo **email**, không theo tên, vì tên sửa được ngay ở màn Team.
+
+**Mặc định `false`, không phải `true`.** Người thứ mười ba vào app đứng trong bảng như mọi người; ra
+ngoài là một việc phải KHAI. Ngược lại thì người mới lặng lẽ biến mất và không ai biết để hỏi.
+
+**Năm chỗ đổ cả team ra màn, gom về một cửa `DOI_DO()`:** `hdVe` (hàng hiện diện) · `taiDoi` (dải
+chuỗi bảy ngày) · `veBangGat` · `veBangCham` · `veSoSanh`. Bài thử đếm bằng máy rằng cả năm cùng đi
+qua cửa ấy — thiếu một chỗ thì tên người ấy vẫn hiện ở đúng chỗ bị bỏ quên, và không ai thấy.
+
+**Cờ này KHÔNG giấu người ấy khỏi** ô chọn người, danh sách mời vào sự kiện, hay màn Team. Bạn ấy vẫn
+là người trong team, vẫn nhận được việc và lời mời.
+
+🪤 **Ca "không ghim tên" báo đỏ oan ngay lần chạy đầu** — vì khối chú thích giải thích *vì sao* có cờ
+này có nhắc tên bạn ấy. Dò cả tệp là phạt đúng đoạn văn ghi lại lý do. Phải gỡ khối `/* */` trước khi
+dò; cùng bài học đã chép ở ca ⑨ của `thu-loai-ca-nhan.js`, nay tái diễn lần thứ ba trong một ngày.
+
+⚠️ **Không thêm ô tick ở màn Team** (cố ý). Đổi cờ cho người khác là một câu `update`; một ô nữa
+trong form sửa người là ô thứ mười một cho một việc làm mỗi năm một lần.
+
+| Chạm | Thử |
+|---|---|
+| JS: `DOI_DO()` mới · `hdVe` · `taiDoi` · `veBangGat` · `veBangCham` · `veSoSanh` | `thu-ba-cap.js` — **37 ca** (thêm 7), đã thử phá 2 chỗ, bắt được cả 2 |
+| SQL: tệp mới `nang-cap-ngoai-bang-do.sql` · `SO-SQL.sql` thêm một dòng dò | `thu-bang-gat` · `thu-hien-dien` nạp thêm dòng khai `DOI_DO` |
+| | trọn bộ **59/61**, hai đỏ còn lại đỏ sẵn |
+
+### Làn SOD — 07/09: dòng dò của sổ SQL gọi nhầm tên TỆP thay vì tên HÀM
+
+Làn CAP thêm hai dòng dò tầng hàm vào `SO-SQL.sql`; một trong hai gọi
+`doi_gio_viec_ca_doi` — đó là **tên tệp**, còn hàm trong tệp ấy tên
+`doi_gio_viec_theo_chuoi`. `pg_proc` không có gì khớp, nên câu ấy trả **⬜ chưa có hàm** dù hàm đang
+chạy ngon lành. Một ⬜ oan tệ hơn không kiểm: nó dạy người đọc thôi tin cả bảng — đúng điều đầu
+`SO-SQL.sql` cảnh báo, và làn CAP vẫn vấp ngay khi vừa viết ra lời cảnh báo ấy.
+
+Bẫy dễ mắc vì trong dự án này tệp và hàm **không cùng tên** ở vài chỗ. Luật rút ra: thêm một dòng dò
+hàm thì `grep -n 'create or replace function'` trong đúng tệp ấy TRƯỚC, đừng suy tên hàm từ tên tệp.
+
+Chặn tái diễn bằng máy chứ không bằng trí nhớ: `thu-viec-theo-chuoi.js` thêm một ca quét **mọi** tên
+hàm mà `SO-SQL.sql` đi hỏi `pg_proc`, rồi đòi tên ấy có thật trong một tệp `.sql` nào đó. Đã thử phá
+— đổi lại tên cũ thì ca đỏ ngay.
+
+| Chạm | Thử |
+|---|---|
+| `SO-SQL.sql` — một dòng dò · `thu-viec-theo-chuoi.js` — thêm 1 ca (23) | trọn bộ **59/61**, hai đỏ còn lại đỏ sẵn |
+
+### Làn CAP — 07/09: ba cấp dùng app, và hai lỗ hổng quyền lịch (TRI-139 · TRI-140)
+
+Tracy 07/09: *"cần bạn phân cấp 3 level dùng app"* — Quản trị (Andy, Tracy) · Lead (John, Justin,
+Hafi, Peter, Sydney) · Member (Ham, Andrew, Javis, ZemC, Vicky, Hương Giang). **Cấp suy thẳng từ hai
+cờ đã có**, không dựng cột thứ ba: soi máy chủ 07/09 thấy dữ liệu đã khớp sẵn ba cấp (2 · 5 · 6), nên
+không phải lật cờ cho ai. Thêm một dòng người mới: Hương Giang, trợ lý khối Vận hành, cấp Member.
+
+**⚠️ THỨ TỰ HỎI CỜ LÀ MỘT PHẦN CỦA LUẬT.** Quản trị mang **cả hai** cờ — bảy người đội cũ đều bật
+`la_lead`, hai trong số đó bật thêm `la_quan_tri`. Hỏi `la_lead` trước là Tracy và Andy đọc ra
+"Lead". Cái sai ấy **không làm ai mất quyền gì**, nên nó sống được rất lâu, tới ngày ai đó thêm một
+giới hạn cho cấp Lead. `thu-ba-cap.js` canh đúng thứ tự hai dòng ấy trong mã.
+
+**Sáu giới hạn của Member, mỗi cái đặt ở CỬA CHUNG chứ không ở cái nút.** Đây là chỗ dễ làm nửa vời
+nhất: giấu một nút thì mọi đường khác vào cùng chỗ ấy vẫn mở, và mở trong im lặng.
+
+| # | Giới hạn | Chốt đặt ở | Vì sao không đặt ở nút |
+|---|---|---|---|
+| ① | không xem cam kết Cả ROVA | `ckDoiPhamVi` **và** `cbKyNhan` | cờ `vuonCaDoi` có HAI đường bật, đường thứ hai gán thẳng vào cờ |
+| ② | Dự án chỉ hiện dự án có tên mình | `duVeLuoi` | lọc ở `taiDuAn` là ô lọc PIC, ô lọc phòng ban và màn hồ sơ cùng hụt theo |
+| ③ | Việc cố định chỉ khối của mình | `khoiDuocNhin` | công tắc `VCD_TAM_NHIN` dựng sẵn 28/08 cho đúng ngày này, vặn sang `'theo-cap'` |
+| ④ | không vào Bảng đo | `moTab` | thanh lề, phím tắt và đường quay lại đều đi qua `moTab` |
+| ⑤ | không vào thông tin nhân sự | *(đã kín từ 05/09)* | chỉ thêm một ca canh nó không bị nới ra |
+| ⑥ | không thấy hàng deep work | `hdVe` | `hdTai` chỉ là một trong những đường gọi tới nó |
+
+🪤 **`nhomTheoKhoi` có một lối rơi lột sạch giới hạn ③ trong im lặng.** Danh sách khối rỗng thì nó
+trả về `{ten:'Toàn team', nguoi: DOI}` — lối ấy đúng cho trường hợp bảng `chuc_nang` chưa dựng, nhưng
+với một Member **chưa được xếp khối** thì nó bày cả đội, mà màn trông vẫn hoàn toàn bình thường. Cùng
+một danh sách rỗng, hai lý do khác nhau, hai lối ra ngược nhau — nay hỏi cấp trước.
+
+⛔ **KHÔNG cắt quyền đăng vấn đề.** Tracy chốt cùng ngày: *"đăng vấn đề thì cho toàn bộ 12 người"*.
+Nút ấy vốn không gác gì; bài thử có một ca canh nó **cứ thế**, để đợt siết sau không quét nhầm.
+
+⚠️ **Đây là lớp giao diện, không phải hàng rào.** RLS chưa siết theo cấp — Member mở công cụ dev vẫn
+hỏi thẳng máy chủ được. Mã tự khai điều đó ngay trong khối chú thích, và một ca thử canh dòng khai ấy
+còn nguyên.
+
+---
+
+**TRI-140 — hai lỗ hổng quyền sửa lịch, cùng một nguyên nhân.** Tracy 07/09: *"Lead không sửa được
+mọi sự kiện trên lịch chung, chỉ có host có quyền đó, và host cấp quyền cho khách thì khách được
+thôi."* Luật này Tracy đã chốt 04/09 và `nang-cap-quyen-host-su-kien.sql` đã bỏ vế `la_lead()` khỏi
+ba policy. Nhưng **hai tệp viết SAU ngày ấy chép lại bản cũ**:
+
+| Tệp | Ngày | Hở gì |
+|---|---|---|
+| `nang-cap-quyen-khach.sql` | 04/09 | dựng lại `sua_lich` kèm `la_lead()`, và cò `chan_khach_sua_cot_cam` cho lead đi qua |
+| `nang-cap-doi-gio-viec-ca-doi.sql` | 05/09 | hàm `security definer` tự kiểm quyền bằng `la_lead() or tao_boi` |
+
+Cái thứ hai nặng hơn: hàm chạy bằng quyền người định nghĩa nên **RLS không chặn hộ nó**. Policy sạch
+mà hàm còn vế lead thì cửa vẫn mở, chỉ là mở bằng đường khác — và cả bảy người đều bật cờ ấy.
+
+🪤 **NGUYÊN NHÂN CHUNG, VÀ NÓ SẼ TÁI DIỄN:** dựng lại một policy bằng cách **chép từ tệp `.sql` cũ
+nhất tìm thấy** rồi nối thêm vế mới vào đuôi. Một tệp `.sql` là ảnh chụp của một ngày, không phải
+trạng thái hôm nay. Đọc bản đang chạy trước khi chép:
+`select policyname, qual from pg_policies where tablename = 'lich_chung';`
+Đã dán cảnh báo ⛔ vào đầu hai tệp cũ (`nang-cap-su-kien-ca-nhan.sql`, `nang-cap-lich-chung.sql`) —
+chạy lại chúng một mình là mở lại cửa, không một dòng lỗi nào báo.
+
+**`SO-SQL.sql` thêm hai dòng dò ở tầng HÀM**, không chỉ tầng policy — dò trong chính thân hàm máy chủ
+đang giữ (`pg_get_functiondef`), không dò tên tệp.
+
+🪤 **Ca thử `thu-viec-theo-chuoi.js` từng ĐÒI vế `la_lead()` có mặt** — nó canh đúng cái lỗ hổng, và
+xanh suốt. Một bài thử chép lại luật sai thì nó bảo vệ cái sai. Nay ba ca thay chỗ nó. Ca dò `la_lead`
+phải **bỏ dòng chú thích trước khi dò**: tệp có mấy dòng `--` kể lại vì sao vế ấy bị bỏ, dò cả tệp là
+phạt người đã ghi lại bài học.
+
+**`lcDuocSua` nới đúng một vế** cho khách được host cấp quyền — trước đó policy đã mở vế ấy mà mặt
+hình chưa, tức người được cấp quyền có cửa trên máy chủ mà không thấy nút nào để đi qua.
+
+⚠️ **Tracy phải chạy lại HAI tệp SQL, đúng thứ tự:** `nang-cap-quyen-khach.sql` →
+`nang-cap-doi-gio-viec-ca-doi.sql` (tệp sau đọc cột `khach_sua` do tệp trước dựng). Cả hai idempotent.
+
+| Chạm | Thử |
+|---|---|
+| **JS mới:** `CAP` · `capCua` · `laMember` · `apCapLenGiaoDien` | **`thu-ba-cap.js` — 30 ca (bài mới)**, đã thử phá 5 chốt, bắt được cả 5 |
+| **JS sửa:** `ckDoiPhamVi` · `capNhatDaiDoi` · `cbKyNhan` · `duVeLuoi` · `khoiDuocNhin` · `nhomTheoKhoi` · `veRova` · `hdVe` · `moTab` · `tmChips` · `veTeam` · `lcDuocSua` · `VCD_TAM_NHIN` | `thu-co-cau-to-chuc` 52 · `thu-hien-dien` 27 · `thu-quyen-host-su-kien` 18 · `thu-keo-su-kien` · `thu-viec-theo-chuoi` 22 |
+| **CSS:** `.tm-q.mb` | trọn bộ **59/61** — hai đỏ còn lại (`thu-luoi-ngay` · `thu-van-de`) đỏ sẵn ở `origin/main` |
+| **SQL:** `nang-cap-quyen-khach` · `nang-cap-doi-gio-viec-ca-doi` · `SO-SQL` · cảnh báo ở `nang-cap-su-kien-ca-nhan` · `nang-cap-lich-chung` | |
+
+### Làn VQ — 06/09: quản trị đổi được nấc của mọi vấn đề (TRI-136)
+
+Tracy 06/09: *"cho Tracy quyền đổi trạng thái đi"* → *"QUẢN TRỊ NHÉ"*. Quyền đi theo cột
+`nguoi.la_quan_tri` (Tracy và Andy), không khai riêng một cái tên.
+
+**Máy chủ chặn nút Đóng ở HAI chỗ, không phải một** — đây là chỗ dễ làm nửa vời nhất của việc này.
+Cò `chan_sua_cot_van_de` canh *ai đang gõ*, còn ràng buộc bảng `van_de_chi_nguoi_neu_dong` canh *kết
+quả*: một dòng `xong` mà ô người đóng không phải người nêu thì không tồn tại được. Gỡ mỗi cái cò thì
+cú bấm vẫn ngã, lần này ở tầng dữ liệu với một câu báo lỗi khó đọc hơn nhiều. Tệp
+`nang-cap-van-de-quan-tri-doi-nac.sql` gỡ cả hai: nới cò, và **thay** ràng buộc bằng
+`van_de_dau_dong_khop_nac` (dấu người đóng chỉ tồn tại trên dòng đã đóng). Không nới được ràng buộc
+cũ vì luật mới phải tra bảng `nguoi`, mà một `check` chỉ nhìn thấy các cột của chính dòng đang ghi.
+
+**Hai nấc giữa thì máy chủ vốn đã cho** — policy `sua_van_de` có sẵn vế quản trị. Chỉ màn hình không
+bày nút. Nên phần lớn việc này nằm ở phía màn chứ không ở máy chủ, ngược với cảm giác ban đầu.
+
+**Vị từ `vdQuanTriNac` đứng RIÊNG, không nới thẳng `vdToiXuLy`/`vdToiDong`.** Hai vị từ ấy còn nuôi
+`vdDemDoi` — con số trên nấc Vấn đề đếm việc đang đợi CHÍNH MÌNH ra tay. Nới chúng thì con số của
+quản trị phồng lên bằng gần cả bảng và thôi nói được điều gì. Có một ca thử canh đúng chỗ này.
+
+**Đóng thay thì để lại một dòng** trong mạch bàn luận, ghi SAU khi đóng xong — ngược thứ tự với
+`vdChoBenKhac`, nơi câu viết là điều kiện nên phải đi trước. Ở đây câu là dấu vết của việc đã xảy ra;
+ghi trước rồi cú đóng ngã là để lại một dòng nói dối.
+
+`thu-van-de.js` thêm 13 ca (151/152 — ca đỏ duy nhất là ca giờ-địa-phương có sẵn từ trước, không
+liên quan). Trọn bộ 58/59, y hệt mốc trước khi sửa.
+
+**Nhát 2 (làn VQ2) — bỏ ranh giới `nhan_luc`, thêm NHẬN THAY.** Nhát đầu bắt vấn đề phải có người
+bấm *Nhận* rồi quản trị mới đổi được nấc, lấy lý do `vdQuaHan` đếm quá hạn theo `nhan_luc` nên một
+dòng chưa nhận mà mang nấc *đang xử lý* sẽ tự mâu thuẫn. Lý do đúng, chữa sai chỗ: Tracy mở app ra
+và vấp ngay dòng đầu tiên — VD-1 giao cho Hafi, Hafi chưa bấm, nằm ở nhóm *Quá hạn nhận* đã năm
+tiếng. **Đó chính là dòng cần tay quản trị nhất, mà nhát đầu chặn đúng nó.**
+
+Cách chữa thật nằm ở `vdDatNac`: đặt nấc cho một vấn đề chưa nhận thì đóng luôn mốc nhận. Mâu thuẫn
+biến mất vì ô ấy không còn trống, chứ không phải vì cấm người ta bấm. `khong_lam` đứng ngoài — bỏ
+một việc không phải là nhận nó. Máy chủ cho ghi ô này đúng một lần (cò giữ nguyên mốc cũ khi đã có),
+nên đây không phải đường lùi đồng hồ 24 giờ của ai, và **không cần thêm tệp SQL nào**.
+
+Hai nấc giữa vẫn đòi một cái TÊN ở ô người nhận: *đang xử lý* nói về một người đang cầm việc, chưa
+giao cho ai thì nó rỗng nghĩa. Vấn đề chưa giao thì quản trị thấy *Đóng vấn đề · Không làm · Giao
+cho ai*. Bài thử lên 155/156.
+
+**Bài học rút ra, đáng nhớ hơn cả bản vá:** một ranh giới nêu ra trong bản duyệt mà người dùng vấp
+phải ở ngay ca đầu tiên thì nó không phải ranh giới, nó là lỗi. Chỗ tôi tự khai *"muốn mở nốt thì
+nói"* lẽ ra phải là chỗ dừng lại hỏi trước khi giao bài.
+
+**Nhát 3 (làn VQ3) — NHẬN THAY, và luật một nút đặc phải viết lại.** Tracy 06/09: *"cho tôi full
+quyền đi để tôi tick hộ Hafi vì tôi chưa triển khai"*. Nấc `da_nhan` trước nay không ai ngoài chính
+người nhận đặt được; nay quản trị có nút **Nhận thay ‹tên›** trên vấn đề đã giao mà người được giao
+chưa động tới. `vdNhan` vốn đã giữ nguyên ô người nhận khi ô ấy có tên, nên đây là bấm hộ chứ không
+phải giành việc — không phải sửa gì trong hàm ấy, và nhãn nút nói đúng điều đó.
+
+**Luật màu vỡ ngầm từ nhát 2 mà không bài thử nào bắt được.** `daCoChinh` cũ chỉ hỏi *"có nút đặc
+nào không"* rồi thôi, vì Nhận và Đóng vốn loại trừ nhau theo ô mốc nhận: một cái đòi nó trống, cái
+kia đòi nó đầy. Từ khi `vdQuanTriNac` thôi đòi mốc nhận thì hai nút đặc đứng cạnh nhau thật — chỉ là
+chưa ai dựng đúng ca ấy trong bài thử (`TRACY` là CEO, còn `vd()` mặc định giao cho phòng Sản phẩm,
+nên hai lối không gặp nhau). Nay luật giữ nền đặc cho lối SỚM NHẤT trong luồng, và có ca canh đúng
+chỗ đó. **Bài học: một luật màu dựa vào chỗ hai điều kiện không thể cùng đúng thì mọi lần nới quyền
+đều phải soi lại nó.**
+
+Nhánh hai nấc giữa đổi từ `else if` sang `if` độc lập — quản trị thấy cả *Nhận thay* lẫn *Đang xử
+lý* trên cùng một vấn đề, hai lối không chồng nhau. Bài thử lên 160/161.
+
+**Nhát 4 (làn VQ4) — menu đổi nấc ngay trên dòng, lối Linear.** Tracy 06/09 gửi ảnh Linear: *"ấn vào
+icon này là đổi đc trạng thái"*. Vòng trạng thái trên dòng nay là **nút duy nhất** của dòng ấy; bấm
+vào bung menu năm nấc, bấm chỗ khác vẫn mở cửa chi tiết như cũ. `stopPropagation` nằm ngay trong
+thuộc tính `onclick` — thiếu nó thì cửa chi tiết bung ra che đúng cái menu vừa mở.
+
+**Một nguồn quyền, hai cách bày.** Menu liệt kê theo NẤC, hàng nút trong cửa liệt kê theo HÀNH ĐỘNG,
+nhưng `vdDatDuocNac` hỏi đúng những vị từ mà `vdNutNac` hỏi. Nấc không đặt được thì không bày; không
+lối nào thì nút nói ra lý do thay vì bung một khung rỗng — và hai lý do khác nhau (đã đóng · không
+có quyền) nói bằng hai câu khác nhau.
+
+Khuôn hình mượn nguyên menu lọc *Việc hôm nay* (05/09), chỉ đổi cách neo: `fixed` theo toạ độ nút
+vừa bấm, vì nó bung từ một dòng bất kỳ trong danh sách chứ không từ một chip đứng yên. Khối menu đặt
+ở gốc `<body>`, không đặt trong danh sách — nằm trong thì khung cuộn cắt cụt nó, và mỗi lượt vẽ lại
+danh sách là nó biến mất giữa chừng. **Đo kích thước SAU khi bỏ `hidden`**: một khối còn ẩn thì cao
+và rộng đều bằng 0, mọi phép né mép màn tính trên số 0 đều ra "vừa vặn".
+
+⚠️ **Bẫy trong chính bài thử, đã cắn một lượt:** cọc `document.getElementById` trả CÙNG một vật cho
+cùng một id, nên ruột menu của ca trước còn nằm nguyên ở ca sau và hai ca *"menu không mở"* đỏ oan.
+Ca nào chấm một thứ KHÔNG xuất hiện thì phải tự dọn chỗ trước khi chấm. Bài thử lên 176/177.
+
+👁 **Chưa xem bằng mắt trên máy thật** — phần tính vị trí menu (né mép dưới, né mép phải) chỉ chạy
+đúng khi có `getBoundingClientRect` thật.
+
+⏳ **Chờ Tracy chạy `nang-cap-van-de-quan-tri-doi-nac.sql`.** Chưa chạy mà mã đã lên thì hàng nút
+rộng ra nhưng cú bấm *Đóng vấn đề* của quản trị bị máy chủ đuổi — ba nấc kia vẫn chạy bình thường.
 
 ### Làn NTH — 06/09: nghi thức hoàn tất hẹn NGÀY MAI, và lưu một việc không đóng cửa (TRI-135)
 

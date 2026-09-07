@@ -31,16 +31,27 @@ const nguon = MOC.map(([a, b]) => {
   return s.slice(i, s.indexOf(b, i));
 }).join('\n');
 
-/* DOM giả: các lát mã trên chỉ tính, phần chạm màn của chúng là nhánh vẽ lại.
-   Không có màn nào ở đây nên trả rỗng — TRỪ chính màn `#don`: `kiemDon` đọc
-   `classList` của nó để mở/đóng, nên nó cần một cái vỏ ghi lại được. */
-const manDon = {classList: {tap: new Set(),
-  add(c){ this.tap.add(c); }, remove(c){ this.tap.delete(c); },
-  contains(c){ return this.tap.has(c); }}};
-const document = {getElementById: id => id === 'don' ? manDon : null,
+/* DOM giả. Trước 06/09 nó trả `null` cho mọi thứ trừ `#don`, và `veDon` bị thay
+   bằng một hàm rỗng — hồi ấy đủ, vì mọi thứ đáng đo đều nằm trong `veDonDong`.
+   Từ TRI-138 thì KHÔNG còn đủ: chỗ đổi nặng nhất là NÚT DƯỚI CÙNG (khoá tới khi
+   mọi dòng có câu trả lời) và DÒNG PHỤ trên nó — cả hai chỉ do `veDon` viết ra.
+   Nên nay mỗi `getElementById` trả một cái vỏ ghi lại được, và `veDon` chạy bản
+   thật. */
+const taoEl = () => ({
+  classList: {tap: new Set(), add(c){ this.tap.add(c); }, remove(c){ this.tap.delete(c); },
+              contains(c){ return this.tap.has(c); }},
+  style: {}, textContent: '', innerHTML: '', disabled: false});
+const KHO_EL = {};
+const el = id => (KHO_EL[id] = KHO_EL[id] || taoEl());
+const manDon = el('don');
+const document = {getElementById: id => el(id),
                   querySelector: () => null,
                   querySelectorAll: () => [], addEventListener: () => {},
                   removeEventListener: () => {}};
+/* Hai thứ `veDon` đọc để vẽ khối việc cố định của buổi tối, nằm ngoài lát mã. */
+let NHIP = [], SO = {};
+/* `donDong` gọi tới sau khi ghi xong ở màn sáng — bản thật tải lại cả app. */
+const taiHomNay = () => { GHI.push({loai: 'tai-lai'}); };
 let ME = {id: 'toi'};
 let DON_TAM = {}, NO_CU = [];
 let GHI = [];            // mọi lệnh gửi lên máy chủ bị bắt lại ở đây
@@ -93,7 +104,11 @@ eval(nguon + `
   };`);
 const datDonKieu = v => globalThis.__datDonKieu(v);
 const ht = () => globalThis.__ht;
-veDon = () => {};        // bản thật đụng DOM, ở đây không cần
+/* `veDon` nay chạy BẢN THẬT (xem DOM giả ở trên). Còn `htHoanThanh` thì không:
+   nó gọi `sb.from('nop_ngay').insert(...).select()`, một hình dạng khác hẳn thứ
+   `sb` giả dựng ra, và cái đáng đo ở đây là "cú lưu gộp có chạy trước khi đóng
+   sổ không", chứ không phải chuyện đóng sổ. */
+htHoanThanh = async () => { GHI.push({loai: 'hoan-tat'}); };
 
 let hong = 0;
 function kiem(ten, dat, them){
@@ -115,8 +130,8 @@ let h = veDonDong(viec());
 kiem('Chưa xong + ngày điền sẵn hôm nay → có nút 📦 về kho đứng cạnh',
      h.includes('📦 về kho') && h.includes('ngày sẽ làm'));
 DON_TAM = {7: {tt: 'Chua_xong', ngay: ''}};
-kiem('Xoá trắng ô ngày → nút chính đổi thành "Lưu và về kho"',
-     veDonDong(viec()).includes('📦 Lưu và về kho'));
+kiem('Xoá trắng ô ngày → dòng nói rõ việc sẽ về kho',
+     veDonDong(viec()).includes('để trống thì việc về kho'));
 DON_TAM = {7: {tt: 'Chua_xong'}};
 kiem('Chưa xong có ô "có người đang chờ"', h.includes('Có người đang chờ'));
 kiem('Không còn hỏi "mai làm gì"', !h.includes('Mai làm gì'));
@@ -124,18 +139,17 @@ kiem('Không còn nút Chia nhỏ', !h.includes('Chia nhỏ') && !h.includes('�
 
 DON_TAM = {7: {tt: 'Chua_xong', ngay: '2026-08-14'}};
 h = veDonDong(viec());
-kiem('Chọn 14/08 → nút đổi thành "Lưu và hẹn 14/08"', h.includes('▶️ Lưu và hẹn 14/08'));
+kiem('Chọn 14/08 → ô ngày hiện 14/08 kèm chữ "ngày sẽ làm"',
+     h.includes('>14/08<') && h.includes('ngày sẽ làm'));
 
 DON_TAM = {7: {tt: 'Chua_xong'}};
 h = veDonDong(viec({so_lan_hoan: 3, het_cua_hen_ngay: true}));
-kiem('Hoãn 3 lần → mất ô chọn ngày, nút chỉ còn Về kho',
-     !h.includes('type="date"') && h.includes('📦 Lưu và về kho'));
+kiem('Hoãn 3 lần → mất ô chọn ngày', !h.includes('type="date"'));
 kiem('Hoãn 3 lần → có nói rõ vì sao', h.includes('chỉ về kho được'));
 
 DON_TAM = {};
 h = veDonDong(viec({trang_thai: 'Blocked', da_chot: true, ghi_chu_chot: 'chờ sếp duyệt giá'}));
 kiem('Nghẽn hỏi lại sáng sau → ô điền sẵn câu đã trả lời', h.includes('chờ sếp duyệt giá'));
-kiem('Cửa Nghẽn → nút "Lưu và tạo việc gỡ chặn"', h.includes('Lưu và tạo việc gỡ chặn'));
 
 console.log('\n── Ô DEADLINE CHO VIỆC GỠ NGHẼN (13/08) ──');
 DON_TAM = {7: {tt: 'Blocked'}};
@@ -146,7 +160,6 @@ kiem('Ô để trống → nhắc đúng ngày mặc định (13/08)', h.include
 DON_TAM = {7: {tt: 'Blocked', han_go: '2026-08-15'}};
 h = veDonDong(viec());
 kiem('Chọn 15/08 → ô hiện 15/08', h.includes('>15/08<'));
-kiem('Nút đổi chữ theo hạn', h.includes('Lưu và tạo việc gỡ — hạn 15/08'));
 
 DON_TAM = {7: {tt: 'Chua_xong'}};
 kiem('Cửa Chưa xong KHÔNG có ô Deadline', !veDonDong(viec()).includes('don-hango-7'));
@@ -242,7 +255,6 @@ datDonKieu('sang');
   let ht2 = veDonDong(viec());
   kiem('Cửa tối: ô ngày điền sẵn NGÀY MAI (14/08), không phải hôm nay',
        ht2.includes('>14/08<') && !ht2.includes('>13/08<'), ht2.match(/>\d\d\/\d\d</g));
-  kiem('Cửa tối: nút Lưu nói đúng ngày mai', ht2.includes('▶️ Lưu và hẹn 14/08'));
 
   DON_TAM = {7: {tt: 'Blocked'}};
   kiem('Cửa tối: hạn việc gỡ để trống → nhắc 14/08',
@@ -254,7 +266,7 @@ datDonKieu('sang');
   DON_TAM = {7: {tt: 'Chua_xong'}};
   ht2 = veDonDong(viec());
   kiem('Cửa tối thứ Bảy: nhảy qua Chủ nhật, hẹn thứ Hai 17/08',
-       ht2.includes('>17/08<') && ht2.includes('▶️ Lưu và hẹn 17/08'), ht2.match(/>\d\d\/\d\d</g));
+       ht2.includes('>17/08<'), ht2.match(/>\d\d\/\d\d</g));
   HOM_NAY = '2026-08-13';
 
   r = await chay({tt: 'Chua_xong'});
@@ -323,6 +335,99 @@ datDonKieu('sang');
   NO_CU = [];
   ht().kiem();
   kiem('Màn sáng hết nợ cũ → vẫn đóng như cũ', !manDon.classList.contains('hien'));
+
+  /* ══ MỘT CÚ LƯU CHO CẢ MÀN (TRI-138, Tracy chốt 06/09) ═══════════════════
+     *"cho mọi người dọn dẹp hết các task rồi lưu 1 lần là được"* — rồi *"sao k
+     làm dọn dẹp của hôm qua luôn đi"*, nên luật áp cho CẢ HAI chế độ. Nút Lưu
+     của từng dòng biến mất; nút dưới cùng ghi cả màn rồi mới đi tiếp. */
+  console.log('\n── MỘT CÚ LƯU CHO CẢ MÀN (TRI-138) ──');
+
+  const banA = () => viec({id: 21, noi_dung: 'Việc A'});
+  const banB = () => viec({id: 22, noi_dung: 'Việc B'});
+  const banC = () => viec({id: 23, noi_dung: 'Việc C'});
+  const dungMan = (kieu, ds, tam) => {
+    datDonKieu(kieu); GHI = []; NO_CU = ds; DON_TAM = tam;
+    DA_CHOT_QUA = false; manDon.classList.add('hien');
+  };
+  const soUpdate = () => GHI.filter(g => g.loai === 'update').length;
+
+  /* `donHanhDong` chỉ còn được gọi từ mã, không từ màn — dấu vết chắc chắn
+     nhất của cái nút đã gỡ là chuỗi `onclick="donHanhDong(` trong HTML dòng. */
+  datDonKieu('sang');
+  DON_TAM = {21: {tt: 'Chua_xong'}};
+  kiem('Màn sáng: dòng đã chọn cửa KHÔNG còn nút Lưu riêng',
+       !veDonDong(banA()).includes('donHanhDong('));
+  DON_TAM = {21: {tt: 'Blocked', ghi_chu: 'Xin duyệt'}};
+  kiem('Màn sáng: cửa Nghẽn cũng không còn nút Lưu riêng',
+       !veDonDong(banA()).includes('donHanhDong('));
+  datDonKieu('toi');
+  DON_TAM = {21: {tt: 'Chua_xong'}};
+  kiem('Cửa tối: cũng không còn nút Lưu riêng',
+       !veDonDong(banA()).includes('donHanhDong('));
+
+  /* Nút dưới cùng mở khoá theo số dòng CHƯA trả lời. Dòng đã trả lời nay nằm
+     lại trên màn, nên đếm bằng `NO_CU.length` là đếm nhầm cả những dòng xong. */
+  dungMan('sang', [banA(), banB()], {21: {tt: 'Done'}});
+  veDon();
+  kiem('Còn một dòng chưa trả lời → nút dưới cùng khoá', el('don-vao').disabled === true);
+  kiem('Dòng phụ đếm số dòng CHƯA trả lời (1), không đếm cả danh sách (2)',
+       el('don-phu').innerHTML.includes('<b>1</b>'), el('don-phu').innerHTML);
+  DON_TAM = {21: {tt: 'Done'}, 22: {tt: 'Done'}};
+  veDon();
+  kiem('Trả lời hết → nút dưới cùng mở khoá', el('don-vao').disabled === false);
+  kiem('Trả lời hết → dòng phụ nói ra chỗ bấm để ghi',
+       el('don-phu').innerHTML.includes('Vào việc hôm nay'), el('don-phu').innerHTML);
+
+  dungMan('sang', [banA(), banB(), banC()],
+          {21: {tt: 'Done'},
+           22: {tt: 'Chua_xong', ngay: '2026-08-14'},
+           23: {tt: 'Da_huy', ghi_chu: 'khách đổi ý'}});
+  await donDong();
+  kiem('Một cú bấm → cả BA dòng xuống máy chủ', soUpdate() === 3, soUpdate());
+  kiem('Ghi xong ở màn sáng thì đóng màn và tải lại',
+       !manDon.classList.contains('hien') && GHI.some(g => g.loai === 'tai-lai'));
+
+  /* SOÁT TRỌN MÀN TRƯỚC, GHI SAU: một dòng thiếu chữ ở CUỐI màn phải chặn được
+     cả lượt, kể cả dòng hợp lệ đứng trước nó. Ghi nửa vời ở phút cuối ngày là
+     thứ không ai lần lại nổi. */
+  dungMan('sang', [banA(), banB()], {21: {tt: 'Done'}, 22: {tt: 'Blocked', ghi_chu: ''}});
+  await donDong();
+  kiem('Một dòng thiếu tên việc gỡ → KHÔNG ghi dòng nào, kể cả dòng hợp lệ đứng trước',
+       soUpdate() === 0 && !GHI.some(g => g.loai === 'insert'), JSON.stringify(GHI));
+  kiem('Báo lỗi gọi ĐÚNG TÊN dòng thiếu',
+       GHI.some(g => g.loai === 'toast' && g.m.includes('Việc B')),
+       JSON.stringify(GHI.filter(g => g.loai === 'toast')));
+  kiem('Không ghi được thì màn đứng nguyên, không đóng', manDon.classList.contains('hien'));
+  kiem('Nháp giữ nguyên để sửa tiếp', !!DON_TAM[21] && !!DON_TAM[22]);
+  kiem('Chặn xong thì nút mở khoá lại cho lượt sửa', el('don-vao').disabled === false);
+
+  dungMan('toi', [banA(), banB()], {21: {tt: 'Done'}, 22: {tt: 'Done'}});
+  await donDong();
+  kiem('Cửa tối: ghi hết CẢ HAI dòng rồi mới đóng sổ ngày',
+       soUpdate() === 2
+         && GHI.findIndex(g => g.loai === 'hoan-tat') > GHI.findIndex(g => g.loai === 'update'),
+       JSON.stringify(GHI.map(g => g.loai)));
+
+  /* ── NHÁP KHÔNG ĐƯỢC BỐC HƠI ─────────────────────────────────────────────
+     Từ khi cả màn gộp về một cú lưu, một lượt tải lại giữa chừng mà xoá trắng
+     `DON_TAM` là mất câu trả lời của MỌI dòng, không phải một dòng như trước. */
+  datDonKieu('sang'); DA_CHOT_QUA = false;
+  manDon.classList.remove('hien');
+  NO_CU = [banA(), banB()]; DON_TAM = {99: {tt: 'Done'}};
+  ht().kiem();
+  kiem('Màn sáng VỪA mở ra → nháp dựng lại từ đầu', !DON_TAM[99]);
+  DON_TAM = {21: {tt: 'Done', ghi_chu: 'đã gọi xong'}};
+  NO_CU = [banA(), banB()];
+  ht().kiem();
+  kiem('Lượt tải lại giữa chừng KHÔNG xoá nháp đang điền',
+       !!DON_TAM[21] && DON_TAM[21].ghi_chu === 'đã gọi xong', JSON.stringify(DON_TAM));
+
+  /* Bấm ✕ giữa chừng là chưa dòng nào xuống máy chủ — mở lại phải còn nguyên
+     thứ vừa gõ, nếu không thì người ta gõ lại từ đầu đúng những câu ấy. */
+  TASKS = []; NO_CU = []; DON_TAM = {21: {tt: 'Da_huy', ghi_chu: 'khách đổi ý'}};
+  ht().mo();
+  kiem('Mở lại nghi thức sau khi bấm ✕ → nháp còn nguyên',
+       !!DON_TAM[21] && DON_TAM[21].tt === 'Da_huy', JSON.stringify(DON_TAM));
 
   console.log(hong ? `\n❌ ${hong} mục chưa đạt\n` : '\n✅ Tất cả đều đạt\n');
   process.exit(hong ? 1 : 0);

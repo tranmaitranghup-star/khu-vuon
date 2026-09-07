@@ -382,7 +382,7 @@ const XONG = {['2|'+NAY]: new Set(['u3','u4']), ['1|'+NAY]: new Set(['u1'])};
    Tracy 03/09: *"trạng thái của lịch thì thay đổi theo host tick là hoàn thành
    hay chưa"*. Ba chỗ dễ trượt, và cả ba đều dựng ra HTML trông bình thường:
    hỏi nhầm sang số đông người dự thay vì hỏi host · gắn nhãn cho buổi CHƯA
-   diễn ra · và khẳng định "chưa chốt" khi thật ra chưa đọc được sổ việc. */
+   diễn ra · và khẳng định "chưa xong" khi thật ra chưa đọc được sổ việc. */
 {
   console.log('\n⑨ Trạng thái buổi theo ô tick của người chủ trì');
   const QUA = '2026-09-01', SAU = '2026-09-05';        /* NAY = 2026-09-03 */
@@ -391,7 +391,7 @@ const XONG = {['2|'+NAY]: new Set(['u3','u4']), ['1|'+NAY]: new Set(['u1'])};
     ds: [
       {id:1, ten:'Họp đã chốt', pham_vi:'cong_ty', tao_boi:'u1', lap:'khong',
        ngay_bat_dau:QUA, gio_bat_dau:9*60, so_phut:60, dang_dung:true},
-      {id:2, ten:'Họp chưa chốt', pham_vi:'cong_ty', tao_boi:'u1', lap:'khong',
+      {id:2, ten:'Họp chưa xong', pham_vi:'cong_ty', tao_boi:'u1', lap:'khong',
        ngay_bat_dau:QUA, gio_bat_dau:14*60, so_phut:60, dang_dung:true},
       {id:3, ten:'Họp tuần sau', pham_vi:'cong_ty', tao_boi:'u1', lap:'khong',
        ngay_bat_dau:SAU, gio_bat_dau:9*60, so_phut:60, dang_dung:true}
@@ -411,11 +411,11 @@ const XONG = {['2|'+NAY]: new Set(['u3','u4']), ['1|'+NAY]: new Set(['u1'])};
   la('và nó KHÔNG đeo thêm thẻ chữ nào',
      !/dbc-tt/.test(nut(html, 'Họp đã chốt')),
      'Tracy chốt: *"bỏ chữ đúng kế hoạch đi"*');
-  la('buổi host chưa tick → thẻ "chưa chốt", dù người khác đã xong',
-     /class="dbc-tt chua">chưa chốt</.test(nut(html, 'Họp chưa chốt')),
+  la('buổi host chưa tick → thẻ "chưa xong", dù người khác đã xong',
+     /class="dbc-tt chua">chưa xong</.test(nut(html, 'Họp chưa xong')),
      'hỏi số đông thay vì hỏi host là trượt ở đúng đây');
   la('và dòng ấy KHÔNG được tô xanh',
-     !/class="dbc-b xong"/.test(nut(html, 'Họp chưa chốt')));
+     !/class="dbc-b xong"/.test(nut(html, 'Họp chưa xong')));
   la('chỉ MỘT dòng được tô xanh, không phải cả hai',
      (html.match(/class="dbc-b xong"/g) || []).length === 1);
   const sau = nut(html, 'Họp tuần sau');
@@ -423,13 +423,13 @@ const XONG = {['2|'+NAY]: new Set(['u3','u4']), ['1|'+NAY]: new Set(['u1'])};
      !!sau && !/dbc-b xong/.test(sau) && !/dbc-tt/.test(sau),
      'gắn nhãn cho buổi chưa diễn ra là nói trước một điều chưa biết');
   la('dòng đầu ngày đếm đúng một xong một chưa',
-     /2 buổi · <em class="dung">1 đúng kế hoạch<\/em> · <em class="chua">1 chưa chốt<\/em>/.test(html));
+     /2 buổi · <em class="dung">1 đúng kế hoạch<\/em> · <em class="chua">1 chưa xong<\/em>/.test(html));
   la('KHÔNG dựng hàng chú giải cho trạng thái buổi (Tracy gỡ 05/09)',
      !/dbc-tt-cg/.test(html) && !/theo ô tick của người chủ trì/.test(html));
 
   /* CHƯA ĐỌC ĐƯỢC ≠ CHƯA AI CHỐT. Cùng cái bẫy bài thử ④ đã canh cho nấc "đã
      dự xong", nay lặp lại một tầng trên: sổ về `null` thì phải im, không được
-     dán "chưa chốt" lên mọi buổi đã qua — nó sai đúng về phía làm người điều
+     dán "chưa xong" lên mọi buổi đã qua — nó sai đúng về phía làm người điều
      hành tưởng cả đội bỏ bê. */
   const h2 = m.ve(d, QUA, '2026-09-06', AI, null);
   la('sổ việc chưa đọc được → không dán nhãn nào lên buổi đã qua',

@@ -56,22 +56,28 @@ function la(ten, dieu, them){
 }
 
 /* ══ CỐC — dựng đủ thứ khối mã cần, không hơn ═════════════════════════════ */
-const NGUON = catKhoi('let TM_VIEW  =', 'function moTab(ten, vuaNap){');
+/* Bộ hàm BA CẤP nằm ở đầu tệp, xa khối màn Team — cắt riêng rồi ghép vào, chứ
+   đừng chép lại nội dung nó ra đây: chép là bài thử tự canh bản sao của mình,
+   và luật đổi trên app thì bài vẫn xanh. */
+const BA_CAP = catKhoi('const CAP = {QUAN_TRI',
+                       'const laMember = ()  => capCua(ME) === CAP.MEMBER;');
+const NGUON = BA_CAP + '\n'
+            + catKhoi('let TM_VIEW  =', 'function moTab(ten, vuaNap){');
 
 const NGUOI = () => ([
   {id:'a', ten:'Andy',  ho_ten:'', email:'nguoi-03@vidu.com',  vai:'CEO',
    chuc_nang_ids:[1,4], la_lead:true, la_dieu_hanh:true,  la_quan_tri:true,
    thu_tu:1, leader_id:null, ngay_nghi:null, ngay_sinh:null, so_dien_thoai:''},
-  {id:'t', ten:'Tracy', ho_ten:'Trần Mai Trang', email:'nguoi-09@vidu.com', vai:'Vận hành',
+  {id:'t', ten:'Tracy', ho_ten:'Trần Mai Trang', email:'nguoi-12@vidu.com', vai:'Vận hành',
    chuc_nang_ids:[2,4], la_lead:true, la_dieu_hanh:true,  la_quan_tri:true,
    thu_tu:2, leader_id:'a', ngay_nghi:null, ngay_sinh:'1990-03-18', so_dien_thoai:'0912'},
-  {id:'p', ten:'Peter', ho_ten:'', email:'nguoi-07@vidu.com', vai:'Lead Sales',
+  {id:'p', ten:'Peter', ho_ten:'', email:'nguoi-08@vidu.com', vai:'Lead Sales',
    chuc_nang_ids:[4], la_lead:true, la_dieu_hanh:false, la_quan_tri:false,
    thu_tu:3, leader_id:'a', ngay_nghi:null, ngay_sinh:null, so_dien_thoai:''},
   {id:'n', ten:'Andrew', ho_ten:'Trương Văn Tiến', email:'nguoi-02@vidu.com', vai:'Nhân sự',
    chuc_nang_ids:[], la_lead:false, la_dieu_hanh:false, la_quan_tri:false,
    thu_tu:4, leader_id:null, ngay_nghi:null, ngay_sinh:null, so_dien_thoai:''},
-  {id:'x', ten:'Xưa',   ho_ten:'', email:'nguoi-10@vidu.com',   vai:'',
+  {id:'x', ten:'Xưa',   ho_ten:'', email:'nguoi-15@vidu.com',   vai:'',
    chuc_nang_ids:[3], la_lead:false, la_dieu_hanh:false, la_quan_tri:false,
    thu_tu:5, leader_id:null, ngay_nghi:'2026-08-01', ngay_sinh:null, so_dien_thoai:''}
 ]);
@@ -126,7 +132,7 @@ console.log('\n① NGƯỜI MỚI KHÔNG ĐƯỢC THÀNH LEAD — ghi thẳng fa
   const k = coc({me:{id:'t', ten:'Tracy', la_quan_tri:true}});
   k.dat('TM_DS', NGUOI()); k.dat('TM_COT', new Set(Object.keys(NGUOI()[0]))); k.dat('TM_SUA', null); k.dat('TM_KHOI', [4]);
   k.o['tm-ten']   = {value:'Javis'};
-  k.o['tm-email'] = {value:'nguoi-06@vidu.com'};
+  k.o['tm-email'] = {value:'nguoi-07@vidu.com'};
   ['tm-hoten','tm-sinh','tm-dt','tm-vai'].forEach(i => k.o[i] = {value:''});
   return_ = k.tmLuu();
   return_.then(() => {
@@ -137,7 +143,7 @@ console.log('\n① NGƯỜI MỚI KHÔNG ĐƯỢC THÀNH LEAD — ghi thẳng fa
     la('la_dieu_hanh và la_quan_tri cũng thẳng false',
        g.la_dieu_hanh === false && g.la_quan_tri === false);
     la('⑤ email hạ chữ thường trước khi gửi',
-       g.email === 'nguoi-06@vidu.com', 'nhận được ' + g.email);
+       g.email === 'nguoi-07@vidu.com', 'nhận được ' + g.email);
     la('thu_tu nối tiếp người cuối, không đè ai', g.thu_tu === 6, 'nhận được ' + g.thu_tu);
     la('khối đang chọn đi theo', JSON.stringify(g.chuc_nang_ids) === '[4]');
     ke2();
@@ -154,7 +160,7 @@ console.log('\n② KHÔNG TỰ GỠ QUYỀN QUẢN TRỊ CỦA CHÍNH MÌNH');
   k.dat('TM_SUA', k.doc('TM_DS').find(n => n.id === 't'));
   k.dat('TM_KHOI', [2,4]);
   k.o['tm-ten']   = {value:'Tracy'};
-  k.o['tm-email'] = {value:'nguoi-09@vidu.com'};
+  k.o['tm-email'] = {value:'nguoi-12@vidu.com'};
   ['tm-hoten','tm-sinh','tm-dt','tm-vai','tm-cap'].forEach(i => k.o[i] = {value:''});
   /* Ô tick bị `disabled` nên trình duyệt vẫn trả `checked=false` nếu ai đó dựng
      lại DOM — đây đúng là cảnh phải chặn. */
@@ -179,7 +185,7 @@ function ke2b(){
   k.dat('TM_SUA', k.doc('TM_DS').find(n => n.id === 'p'));   // sửa NGƯỜI KHÁC
   k.dat('TM_KHOI', [4]);
   k.o['tm-ten']   = {value:'Peter'};
-  k.o['tm-email'] = {value:'nguoi-07@vidu.com'};
+  k.o['tm-email'] = {value:'nguoi-08@vidu.com'};
   ['tm-hoten','tm-sinh','tm-dt','tm-vai','tm-cap'].forEach(i => k.o[i] = {value:''});
   k.o['tm-lead'] = {checked:false}; k.o['tm-dh'] = {checked:false}; k.o['tm-qt'] = {checked:true};
   k.tmLuu().then(() => {
@@ -202,7 +208,7 @@ console.log('\n③ CẦU BẮC QUA KHOẢNG CHỜ — máy chủ chưa có bốn
   const k = coc({me:{id:'t', ten:'Tracy', la_quan_tri:true}, ds:cu});
   k.dat('TM_DS', cu); k.dat('TM_COT', new Set(Object.keys(cu[0]))); k.dat('TM_SUA', null); k.dat('TM_KHOI', []);
   k.o['tm-ten']   = {value:'Ham'};
-  k.o['tm-email'] = {value:'nguoi-05@vidu.com'};
+  k.o['tm-email'] = {value:'nguoi-06@vidu.com'};
   k.o['tm-hoten'] = {value:'Nguyễn Xuân Đại'};
   k.o['tm-sinh']  = {value:'1995-01-01'};
   k.o['tm-dt']    = {value:'0999'};
@@ -223,17 +229,32 @@ console.log('\n③ CẦU BẮC QUA KHOẢNG CHỜ — máy chủ chưa có bốn
 }
 
 function ke4(){
-console.log('\n④ KHÔNG QUYỀN THÌ KHÔNG CHIP NÀO');
+/* LUẬT ĐỔI 07/09 — ba cấp. Trước bản này chip đọc từng cờ một, nên quản trị đeo
+   cùng lúc "Lead" và "Quản trị" (họ mang CẢ HAI cờ), còn người không cờ nào thì
+   trần trụi. Nay CẤP là một chip duy nhất, và Member CÓ chip vì từ hôm nay cấp
+   ấy mang một bộ quyền riêng — một dòng người không chip là một dòng thiếu tin.
+   `la_dieu_hanh` vẫn là quyền lẻ cắt ngang ba cấp nên giữ chip riêng. */
+console.log('\n④ MỖI NGƯỜI ĐÚNG MỘT CHIP CẤP, CỘNG QUYỀN LẺ NẾU CÓ');
 {
   const k = coc({me:{id:'t'}});
   const ds = NGUOI();
-  la('người không quyền: chuỗi chip RỖNG, không có chip Thành viên',
-     k.tmChips(ds.find(n => n.id === 'n')) === '',
-     'nhận được: ' + k.tmChips(ds.find(n => n.id === 'n')));
-  la('lead thường đúng một chip', k.tmChips(ds.find(n=>n.id==='p')) === '<span class="tm-q">Lead</span>');
-  la('quản trị đủ ba chip, và chip Quản trị đi nền đặc',
-     /tm-q qt">Quản trị/.test(k.tmChips(ds.find(n=>n.id==='t')))
-     && (k.tmChips(ds.find(n=>n.id==='t')).match(/tm-q/g)||[]).length === 3);
+  const chip = id => k.tmChips(ds.find(n => n.id === id));
+  const dem  = id => (chip(id).match(/tm-q/g) || []).length;
+
+  la('người không cờ nào đọc ra Member, và đeo đúng một chip',
+     chip('n') === '<span class="tm-q mb">Member</span>',
+     'nhận được: ' + chip('n'));
+  la('lead thường đúng một chip', chip('p') === '<span class="tm-q">Lead</span>');
+  la('quản trị đọc ra Quản trị, KHÔNG kèm chip Lead thứ hai',
+     /tm-q qt">Quản trị/.test(chip('t')) && !/>Lead</.test(chip('t')),
+     'nhận được: ' + chip('t'));
+  la('quản trị kiêm điều hành: đúng hai chip — một cấp, một quyền lẻ',
+     dem('t') === 2 && /tm-q dh">Điều hành/.test(chip('t')),
+     'nhận được: ' + chip('t'));
+  la('ba cấp phân biệt bằng ĐỘ ĐẬM NỀN, không bằng ba màu rời',
+     /\.tm-q\.mb\{background:var\(--card2\)/.test(SRC)
+     && /\.tm-q\.qt\{background:var\(--xanh-dam\)/.test(SRC),
+     'Quản trị nền đặc · Lead viền · Member nền chìm');
 }
 
 console.log('\n⑥ HAI VIEW ĐẾM HAI KIỂU, VÀ CHÚNG PHẢI KHÔNG TRÙNG NHAU');
@@ -245,8 +266,16 @@ console.log('\n⑥ HAI VIEW ĐẾM HAI KIỂU, VÀ CHÚNG PHẢI KHÔNG TRÙNG N
   la('view Nhân sự: 4 người đang làm, mỗi người ĐÚNG một dòng',
      (nsHtml.match(/class="tm-ns"/g) || []).length === 4,
      'đếm được ' + (nsHtml.match(/class="tm-ns"/g)||[]).length);
-  la('dòng đo của nó nói người · lead · quản trị',
-     nsDo === '4 người · 3 lead · 2 quản trị', 'nhận được: ' + nsDo);
+  /* ĐẾM THEO CẤP, KHÔNG THEO CỜ (07/09). Bản cũ đọc "4 người · 3 lead · 2 quản
+     trị" — hai con số sau cộng lại là 5 trên tổng 4, vì quản trị mang cả cờ
+     lead nên bị đếm hai lần. Một dòng đo mà tự nó không cộng được là một dòng
+     đo không ai tin. Ca này canh cả câu chữ lẫn phép cộng. */
+  la('dòng đo đếm theo CẤP: người · quản trị · lead · member',
+     nsDo === '4 người · 2 quản trị · 1 lead · 1 member', 'nhận được: ' + nsDo);
+  la('ba con số cấp cộng lại đúng bằng quân số',
+     (() => { const n = nsDo.match(/(\d+) người · (\d+) quản trị · (\d+) lead · (\d+) member/);
+              return !!n && (+n[2]) + (+n[3]) + (+n[4]) === (+n[1]); })(),
+     'nhận được: ' + nsDo);
   la('người đã nghỉ KHÔNG nằm trong danh sách chính', !/>Xưa</.test(nsHtml.split('tm-nghi-nut')[0]));
 
   k.dat('TM_VIEW', 'phongban'); k.veTeam();

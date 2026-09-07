@@ -83,7 +83,13 @@ console.log('\n③ Cùng tên ô là cố ý — nên chỉ MỘT cửa được
      TIÊN trong cây, nên nếu khung của cửa đã đóng còn nằm đó thì mọi lượt đọc
      đều trỏ nhầm sang nó — cửa đang mở thì trơ ra, và không lỗi nào báo. Làn
      CGV đã ghi bẫy này cho một chiều; đây là chiều còn lại. */
-  const dong = catKhoi('function lcDongCua(){', '\n\nfunction lcMoForm');
+  /* MỐC CUỐI LÀ DẤU ĐÓNG HÀM, KHÔNG PHẢI TÊN HÀM KẾ TIẾP. Bản đầu cắt tới
+     `\n\nfunction lcMoForm`, và mốc ấy vỡ ngay lượt đầu có người viết một chú
+     thích phía trên `lcMoForm` (làn GTB, 07/09) — bài thử KHÔNG đỏ mà CHẾT lúc
+     khởi động, kéo theo mọi ca của nó biến mất trong im lặng. Trong tệp này thì
+     chú thích trên đầu hàm là chuyện thường, nên một mốc dựa vào việc KHÔNG có
+     chú thích là một mốc mượn may. `\n}` là dấu đóng của chính hàm đang cắt. */
+  const dong = catKhoi('function lcDongCua(){', '\n}');
   la('`lcDongCua` dọn trắng khung của cửa đầy đủ khi đóng',
      /lc-than'\)\.innerHTML\s*=\s*''/.test(dong) || /than\.innerHTML\s*=\s*''/.test(dong),
      'cửa đóng mà khung còn trong cây thì cửa gộp đọc nhầm sang ô của nó');

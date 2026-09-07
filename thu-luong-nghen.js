@@ -90,6 +90,12 @@ const DW_KHOA_NGHI = 'k';
 global.localStorage = {removeItem(){}, getItem(){ return null }, setItem(){}};
 const homNay = () => '2026-08-13';
 const toast = m => GHI.push({loai: 'toast', m});
+/* HOÀN TÁC (07/09, TRI-156) — giả có chủ ý. Bộ thử này hỏi về luồng Nghẽn, một
+   chuyện khác hẳn; cho chụp trả rỗng thì `htNhan` trả `undefined` và `toast(m,
+   undefined)` chạy y hệt `toast(m)`, tức lời khai của bộ thử không đổi một chữ.
+   Đường hoàn tác có bài riêng: `thu-hoan-tac.js`. */
+const htChupTheo = async () => null;
+const htNhan = () => undefined;
 const timO = ma => ma ? {ma, qua: '🍎'} : null;
 const gioChu = p => p + ' phút';
 /* Cụm phiên deepwork mà `dwTheoTrangThai` cần (TRI-126) — từ 05/09 `datNghen`

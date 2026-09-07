@@ -6430,7 +6430,7 @@ i.dbc-bieu{flex:none;font-style:normal;font-size:.76rem;color:var(--dim2)}
 .dbc-b.xong .dbc-ten{color:var(--tt-xong)}
 /* `.dbc-tt-cg` GỠ 05/09 cùng hai hàng chú giải — nó chỉ sống trong hàng ấy. */
 
-/* THẺ NGOẠI LỆ — "chưa chốt" và "dời sang …". CẢ HAI CÙNG MỘT MÀU XÁM (Tracy
+/* THẺ NGOẠI LỆ — "chưa xong" và "dời sang …". CẢ HAI CÙNG MỘT MÀU XÁM (Tracy
    chốt 03/09: *"việc mà bị dời thì màu xám như vậy oke"*). Chúng không cần
    khác màu nhau vì chữ đã nói rõ, và một dòng bóng còn khác cả dáng: lùi màu,
    không thẻ tên người, không con số bên phải. Xám chứ không đỏ — cả hai đều
@@ -6471,6 +6471,12 @@ i.dbc-bieu{flex:none;font-style:normal;font-size:.76rem;color:var(--dim2)}
    làm gì" — hai câu, hai dòng, đúng cái phân biệt mà ô Loại vừa dựng ra. */
 .lcb-loai{display:inline-flex;align-items:center;gap:6px;font-size:.86rem}
 .lcb-loai .o-so{flex:none}
+/* Ô LOẠI CỦA NGƯỜI ĐANG XEM (07/09) — đứng đúng chỗ nhãn chỉ-đọc cũ, vì dòng ấy
+   vốn đã trả lời câu *để làm gì*. Ăn hết bề ngang: tên cam kết dài tới bốn năm
+   chữ, và đây là chỗ duy nhất trong cửa còn đủ chiều ngang cho nó. Đặt xuống
+   hàng nút cuối thì ô bị ba nút ép còn một mẩu, đọc ra "2. Công n…". */
+.lcb-loai-toi{display:flex}
+.lcb-loai-toi select{width:100%}
 /* Nhãn phụ trên dòng ngày-giờ của cửa buổi: buổi này đã bị dời riêng khỏi
    luật lặp. Chữ nhỏ và mờ — nó là chú thích cho con số bên cạnh, không
    phải một tin đứng riêng. */
@@ -9499,6 +9505,44 @@ input[type=radio]:active{transform:translateY(1px)}
 .vd-tt.xong{color:var(--xanh);--p:360deg}
 .vd-tt.bo{color:var(--dim2);--p:360deg;opacity:.55}
 
+/* Vòng trạng thái trên DÒNG là một nút bấm được (Tracy 06/09, xin đúng lối
+   Linear: bấm vòng là đổi nấc, khỏi mở gì). Nút bọc ngoài chứ không biến chính
+   `.vd-tt` thành `<button>` — vòng ấy còn được vẽ trong đầu nhóm và trong menu,
+   nơi nó chỉ là một hình. Padding 7px cho vùng chạm 28px (ngón tay cần chừng
+   ấy) mà lưới không xê dịch: margin âm trả lại đúng phần vừa nống ra. */
+.vd-tt-nut{flex:none;display:flex;align-items:center;justify-content:center;
+  padding:7px;margin:-7px;border:0;background:none;cursor:pointer;border-radius:50%}
+.vd-tt-nut:hover{background:var(--card2)}
+.vd-tt-nut:focus-visible{outline:2px solid var(--xanh);outline-offset:-2px}
+
+/* Menu nấc. Mượn nguyên hình của menu lọc `Việc hôm nay` (05/09) — cùng nền,
+   cùng viền, cùng bo, cùng bóng — nhưng neo bằng `fixed` theo toạ độ nút vừa
+   bấm, vì nó bung ra từ một dòng bất kỳ trong danh sách chứ không từ một chip
+   đứng yên một chỗ. */
+/* Tầng z phải đứng TRÊN lớp cửa sổ nổi (`.cua-noi-nen` 70, chồng cửa 75) từ
+   khi cửa chi tiết cũng bung menu này ra (làn VDN). Ở 60/61 nó vẫn "mở" đúng
+   theo mọi phép đo trong mã — có kích thước, có toạ độ, `elementFromPoint` chạm
+   được — mà mắt không thấy gì, vì nền cửa nằm đè lên trên. Dừng dưới 80, chỗ
+   `.tlg-bong` đang đứng. */
+.vd-nac-nen{position:fixed;inset:0;z-index:76}
+.vd-nac-menu{position:fixed;z-index:77;min-width:196px;
+  font-size:.82rem;font-weight:500;color:var(--text);
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r3);
+  box-shadow:var(--noi-2);padding:5px;overflow:hidden}
+.vd-nac-dong{display:flex;align-items:center;gap:9px;padding:7px 9px;width:100%;
+  border:0;background:none;color:inherit;font:inherit;text-align:left;
+  border-radius:var(--r2);cursor:pointer;white-space:nowrap}
+.vd-nac-dong:hover{background:var(--card2)}
+.vd-nac-dong .ten{flex:1;min-width:0}
+/* Nấc đang đứng đeo dấu chọn. Đây là chỗ DUY NHẤT trong khối vấn đề dùng một
+   dấu ✓: luật *trạng thái bằng màu, không bằng dấu* nói về thẻ và dòng, còn
+   trong một menu chọn thì dấu chọn là nghĩa của chính cái menu — Linear cũng
+   đánh dấu đúng kiểu này. */
+.vd-nac-dong .dau{color:var(--xanh);font-weight:700}
+/* Lối ra đọc bằng màu đỏ khi nó vào menu. Ở hàng nút nó đeo viền đỏ; bỏ luôn cả
+   màu là mất dấu hiệu duy nhất nói đây là chỗ không quay lại. */
+.vd-nac-dong.pha{color:var(--do)}
+
 /* Vạch mức — ba thanh cao dần, hình ưu tiên quen thuộc. Ô giữ chỗ 13px ở MỌI
    dòng để lưới thẳng hàng, nhưng CHỈ mức 1 vẽ vạch: một dấu lúc nào cũng hiện
    thì thôi làm tín hiệu (cùng luật với nhãn "Nghiêm trọng" của bản cũ). */
@@ -9564,6 +9608,10 @@ input[type=radio]:active{transform:translateY(1px)}
   border:1px solid transparent}
 .vd-nac-hang .pha{background:none;border:1.5px solid var(--do);color:var(--do);
   font-weight:600}
+/* Nút ⋯ — cửa vào những lối còn lại. Đi nền chìm vì nó không phải một hành
+   động, nó là một cái cửa; và hẹp hơn nút chữ vì nó không có chữ nào chống
+   ngang. */
+.vd-nac-hang .khac{padding:9px 14px;font-size:1rem;line-height:.85}
 /* Mạch bàn luận: danh sách PHẲNG theo thời gian, không phân cấp và không lệch
    câu của mình sang phải kiểu tin nhắn. Đây là biên bản một cuộc bàn — ai nói
    cũng đứng cùng một lề thì đọc từ trên xuống mới ra được mạch. */
@@ -9696,6 +9744,11 @@ textarea.bt-o{min-height:92px;resize:vertical;line-height:1.5}
   white-space:nowrap;border:1px solid var(--line);background:transparent;color:var(--dim2)}
 .tm-q.dh{background:var(--card2);color:var(--dim);border-color:transparent}
 .tm-q.qt{background:var(--xanh-dam);color:var(--chu-tren-xanh-dam);border-color:transparent}
+/* Member — nấc chìm nhất trong ba cấp (07/09). Ba cấp phân biệt bằng ĐỘ ĐẬM
+   NỀN, không bằng ba màu khác nhau: màu ở đây không mang nghĩa "tốt/xấu", nó
+   chỉ nói ai rộng quyền hơn ai, và một thang độ đậm đọc ra thứ bậc ngay còn ba
+   màu rời thì phải học thuộc. Quản trị nền đặc · Lead viền · Member nền chìm. */
+.tm-q.mb{background:var(--card2);color:var(--dim2);border-color:transparent}
 .tm-sua{flex:none;width:30px;height:30px;border:0;border-radius:50%;cursor:pointer;
   background:var(--card2);color:var(--dim2);display:grid;place-items:center;padding:0}
 .tm-sua svg{width:15px;height:15px}
@@ -9838,8 +9891,17 @@ textarea.bt-o{min-height:92px;resize:vertical;line-height:1.5}
    `.hs-gt` là giá trị bị đẩy ra giữa hàng — bản đầu 05/09 đúng như vậy, bắt
    được lúc dựng trang xem thử từ khối CSS thật. */
 .hs-gt.hs-chua{color:var(--tt-chua)}
-.cn{display:flex;gap:6px;flex-wrap:wrap}
-.cn i{font-style:normal;font-size:.78rem;font-weight:600;padding:3px 10px;
+/* ⚠️ TÊN LỚP NÀY TỪNG LÀ `.cn` TRƠN, từ 05/09 tới 07/09, và đó là một cái bẫy
+   đặt sẵn. Lịch tuần cũng gắn ` cn` cho ô đầu cột Chủ nhật (`.tlg-ten.cn`) —
+   hai chữ viết tắt khác nghĩa, "chức năng" và "chủ nhật", trùng đúng một cái
+   tên hai chữ cái. Luật của lịch chỉ khai `color`, nên `display:flex` dưới đây
+   rơi trúng ô ấy: chữ "CN" và số ngày thành hai phần tử flex nằm ngang cạnh
+   nhau thay vì xếp dọc, và `display:block` của thẻ `<b>` mất tác dụng. Tracy
+   báo bằng ảnh chụp 07/09.
+   Luật rút ra: tên lớp hai chữ cái, không tiền tố, là tên chờ đụng — đặt tên
+   theo họ của nó (`hs-` cho màn hồ sơ). */
+.hs-cn{display:flex;gap:6px;flex-wrap:wrap}
+.hs-cn i{font-style:normal;font-size:.78rem;font-weight:600;padding:3px 10px;
   border-radius:999px;background:var(--card2);border:1px solid var(--line);color:var(--dim)}
 
 .pn-hang{display:flex;align-items:center;gap:12px}
@@ -10648,6 +10710,14 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- CỬA SOẠN TIN (TRI-96). Ruột dựng bằng `btVeCua()` mỗi lần mở: cùng một
      khung phục vụ cả tin mới lẫn tin đang sửa, và các chip tag phải vẽ lại
      theo trạng thái đang chọn. Cùng lối `lc-cua` đã dùng cho sự kiện. -->
+<!-- Menu đổi nấc bung ra từ vòng trạng thái của một dòng (Tracy 06/09, lối
+     Linear). Nằm ở gốc `<body>` chứ không trong danh sách: một menu dựng bên
+     trong dòng sẽ bị chính khung cuộn của danh sách cắt cụt, và mỗi lượt vẽ lại
+     danh sách là nó biến mất giữa chừng. -->
+<div class="vd-nac-nen" id="vd-nac-nen" hidden onclick="vdDongMenuNac()"></div>
+<div class="vd-nac-menu" id="vd-nac-menu" hidden role="menu"
+     aria-label="Đổi trạng thái vấn đề"></div>
+
 <div class="cua-noi-nen" id="vd-cua" onclick="if(cuaNenNgoai(event))vdDongCua()">
   <div class="cua-noi cua-hep" role="dialog" aria-modal="true" aria-labelledby="vd-ten-cua">
     <div class="cua-noi-dau">
@@ -11014,7 +11084,7 @@ document.addEventListener('DOMContentLoaded', () => {
        xuyên suốt; sáu lưới rời sẽ lệch cột nhau ngay khi tên khối dài ngắn khác
        nhau. -->
   <div class="the" id="the-vcd-doi">
-    <h2>🏛 Cả công ty theo khối chức năng</h2>
+    <h2 id="vcd-doi-tieu">🏛 Cả công ty theo khối chức năng</h2>
     <div id="vcd-doi">
     <div class="tq-so" id="rv-so"></div>
 
@@ -11450,8 +11520,110 @@ if (typeof supabase === 'undefined'){
 const CHUA_CAU_HINH = SUPABASE_URL.includes('DIEN-VAO');
 const sb = CHUA_CAU_HINH ? null : supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let ME = null;            // dòng của mình trong bảng nguoi
-let DOI = [];             // cả 12 người
+let DOI = [];             // cả team đang làm việc (đã lọc người đã nghỉ)
 let CHUC_NANG = [];       // sáu khối chức năng, xếp theo `thu_tu`
+
+/* ══ BA CẤP DÙNG APP (Tracy chốt 07/09) ══════════════════════════════════════
+   Quản trị → Lead → Member. Suy thẳng từ hai cờ đã có trên bảng `nguoi`, không
+   dựng cột thứ ba: hai nguồn cho cùng một câu hỏi thì sớm muộn trôi lệch nhau,
+   và dữ liệu hôm nay đã khớp sẵn ba cấp (soi máy chủ 07/09: 2 · 5 · 6).
+
+   ⚠️ THỨ TỰ HỎI LÀ MỘT PHẦN CỦA LUẬT. Quản trị mang CẢ HAI cờ — bảy người đội
+   cũ đều bật `la_lead`, trong đó hai người bật thêm `la_quan_tri`. Nên phải hỏi
+   `la_quan_tri` TRƯỚC; đảo hai dòng lại là Tracy và Andy đọc ra "Lead".
+
+   Member chịu BA giới hạn, mỗi chỗ gọi đúng `laMember()` dưới đây:
+     ① không đổi sang phạm vi Cả ROVA ở màn Cam kết
+     ② màn Dự án chỉ hiện dự án có tên mình
+     ③ màn Việc cố định chỉ hiện khối chức năng của mình
+
+   🪤 BA GIỚI HẠN, KHÔNG PHẢI SÁU — sửa 07/09, cùng ngày dựng. Bản đầu còn chặn
+   Member khỏi tab Bảng đo và giấu hàng deep work đầu màn Hôm nay, vì đọc câu
+   Tracy *"không cho tài khoản này vào dashboard… bảng deep work"* thành "chặn
+   XEM". Tracy nói lại: *"ý là bỏ tên Hương Giang ra khỏi đó chứ có phải bảo là
+   để Hương Giang không thấy mấy cái bảng đó đâu"*. Hai việc khác hẳn nhau — một
+   cái là QUYỀN, cái kia là AI ĐỨNG TRONG BẢNG, và cái sau đi theo cờ
+   `ngoai_bang_do` ngay dưới. Member xem Bảng đo và hàng deep work như mọi
+   người; thứ đổi là ai có TÊN trong đó.
+
+   ⛔ KHÔNG cắt quyền ĐĂNG VẤN ĐỀ. Tracy chốt 07/09: *"đăng vấn đề thì cho toàn
+   bộ 12 người"*. `thu-ba-cap.js` có một ca canh đúng câu ấy, để đợt siết sau
+   không vô tình quét nhầm nó.
+
+   ⚠️ ĐÂY LÀ LỚP GIAO DIỆN, KHÔNG PHẢI HÀNG RÀO. Nó dọn mắt và chặn đường bấm.
+   Hàng rào thật nằm ở RLS trên máy chủ, và nó ĐÃ ĐƯỢC SIẾT theo cấp ngày 07/09
+   (TRI-144, bốn tệp `nang-cap-cap-dang-nhap` · `-rls-cam-ket` · `-rls-du-an` ·
+   `-rls-viec-co-dinh`). Sửa mã ở đây KHÔNG nới được quyền: bỏ `laMember()` đi
+   thì nút hiện ra, bấm vào máy chủ vẫn từ chối.
+
+   ⚠️ NHƯNG HÀNG RÀO ẤY CHƯA KÍN, và hai chỗ hở là CÓ CHỦ Ý — cùng một lý do:
+   bảng đo mở cho MỌI cấp, nên không siết được thứ nuôi nó.
+     · việc của dự án đọc thẳng qua bảng `task`  → câu hỏi G-01.ap
+     · nhịp tuần và số theo ngày của khối khác   → câu hỏi G-01.aq
+   Đừng đọc mã này thành "Member không đọc được gì cả", và cũng đừng lặng lẽ
+   siết hai chỗ ấy: `ket_qua_ngay` có một vế `exists` đứng trên `nhip`, siết là
+   dải 💎🪨💩 của người ngoài khối biến mất khỏi bảng đo của Member. Hàm
+   `thu_hang_rao_cap()` trên máy chủ đo cả hàng rào lẫn hai chỗ hở bằng số. */
+const CAP = {QUAN_TRI: 'Quản trị', LEAD: 'Lead', MEMBER: 'Member'};
+const capCua   = (n) => !n                 ? null
+                      : n.la_quan_tri      ? CAP.QUAN_TRI
+                      : n.la_lead          ? CAP.LEAD
+                      :                      CAP.MEMBER;
+const laMember = ()  => capCua(ME) === CAP.MEMBER;
+
+/* ══ AI ĐỨNG TRONG BẢNG ĐO (Tracy chốt 07/09) ════════════════════════════════
+   Tracy: *"bỏ Hương Giang khỏi dashboard (bảng đo) và tên ở đầu mục hôm nay
+   đi"*. Không phải chuyện QUYỀN — bạn ấy không bị chặn khỏi cái gì cả; chuyện ở
+   đây là bạn ấy không tham gia cuộc đo, nên một dòng 0 quả mang tên bạn ấy nằm
+   giữa bảng xếp hạng là một con số nói sai về một người.
+
+   ⚠️ ĐI THEO MỘT CỜ, KHÔNG GHIM TÊN. Ghim `ten === 'Hương Giang'` vào mã là
+   ngày có trợ lý thứ hai lại phải sửa mã, và ngày bạn ấy đổi tên thì bảng lặng
+   lẽ nhận lại một dòng không ai chờ. Cờ `nguoi.ngoai_bang_do` do
+   `nang-cap-ngoai-bang-do.sql` dựng, mặc định `false` — người thứ mười ba vào
+   app vẫn đứng trong bảng như mọi người, phải khai mới ra ngoài.
+
+   ⛔ KHÁC HẲN `laMember()`. Cấp nói AI ĐƯỢC XEM GÌ; cờ này nói AI ĐƯỢC ĐẾM.
+   Đừng gộp hai câu hỏi ấy vào một chỗ: một người có thể đứng ngoài bảng mà vẫn
+   xem được mọi màn, và ngược lại.
+
+   📌 CẬP NHẬT CHIỀU 07/09 — cờ nay mang thêm 5 người, và mang tạm thời. Tracy:
+   *"tạm thời ẩn giúp tôi tên của 5 member ra khỏi dashboard và bảng ở đầu mục
+   hôm nay… tôi pending chưa onboard luôn hôm nay mà đợi mấy hôm nữa (chỉ là ẩn
+   tên đi chứ vẫn giữ acc của họ đã đăng ký)"*. Năm người ấy vào sổ ngày 06/09
+   và tới giờ chưa một phiên deep work, chưa một task, chưa một ngày nộp — nên
+   họ là năm dòng 0 nằm giữa bảng xếp hạng. Khai bằng
+   `nang-cap-tam-an-5-member-chua-onboard.sql`; onboard xong thì GỠ, câu lệnh gỡ
+   nằm sẵn ở cuối tệp ấy.
+
+   ⚠️ HAI LÝ DO KHÁC NHAU CÙNG ĐI CHUNG MỘT CỜ. Hương Giang đứng ngoài VĨNH
+   VIỄN (trợ lý, không tham gia cuộc đo); năm người kia đứng ngoài TỚI KHI
+   onboard. Cờ không phân biệt được hai lý do ấy — nên chỗ ghi lý do là tệp SQL,
+   và ai gỡ thì gỡ đúng năm email đã ghi trong đó, đừng gỡ sạch cả cột. */
+const DOI_DO = () => DOI.filter(n => !n.ngoai_bang_do);
+
+/* ══ AI HIỆN TRONG Ô CHỌN NGƯỜI (Tracy chốt 07/09, chiều) ════════════════════
+   Tracy, nhìn hàng chip mời người của cửa sự kiện: *"chỗ này xóa tên Hương
+   Giang đi nha"*, rồi mở rộng: *"bỏ hết ở những chỗ chọn nhé"*.
+
+   ⛔ PHẢI LÀ CỜ THỨ HAI, KHÔNG DÙNG LẠI `ngoai_bang_do`. Cờ kia đang mang SÁU
+   người: Hương Giang cộng năm member chưa onboard. Lọc ô chọn theo nó là năm
+   người kia thôi được mời và thôi được giao việc — mà Tracy giữ họ lại đúng để
+   còn giao. Ba câu hỏi khác nhau, và mỗi câu một cột:
+     · `la_quan_tri`/`la_lead` → ai được XEM gì
+     · `ngoai_bang_do`         → ai được ĐẾM trong bảng đo
+     · `ngoai_o_chon` (đây)    → ai được CHỌN để giao hoặc mời
+
+   ⚠️ CHỌN ≠ TRA TÊN. Hàm này chỉ nuôi những chỗ BÀY RA để người dùng bấm chọn.
+   Mọi chỗ dịch một `id` sẵn có thành cái tên — `nguoiTrongDoi` · `duTenNguoi` ·
+   `btTenNguoi` · `capTrenCua` · thẻ người trong bảng cam kết — vẫn đọc thẳng
+   `DOI`. Lọc cả những chỗ ấy thì việc bạn ấy từng nhận hiện ra mang tên "—",
+   và một dòng mất tên còn khó hiểu hơn một dòng có tên không mong đợi.
+
+   SÁU Ô CHỌN đi qua cửa này: mời vào sự kiện · thêm thành viên dự án · chọn PIC
+   cam kết · trao dự án · mời thêm vào dự án · chọn người nhận vấn đề.
+   Khai bằng `nang-cap-ngoai-o-chon.sql`; câu gỡ để sẵn ở cuối tệp ấy. */
+const DOI_CHON = () => DOI.filter(n => !n.ngoai_o_chon);
 
 /* ══ CÔNG TẮC TẦM NHÌN của màn Việc cố định (K-01, Tracy chốt 28/08) ══════════
    Nguyên văn Tracy: *"hiện tại thấy tất cả nhé nhưng mà sau này sẽ chuyên môn
@@ -11467,11 +11639,18 @@ let CHUC_NANG = [];       // sáu khối chức năng, xếp theo `thu_tu`
    của mình, vì máy chủ ép: trigger của bảng `nhip` ném "Việc này thuộc khối
    chức năng khác" khi xếp việc của khối khác vào tuần một người. Nới cửa chọn
    theo công tắc là bày ra một danh sách bấm vào thì lỗi. */
-const VCD_TAM_NHIN = 'tat-ca';        // 'tat-ca' | 'khoi-cua-toi'
+/* ĐÃ VẶN SANG 'theo-cap' NGÀY 07/09 — chính là "ngày chuyên môn hoá" mà đoạn
+   trên chờ. Không viết cứng 'khoi-cua-toi' vì chuyên môn hoá không áp cho mọi
+   người: Tracy chốt ba cấp, và chỉ Member bị thu hẹp. Ba nấc của công tắc:
+     'tat-ca'       — ai cũng thấy sáu khối (bản trước 07/09)
+     'theo-cap'     — Member thấy khối của mình, Lead và Quản trị thấy cả sáu
+     'khoi-cua-toi' — mọi người chỉ thấy khối mình, kể cả Quản trị */
+const VCD_TAM_NHIN = 'theo-cap';      // 'tat-ca' | 'theo-cap' | 'khoi-cua-toi'
 
 function khoiDuocNhin(){
-  if (VCD_TAM_NHIN === 'khoi-cua-toi')
-    return CHUC_NANG.filter(c => (ME.chuc_nang_ids || []).includes(c.id));
+  const hep = VCD_TAM_NHIN === 'khoi-cua-toi'
+           || (VCD_TAM_NHIN === 'theo-cap' && laMember());
+  if (hep) return CHUC_NANG.filter(c => (ME.chuc_nang_ids || []).includes(c.id));
   return CHUC_NANG;
 }
 let NHIP = [];            // việc cố định tuần này của mình
@@ -11799,6 +11978,8 @@ let CO_LICH   = false;                    // máy chủ đã có ba bảng lịc
 let CO_VIEC_BUOI = false;                 // máy chủ đã có task.lich_id chưa
 let CO_DOI_CA_DOI = null;                 // máy chủ đã có hàm doi_gio_viec_theo_chuoi chưa
                                           // null = chưa hỏi lần nào; hỏi bằng chính lượt gọi đầu
+let CO_NOI_CHUOI = null;                  // máy chủ đã có hàm noi_chuoi_lich chưa (TRI-161)
+                                          // null = chưa dò; dò bằng lượt gọi rỗng, hàm trả null
 let CO_MAU_LICH  = false;                 // máy chủ đã có cột `lich_chung.mau` chưa
 let CO_GC_BUOI   = false;                 // máy chủ đã có bảng `ghi_chu_buoi` chưa
 let CO_DOC_SK    = false;                 // máy chủ đã có bảng `doc_su_kien` chưa
@@ -11813,6 +11994,13 @@ let CO_CHOT_LICH = false;                 // máy chủ đã có cột `lich_chu
 let CO_RIENG_TU  = false;                 // máy chủ đã có cột `rieng_tu` (task + lich_chung) chưa
 let CO_LOAI_SK   = false;                 // máy chủ đã có cột `lich_chung.tieu_diem_ma` chưa
 let CO_QUYEN_KHACH = false;               // máy chủ đã có ba cột `lich_chung.khach_*` chưa
+/* Nấc "và các sự kiện tiếp theo" (TRI-146) dựa vào một HÀM, không phải một cột
+   — nên lượt dò cũng là một lượt GỌI, với `p_lich_id` rỗng: hàm trả null và
+   không chạm gì. Đi chung chuyến với bộ dò cột nên không thêm một vòng mạng
+   nào. Dò TRƯỚC chứ không bắt lỗi lúc bấm, khác `CO_DOI_CA_DOI`: ở đó có một
+   đường cũ để rơi xuống, ở đây không — bày một nấc bấm vào thì hỏng còn tệ hơn
+   hẳn không bày. */
+let CO_CAT_CHUOI = false;                 // máy chủ đã có hàm `cat_chuoi_lich` chưa
 
 async function doCotGio(){
   if (!sb) return;
@@ -11820,7 +12008,7 @@ async function doCotGio(){
      Cột `mau` (29/08) vào đúng theo lối `gio_start` đã mở: app đẩy lên sóng
      TRƯỚC hay SAU khi chạy `nang-cap-mau-khoi-viec.sql` đều chạy được. Chưa
      chạy thì dải màu hiện một dòng nhắc, mọi thứ còn lại nguyên vẹn. */
-  const [rg, rm, rl, rv, rml, rgb, rdsk, rtb, rgn, rlv, rdp, rtt, rbl, rcn, rcl, rrt, rlsk, rqk] = await Promise.all([
+  const [rg, rm, rl, rv, rml, rgb, rdsk, rtb, rgn, rlv, rdp, rtt, rbl, rcn, rcl, rrt, rlsk, rqk, rcc] = await Promise.all([
     sb.from('task').select('gio_start').limit(1),
     sb.from('task').select('mau').limit(1),
     sb.from('lich_chung').select('id').limit(1),
@@ -11838,7 +12026,9 @@ async function doCotGio(){
     sb.from('lich_chung').select('da_chot').limit(1),
     sb.from('task').select('rieng_tu').limit(1),
     sb.from('lich_chung').select('tieu_diem_ma').limit(1),
-    sb.from('lich_chung').select('khach_sua').limit(1)
+    sb.from('lich_chung').select('khach_sua').limit(1),
+    /* Lượt dò hàm chia chuỗi — xem chú thích ở chỗ khai `CO_CAT_CHUOI`. */
+    sb.rpc('cat_chuoi_lich', {p_lich_id: null, p_ngay_cat: null, p_dong: null})
   ]);
   CO_GIO_SE = !rg.error;
   CO_MAU    = !rm.error;
@@ -11931,6 +12121,7 @@ async function doCotGio(){
      và mọi chỗ đọc đều hỏi `!== false`, tức rơi về "được phép" đúng như hành vi
      hôm qua khi chưa có khái niệm quyền khách. */
   CO_QUYEN_KHACH = !rqk.error;
+  CO_CAT_CHUOI   = !rcc.error;
   COT_TASK  = COT_TASK_GOC
             + (CO_GIO_SE ? ',gio_start,gio_end' : '')
             + (CO_MAU    ? ',mau'              : '')
@@ -13152,17 +13343,19 @@ async function luuSuaKho(id){
   // đúng hai thứ để ghi: tên đã gỡ chữ, và con số vừa gỡ ra khỏi nó.
   const nd = tenBoThoiLuong('kho-nd', goc);
   const phutTL = tlCua('kho-nd');
-  const {error} = await sb.from('task').update({
+  const patch = {
     noi_dung: nd,
     ...manhLoai(document.getElementById('kho-od').value),
     ...(phutTL ? {thoi_luong_du_kien: phutTL} : {})
-  }).eq('id', id);
+  };
+  const ban = await htChupTheo(id, patch, `«${nd}» trong kho`);
+  const {error} = await sb.from('task').update(patch).eq('id', id);
   if (error) return toast(baoLoiTask(error));
   SUA_KHO = null; tlNhatXong('kho-nd');
   /* Tải lại thay vì vá `KHO` tại chỗ: đổi cam kết là đổi luôn NHÓM mà việc này
      đứng, mà nhóm thì `veKhoiChon` gom lại từ đầu ở mỗi lần vẽ. */
   await taiHomNay();
-  toast('Đã sửa việc trong kho.');
+  toast('Đã sửa việc trong kho.', htNhan(ban));
 }
 
 /* Lấy về = đặt ngày cho cả loạt trong MỘT lần gọi máy chủ. Gọi từng cái một
@@ -13171,11 +13364,16 @@ async function luuSuaKho(id){
 async function layViecVeHomNay(){
   const ds = [...CHON_TICK];
   if (!ds.length) return toast('Tick vài việc đã.');
-  const {error} = await sb.from('task').update({ngay: homNay()}).in('id', ds);
+  /* Cú chạm NHIỀU dòng duy nhất có đường lui, và cũng là cú đáng có đường lui
+     nhất: tick nhầm một việc trong hai mươi rồi bấm là hai mươi việc đổi ngày
+     cùng lúc, mà không ai nhớ nổi từng cái trước đó hẹn ngày nào. */
+  const patch = {ngay: homNay()};
+  const ban = await htChupNhieu(ds, patch, `${ds.length} việc về hôm nay`);
+  const {error} = await sb.from('task').update(patch).in('id', ds);
   if (error) return toast('⚠️ '+error.message);
   CHON_TICK.clear(); CHON_MO = false;
   await taiHomNay();
-  toast(`Đã lấy ${ds.length} việc cho hôm nay.`);
+  toast(`Đã lấy ${ds.length} việc cho hôm nay.`, htNhan(ban));
 }
 
 async function ghiSo(nhipId, v){
@@ -15952,7 +16150,7 @@ function hdVe(){
   if (HD_TAT || !HD_SAN || !DOI.length){ khoi.hidden = true; return; }
   const dang = {};
   HD_DS.forEach(x => { dang[x.nguoi_id] = x; });
-  khoi.innerHTML = DOI.map(n => {
+  khoi.innerHTML = DOI_DO().map(n => {
     const x   = dang[n.id];
     const lop = ['hd-ai'];
     if (x) lop.push(x.dang_nghi ? 'nghi' : 'lam');
@@ -16016,6 +16214,11 @@ document.addEventListener('visibilitychange', () => {
      lặng lẽ nhất trên màn — một cái tên đeo viền xanh trong khi người ta đã
      tắt máy từ lâu vẫn trông y như thật. */
   if (document.visibilityState === 'visible' && ME && Date.now() - HD_LUC > 20000) hdCoTin();
+  /* Khối Chờ bạn cũng cần dây bảo hiểm riêng, và vì một lẽ KHÁC hai dòng trên:
+     nhánh phiên quên tắt bật lên khi đồng hồ vượt 180 phút, không do ai thao
+     tác — nên không tin realtime nào mang nó tới. Quay lại app là soát một
+     lượt. Ngưỡng 60 giây: dòng ấy đứng chờ được, không đáng hỏi dồn. */
+  if (document.visibilityState === 'visible' && ME && Date.now() - CB_LUC > 60000) cbTaiLai();
 });
 
 /* MÀN NÀO ĐANG MỞ THÌ CẦN VẼ LẠI VƯỜN — HAI màn, không một (sửa 29/08).
@@ -16168,7 +16371,21 @@ function rvTrangThai(nguoiId, g){
    con số ấy đứng cạnh nhau và mắt tự so. */
 function nhomTheoKhoi(){
   const nhin = khoiDuocNhin();
-  if (!nhin.length) return [{ten: 'Toàn team', nguoi: DOI, cuaToi: true}];
+  /* Cả màn này đọc `DOI_DO()`, không đọc `DOI` — người mang cờ `ngoai_bang_do`
+     không đứng trong lưới nhịp cũng như không đứng trong bảng đo. Lấy MỘT lần
+     ở đầu hàm rồi dùng lại: gọi lẻ ở bốn chỗ là bốn lượt lọc cho cùng một câu
+     trả lời, và chỉ cần quên một chỗ là một cái tên lọt lại đúng chỗ vừa gỡ. */
+  const doi = DOI_DO();
+  /* ⚠️ HAI LÝ DO KHÁC NHAU CHO CÙNG MỘT DANH SÁCH RỖNG, và chúng đòi hai lối ra
+     ngược nhau (07/09):
+       · bảng `chuc_nang` chưa dựng → chưa ai được xếp khối, bày cả đội dưới một
+         cái tên chung là đúng, không thì màn trống câm;
+       · Member chưa được xếp khối nào → bày cả đội là LỘT SẠCH giới hạn ③ vừa
+         đặt, mà lột trong im lặng: màn trông vẫn bình thường.
+     Nên hỏi cấp trước, rồi mới tới lối ra cũ. */
+  if (!nhin.length && laMember())
+    return [{ten: 'Nhịp của tôi', nguoi: ME ? [ME] : [], cuaToi: true}];
+  if (!nhin.length) return [{ten: 'Toàn team', nguoi: doi, cuaToi: true}];
 
   /* MỌI khối của mình lên đầu, không phải một khối. `sort` của JS giữ nguyên
      thứ tự tương đối của những phần bằng điểm, nên các khối của mình vẫn xếp
@@ -16178,7 +16395,7 @@ function nhomTheoKhoi(){
 
   const nhom = xep
     .map(c => ({ten: c.ten, cuaToi: cuaToi(c),
-                nguoi: DOI.filter(n => (n.chuc_nang_ids || []).includes(c.id))}))
+                nguoi: doi.filter(n => (n.chuc_nang_ids || []).includes(c.id))}))
     .filter(g => g.nguoi.length);
 
   const daCo = new Set(nhin.map(c => c.id));
@@ -16187,7 +16404,7 @@ function nhomTheoKhoi(){
      có mặt thì họ đã được vẽ rồi, vớt lần nữa là đẻ ra một hàng thứ hai mang
      nhãn sai. */
   const ngoai = VCD_TAM_NHIN === 'tat-ca'
-    ? DOI.filter(n => !(n.chuc_nang_ids || []).some(id => daCo.has(id))) : [];
+    ? doi.filter(n => !(n.chuc_nang_ids || []).some(id => daCo.has(id))) : [];
   if (ngoai.length) nhom.push({ten: 'Chưa xếp khối', nguoi: ngoai, cuaToi: false});
   return nhom;
 }
@@ -16195,6 +16412,19 @@ function nhomTheoKhoi(){
 function veRova(){
   const khu = document.getElementById('rv-luoi');
   if (!khu) return;
+  /* GIỚI HẠN ③ CỦA MEMBER — tiêu đề phải nói đúng thứ bên dưới nó. Với Member,
+     lưới này chỉ còn khối của họ, nên để nguyên chữ "Cả công ty" là cái nhãn
+     nói dối: họ sẽ đọc bảng thành "cả công ty có bấy nhiêu người". Dòng chú
+     thích dưới mũ màn cũng nói cùng câu ấy nên sửa kèm — hai chỗ lệch nhau còn
+     khó hiểu hơn một chỗ sai. */
+  const tieu = document.getElementById('vcd-doi-tieu');
+  if (tieu) tieu.textContent = laMember()
+    ? '🏛 Khối chức năng của tôi'
+    : '🏛 Cả công ty theo khối chức năng';
+  const phu = document.querySelector('#man-vcd .dau .ngay');
+  if (phu) phu.textContent = laMember()
+    ? 'nhịp tuần của tôi, và của khối chức năng mình'
+    : 'nhịp tuần của tôi, và của cả công ty theo khối chức năng';
   const hn = homNay(), tuan = RV_TUAN;
   const soNgay = RV_THANG ? 28 : 7;
   const ngay = [...Array(soNgay)].map((_,i) => rvCong(rvCong(tuan, -(soNgay-7)), i));
@@ -16249,8 +16479,12 @@ function veRova(){
      đội nào ai cũng một khối thì dòng này là chữ thừa. */
   const cacNhom = nhomTheoKhoi();
   const tongO   = cacNhom.reduce((t, g) => t + g.nguoi.length, 0);
-  if (tongO > DOI.length)
-    html += `<div class="rv-tong">Toàn team <i>${DOI.length} người</i></div>`;
+  /* So với `DOI_DO().length`, không với `DOI.length`: các nhóm trên kia đã lọc
+     theo cờ rồi, nên đem chúng so với quân số CHƯA lọc là dòng tổng bật lên
+     lúc không có ai đứng hai khối, và tắt đi lúc có. */
+  const quanSo  = DOI_DO().length;
+  if (tongO > quanSo)
+    html += `<div class="rv-tong">Toàn team <i>${quanSo} người</i></div>`;
   cacNhom.forEach(nhom => {
     html += `<div class="rv-khoi${nhom.cuaToi ? ' cua-toi' : ''}">${chuSach(nhom.ten)}
       <i>${nhom.nguoi.length} người</i></div>`;
@@ -16272,24 +16506,28 @@ function veRova(){
 function rvVeSo(ngayKhung, hn){
   const tuan = RV_TUAN;
   const ngay = [...Array(7)].map((_,i) => rvCong(tuan,i));
+  /* Cùng danh sách với lưới ngay trên — bốn ô số này là bản tóm tắt của chính
+     nó. Đếm trên `DOI` trong khi lưới vẽ theo `DOI_DO()` là hai con số cãi
+     nhau trên cùng một màn, và người đọc không có cách nào biết bên nào đúng. */
+  const doi = DOI_DO();
   let tongO = 0, du = 0, bo = 0;
-  DOI.forEach(n => ngay.forEach(g => {
+  doi.forEach(n => ngay.forEach(g => {
     const d = rvTrangThai(n.id, g);
     if (d.ma === 'chuakhai' || d.ma === 'cho' || d.ma === 'nghi') return;
     tongO++; if (d.ma === 'du') du++; if (d.ma === 'bo') bo++;
   }));
   const trongTuan = ngay.includes(hn);
-  const hnDu   = trongTuan ? DOI.filter(n => rvTrangThai(n.id, hn).ma === 'du').length : null;
-  const hnChot = trongTuan ? DOI.filter(n => ['du','gan'].includes(rvTrangThai(n.id, hn).ma)).length : null;
-  const chuaKhai = DOI.filter(n => !(RV_NHIP[n.id] || new Set()).has(tuan)).length;
+  const hnDu   = trongTuan ? doi.filter(n => rvTrangThai(n.id, hn).ma === 'du').length : null;
+  const hnChot = trongTuan ? doi.filter(n => ['du','gan'].includes(rvTrangThai(n.id, hn).ma)).length : null;
+  const chuaKhai = doi.filter(n => !(RV_NHIP[n.id] || new Set()).has(tuan)).length;
 
   const o = (lop, so, phu, nhan) =>
     `<div class="tq-o ${lop}"><b>${so}</b><em>${phu || '&nbsp;'}</em><span>${nhan}</span></div>`;
   document.getElementById('rv-so').innerHTML =
       o('hero', (tongO ? Math.round(du/tongO*100) : 0)+'%', du+'/'+tongO+' ngày-người', 'Tuần này')
-    + o('', trongTuan ? hnDu+'/'+DOI.length : '—', 'trọn vẹn', 'Hôm nay')
+    + o('', trongTuan ? hnDu+'/'+doi.length : '—', 'trọn vẹn', 'Hôm nay')
     + o('', bo, '/ '+tongO+' ô', 'Không báo cáo')
-    + o('', chuaKhai, '/ '+DOI.length, 'Chưa khai việc');
+    + o('', chuaKhai, '/ '+doi.length, 'Chưa khai việc');
 
   /* `#rv-tomtat` đã BỎ 28/08. Nó là con số cho thanh tiêu đề của một thẻ GẤP —
      đọc được một điều mà không phải bung ra. Nay thẻ này là nội dung chính của
@@ -16300,7 +16538,7 @@ function rvVeSo(ngayKhung, hn){
      không làm cả hàm ngã. */
   const oTomTat = document.getElementById('rv-tomtat');
   if (oTomTat) oTomTat.textContent = trongTuan
-    ? `Hôm nay ${hnChot}/${DOI.length} người đã chốt ngày · ${hnDu} người trọn vẹn`
+    ? `Hôm nay ${hnChot}/${doi.length} người đã chốt ngày · ${hnDu} người trọn vẹn`
     : `Đang xem tuần ${rvChuNgay(tuan)} → ${rvChuNgay(rvCong(tuan,6))}`;
 }
 
@@ -16399,13 +16637,19 @@ function rvdVe(){
   const lay  = n => RVD[n.id] || {cam_ket:0, co_dinh:0, phat_sinh:0, phien:0};
   const cong = o => o.cam_ket + o.co_dinh + o.phat_sinh;
 
-  const T = DOI.reduce((s, n) => {
+  /* Khối này là MỘT khối của Bảng đo, nên đi cùng một danh sách với bốn khối
+     kia (`veBangGat` · `veBangCham` · biểu đồ so sánh · dải chuỗi bảy ngày) —
+     cả bốn đã đọc `DOI_DO()` từ 07/09, riêng khối này bị bỏ sót. Hệ quả của
+     việc sót: mẫu số «x/y người có phiên» đếm cả người không đứng trong bảng,
+     nên cùng một màn có hai quân số khác nhau. */
+  const doi = DOI_DO();
+  const T = doi.reduce((s, n) => {
     const o = lay(n);
     return {cam_ket: s.cam_ket + o.cam_ket, co_dinh: s.co_dinh + o.co_dinh,
             phat_sinh: s.phat_sinh + o.phat_sinh};
   }, {cam_ket:0, co_dinh:0, phat_sinh:0});
   const tong    = cong(T);
-  const coPhien = DOI.filter(n => cong(lay(n)) > 0).length;
+  const coPhien = doi.filter(n => cong(lay(n)) > 0).length;
 
   /* Nói thẳng "thứ tự cố định" ngay trên đầu: một bảng có mỏ neo chữ cái và số
      to đậm mặc định bị đọc thành bảng xếp hạng, mà luật thứ tự chỉ nằm trong
@@ -16419,7 +16663,7 @@ function rvdVe(){
   /* Dùng `rvdHmm` chứ không `gioChu`, để một khối chỉ có MỘT lối viết giờ —
      ba ô số và mười hai khối dưới nó phải đọc được cạnh nhau. */
   document.getElementById('rvd-so').innerHTML =
-      o('hero', tong ? rvdHmm(tong) : '—', `${coPhien}/${DOI.length} người có phiên`, 'Toàn team tuần này')
+      o('hero', tong ? rvdHmm(tong) : '—', `${coPhien}/${doi.length} người có phiên`, 'Toàn team tuần này')
     + o('nho',  coPhien ? rvdHmm(Math.round(tong / coPhien)) : '—', 'mỗi người có phiên', 'Trung bình')
     + o('nho',  tong ? Math.round(T.phat_sinh / tong * 100) + '%' : '—',
         tong ? rvdHmm(T.phat_sinh) : '', 'Việc phát sinh');
@@ -16453,7 +16697,7 @@ function rvdVe(){
           `<b><i style="display:inline-block;width:6px;height:6px;border-radius:2px;`
           + `background:var(${c.bien});margin-right:5px"></i>${c.nhan}</b>`).join('')
     + `</div></div>`
-    + DOI.map(n => {
+    + doi.map(n => {
         const d = lay(n), t = cong(d);
         const cu = RVD_TRUOC[n.id];
         const tCu = cu ? cong(cu) : null;
@@ -17225,12 +17469,14 @@ async function dwTheLuu(id){
   const nd = (o?.value || '').trim();
   if (!nd) return toast('Tên việc không để trống được — bấm Hủy nếu muốn giữ nguyên.');
   const ngay = document.getElementById('dw-the-ngay-' + id)?.value || null;
-  const {error} = await sb.from('task').update({noi_dung: nd, ngay}).eq('id', id);
+  const patch = {noi_dung: nd, ngay};
+  const ban = await htChupTheo(id, patch, `«${nd}» sửa trong phiên`);
+  const {error} = await sb.from('task').update(patch).eq('id', id);
   if (error) return toast(baoLoiTask(error));
   v.noi_dung = nd; v.ngay = ngay;
   DW_THE_SUA = null;
   dwThemVeDs();
-  toast('Đã sửa — ' + (ngay ? 'hẹn ' + dwNhanTheDi(ngay) : 'về 🧺 kho') + '.');
+  toast('Đã sửa — ' + (ngay ? 'hẹn ' + dwNhanTheDi(ngay) : 'về 🧺 kho') + '.', htNhan(ban));
   /* Màn Hôm nay đang giữ một bản chụp của cùng dòng ấy; không nạp lại thì thoát
      phiên ra là thấy tên cũ. Không `await` — người ta còn đang đứng trong hộp,
      màn phía sau cập nhật lúc nào cũng được. */
@@ -18167,10 +18413,23 @@ function dwVe(){
   }
   /* NHỊP TIM đặt TRƯỚC chốt tab-ẩn ngay dưới, và đó là chủ ý: người ta làm
      việc ở cửa sổ khác trong lúc đồng hồ chạy, tab chìm mà phiên vẫn sống
-     thật — ngừng đập lúc tab chìm là tự khai tử một phiên đang chạy. Trình
-     duyệt ghìm nhịp của tab nền xuống còn khoảng một lượt mỗi phút, vừa đúng
-     nhịp cần. Tab bị đông lạnh hẳn thì nhịp tắt, và đó chính là tín hiệu ta
-     muốn có: máy này đã thật sự đi khỏi. */
+     thật — ngừng đập lúc tab chìm là tự bỏ rơi một phiên đang chạy.
+
+     ⚠️ ĐỪNG DỰNG LẠI SUY LUẬN ĐÃ SAI Ở ĐÂY (TRI-150, 07/09). Bản trước viết
+     rằng trình duyệt ghìm tab nền xuống khoảng một lượt mỗi phút là "vừa đúng
+     nhịp cần", và tab đông lạnh hẳn thì nhịp tắt, mà nhịp tắt chính là tín
+     hiệu máy đã đi khỏi. Hai câu ấy đều lạc quan quá tay. Người deep work
+     trong một cửa sổ khác CHÍNH LÀ người có tab chìm lâu nhất, nên một nhịp
+     tắt không phân biệt được "đã đi khỏi" với "đang làm việc chăm chú nhất".
+     Còn cái ghìm một lượt mỗi phút thì gặp đúng chốt 60 giây của `dwDapNhip`
+     ngay dưới: lượt nào rơi vào trước mốc 60 giây là bị bỏ, nên nhịp thật
+     giãn ra quãng hai phút chứ không phải một.
+
+     Andy đã mất viền xanh trên máy Tracy vì hai câu ấy. Hàng hiện diện nay
+     hỏi TRẦN chứ không hỏi nhịp tim (`nang-cap-hien-dien-theo-tran.sql`), nên
+     nhịp này chỉ còn phục vụ MỘT câu hỏi: máy nào được đoạt lại một phiên
+     (`dwDongDuoc`). Ở câu hỏi ấy thì đo sự im lặng vẫn đúng — đoạt nhầm một
+     phiên đang sống là lấy mất giờ của người khác. */
   dwDapNhip();
 
   /* Tab ẩn thì KHÔNG vẽ gì. Người ta làm việc ở cửa sổ khác trong lúc đồng hồ
@@ -19594,9 +19853,17 @@ async function vaoDeepTuLuoi(t){
   if (dwChanViecDong(t)) return;
   const hn = homNay();
   if (t.ngay !== hn){
-    const {error} = await sb.from('task').update({ngay: hn}).eq('id', t.id);
+    /* Cú kéo ngày ở đây vốn ÂM THẦM: bấm 💧 trên một việc của thứ Sáu là nó
+       sang hôm nay mà không một dòng nào nói ra. Nay nói ra, và nói kèm đường
+       lui (07/09, TRI-156) — đây đúng là chỗ người ta bấm nhầm ô rồi mới nhận
+       ra. Lùi lúc phiên đang chạy thì chỉ trả lại NGÀY, phiên vẫn nguyên: phiên
+       gắn theo việc chứ không theo ngày, và người bấm nhầm sẽ tự khép nó. */
+    const patch = {ngay: hn};
+    const ban = await htChupTheo(t.id, patch, `«${t.noi_dung || 'việc'}» → hôm nay`);
+    const {error} = await sb.from('task').update(patch).eq('id', t.id);
     if (error) return toast(baoLoiTask(error));
     t.ngay = hn;
+    toast('🗓 Đã dời việc sang hôm nay.', htNhan(ban));
   }
   if (!TASKS.some(x => x.id === t.id)) TASKS.push(t);
   dwMo(t.id);
@@ -19634,6 +19901,13 @@ function capNhatDaiDoi(){
   const d = document.getElementById('ck-pv-doi');
   if (t) t.classList.toggle('chon', !vuonCaDoi);
   if (d) d.classList.toggle('chon',  vuonCaDoi);
+  /* GIỚI HẠN ① CỦA MEMBER (07/09) — giấu CẢ dải hai nút, không giấu mỗi nút
+     "Cả ROVA". Còn lại một nút "Của tôi" đang sáng là một bộ chọn không chọn
+     được gì: nó bày ra một lựa chọn để rồi không có lựa chọn nào khác, và mắt
+     người đọc sẽ đi tìm cái nút thứ hai bị mất. Không bộ chọn thì màn tự mang
+     nghĩa "của tôi", đúng như bốn màn kia. */
+  const pv = document.getElementById('ck-pv');
+  if (pv) pv.style.display = laMember() ? 'none' : '';
 }
 
 /* Cửa DUY NHẤT đổi phạm vi. Thoát sớm khi bấm lại nấc đang đứng: `taiVuon` là
@@ -19641,6 +19915,12 @@ function capNhatDaiDoi(){
    để lấy. Thoát sớm còn tránh luôn hai lượt `taiVuon` chồng nhau — bẫy ① của
    file này. */
 function ckDoiPhamVi(caDoi){
+  /* GIỚI HẠN ① CỦA MEMBER — chặn ở ĐÂY, không ở cái nút. Cờ `vuonCaDoi` có HAI
+     đường bật: dải nút trên màn Cam kết, và `cbKyNhan` tự bật nó trước khi mở
+     màn để tìm một cam kết đang chờ ký. Giấu nút chỉ bịt đường thứ nhất; hàm
+     này là chỗ hẹp duy nhất cả hai cùng đi qua, nên luật đặt ở đây thì không
+     đường nào lách được, kể cả đường viết sau này. */
+  if (caDoi && laMember()) return;
   if (vuonCaDoi === caDoi) return;
   vuonCaDoi = caDoi;
   capNhatDaiDoi();
@@ -22031,12 +22311,17 @@ async function luuSuaTaskCK(id){
       : '🚧 Đã ghi nghẽn — việc gỡ nghẽn nằm trong danh sách hôm nay của bạn.');
   }
 
+  /* Chỉ nhánh này có đường lui, KHÔNG phải nhánh Nghẽn ở trên (07/09, TRI-156).
+     Nhánh ấy đẻ ra một việc gỡ nghẽn, nên lùi nó cho tử tế là phải xoá luôn việc
+     vừa đẻ — một cú lùi đi xoá việc là chuyện nặng hơn hẳn, đủ để đứng riêng.
+     Cùng lý do ở `tvLuu` và cửa Dọn (`donLuu`). */
+  const ban = await htChupTheo(id, patch, `«${nd}»`);
   const {error} = await sb.from('task').update(patch).eq('id', id);
   if (error) return toast(baoLoiTask(error));
   await dwTheoTrangThai(id, tt);          // phiên đi theo việc (TRI-126)
   SUA_TCK = null; tlNhatXong('tck-nd');
   await lamMoiCuaToi();
-  toast('Đã sửa việc.');
+  toast('Đã sửa việc.', htNhan(ban));
 }
 
 /* Đặt hạn cho một việc đang nằm trong kho — và ĐƯA SỐ LẦN HOÃN VỀ 0.
@@ -22047,10 +22332,18 @@ async function luuSuaTaskCK(id){
    kho. `ngay_hen_dau` vẫn giữ nguyên nên tuổi thật của việc không bị xoá sổ. */
 async function datHanKho(id, v){
   if (!v) return;
-  const {error} = await sb.from('task').update({ngay: v, so_lan_hoan: 0}).eq('id', id);
+  /* Đi qua một biến `patch` chứ không viết thẳng vào câu ghi: `htChupTheo` đọc
+     danh sách cột từ chính nó, nên hai chỗ không bao giờ lệch nhau được. Cùng
+     lối này ở cả bảy cửa còn lại (07/09, TRI-156).
+     Ở đây `so_lan_hoan` cũng phải nằm trong bản chụp — lùi mà bỏ nó lại là trả
+     việc về ngày cũ nhưng giữ đồng hồ hoãn đã bị xoá, tức cú lùi tự nó xoá mất
+     ba lần hoãn có thật. */
+  const patch = {ngay: v, so_lan_hoan: 0};
+  const ban = await htChupTheo(id, patch, `hạn của «${(htTimTask(id) || {}).noi_dung || 'việc'}»`);
+  const {error} = await sb.from('task').update(patch).eq('id', id);
   if (error) return toast('⚠️ '+error.message);
   await lamMoiCuaToi();
-  toast(`Đã đặt hạn ${v.slice(8,10)}/${v.slice(5,7)} — đồng hồ hoãn về 0.`);
+  toast(`Đã đặt hạn ${v.slice(8,10)}/${v.slice(5,7)} — đồng hồ hoãn về 0.`, htNhan(ban));
 }
 
 /* Thêm task vào cam kết. Hỏi thêm HẠN, nhưng KHÔNG bắt buộc (Tracy chốt 08/08):
@@ -22102,10 +22395,12 @@ async function themTaskCK(ma){
 /* Kéo một việc từ kho ra ngày hôm nay. Đây là CỬA DUY NHẤT nối kho sang màn
    Hôm nay — và cũng là mảnh đầu tiên của nghi thức chọn việc buổi sáng. */
 async function dayVaoHomNay(id){
-  const {error} = await sb.from('task').update({ngay: homNay()}).eq('id', id);
+  const patch = {ngay: homNay()};
+  const ban = await htChupTheo(id, patch, `«${(htTimTask(id) || {}).noi_dung || 'việc'}» vào hôm nay`);
+  const {error} = await sb.from('task').update(patch).eq('id', id);
   if (error) return toast('⚠️ '+error.message);
   await lamMoiCuaToi();
-  toast('Đã đưa vào việc hôm nay.');
+  toast('Đã đưa vào việc hôm nay.', htNhan(ban));
 }
 
 /* ── Cam kết của người khác: xem được, không sửa được ── */
@@ -22946,7 +23241,7 @@ async function taiDoi(){
   rvdVe();
 
   const khu=document.getElementById('ds-doi');
-  khu.innerHTML = DOI.map(n => {
+  khu.innerHTML = DOI_DO().map(n => {
     const cua=(kq||[]).filter(k=>k.nguoi_id===n.id).sort((a,b)=>a.ngay<b.ngay?-1:1);
     const homNayKq = cua.find(k=>k.ngay===homNay());
     /* LUẬT NGHỈ CN cho dải chuỗi: máy chủ chấm 💎/🪨/💩 cho cả Chủ nhật (khung
@@ -22983,7 +23278,7 @@ async function taiDoi(){
    nữa. Trước 03/09 nó đóng cứng "hôm nay" cho con số lớn và "7 ngày" cho dòng
    phụ; nay cả hai đi theo bộ chọn, nên nấc `homnay` cho ra đúng bảng cũ. */
 function veBangGat(ds){
-  const hang = DOI.map(n => {
+  const hang = DOI_DO().map(n => {
     const cua = ds.filter(g => g.nguoi_id === n.id);
     return {
       n,
@@ -23024,7 +23319,7 @@ function veBangGat(ds){
 }
 
 function veBangCham(ds){
-  const hang = DOI.map(n => {
+  const hang = DOI_DO().map(n => {
     const cua = ds.filter(c => c.nguoi_id === n.id);
     return {
       n,
@@ -23078,7 +23373,7 @@ function veSoSanh(gat, cham){
   const the = document.getElementById('ss-the');
   if (!the) return;
 
-  const hang = DOI.map(n => ({
+  const hang = DOI_DO().map(n => ({
     n,
     phut: cham.filter(c => c.nguoi_id === n.id).reduce((s,c)=>s+Number(c.phut||0), 0),
     qua:  gat .filter(g => g.nguoi_id === n.id).reduce((s,g)=>s+Number(g.so_qua||0), 0)
@@ -23580,16 +23875,31 @@ let TLG_CUON = 0;
    KHÔNG ĐỤNG ba thứ, theo ranh giới cứng 14/08: buổi họp không chiếm ô `nhip`
    (trần 5 việc/người/tuần), không vào `diem_ngay`, và không đi qua bảng `task`.
 
-   CHƯA CÓ Ở NHÁT NÀY, cố ý: dời RIÊNG một buổi sang giờ khác. Bảng
-   `lich_chung_ngoai_le` đã có sẵn `kieu='doi'` cho việc đó, nhưng máy khách chỉ
-   đọc `kieu='huy'` — viết đường bung cho một kiểu chưa màn nào tạo ra được là
-   dựng mã không ai chạy. Muốn đổi giờ thì sửa cả chuỗi, hoặc huỷ buổi ấy đi.
+   DỜI RIÊNG MỘT BUỔI NAY ĐÃ CÓ, qua dòng `kieu='doi'` của `lich_chung_ngoai_le`
+   (`ngay_moi` · `gio_moi` · `so_phut_moi`), và `lcLuot` bung nó ra lúc vẽ. Hai
+   cửa dẫn vào đó: cú kéo trên lưới (`lcKeoTha`) và cửa sửa (`lcHoiSuaChuoi`,
+   TRI-143). Đoạn này trước 07/09 còn khai là "chưa có, cố ý" — lời khai ấy đã
+   cũ từ lâu trước khi có ai đọc lại nó.
    ══════════════════════════════════════════════════════════════════════════ */
 let LC_KHO  = {};      // đệm theo dải: 'tu|den' → {ds, huy, tick}
 let LC_HIEN = null;    // dữ liệu của dải ĐANG VẼ; null = chưa nạp lần nào
 let LC_SUA  = null;    // id lịch đang sửa trong cửa khai; 0 = đang thêm mới
 let LC_BUOI = null;
 let LC_KEO  = null;    // cú kéo sự kiện đang chờ người chọn phạm vi; null = không có
+/* Bốn cờ của nấc hỏi phạm vi ở CỬA SỬA (TRI-143, TRI-145). Ngày gốc phải giữ
+   riêng vì `lcSuaChuoi` đóng cửa buổi trước khi mở form, mà cú đóng ấy xoá
+   `LC_BUOI` — không có nó thì nhánh "Sự kiện này" không biết mình đang ghi
+   ngoại lệ cho lượt nào. Cả bốn dừng theo cửa, ở `lcDongCua`.
+   ⚠️ CẢ BỐN PHẢI CÓ DÒNG KHAI Ở ĐÂY, kể cả cờ chỉ được gán trong đúng một hàm.
+   `LC_SUA_GIO` thêm ở TRI-145 mà thiếu đúng dòng khai, và khối mã chạy ở chế độ
+   lỏng nên phép gán trong `lcMoForm` tự đẻ ra một biến toàn cục — hỏng chỉ lộ ra
+   ở đường KHÔNG đi qua hàm ấy. Cửa gộp gọi thẳng `lcLuu`, mà `lcLuu` ĐỌC cờ
+   trước khi có ai gán: `ReferenceError`, và trên trang vừa tải thì không thêm
+   được sự kiện nào (TRI-154). Ca ⑩ của `thu-cua-gop.js` nay gác luật này. */
+let LC_SUA_NGAY = null;  // ngày gốc của buổi đã mở cửa sửa; null = không rõ buổi nào
+let LC_SUA_CHO  = null;  // lượt lưu đang chờ người chọn phạm vi; null = không có
+let LC_SUA_PHAM = null;  // phạm vi vừa chọn, `lcLuu` đọc đúng một lần rồi xoá
+let LC_SUA_GIO  = null;  // giờ form vừa bày ra; `lcLuu` so với nó để biết ai động vào ô giờ
 /* BẢN NHÁP của cửa đang mở — Tracy chốt 01/09: *"bất cứ chỉnh sửa gì thì phải
    bấm lưu, hoặc nếu bấm X hay bấm ra ngoài màn hình thì sửa đổi chưa được lưu"*.
    Nên KHÔNG ô nào tự ghi nữa: chữ gõ, link gắn, link bỏ đều nằm ở đây cho tới
@@ -23767,15 +24077,47 @@ function lcNguoiCuaLich(l){
    khắp nơi chỉ làm loãng. Chỉ nói khi có gì để nói.
    Ô số cam kết dùng lại đúng hình của bên việc (`o-so l{luống}`) — số cam kết
    là ngôn ngữ app đã dạy từ 15/08, đừng dựng một hình thứ hai cho cùng một thứ. */
-function lcNhanLoai(l){
+function lcOLoaiToi(l, id, ngay){
   /* "Cá nhân", không mượn `TEN_LOAI.cn` — hằng ấy đọc là "Việc cá nhân", đúng
      cho một dòng việc và sai cho một buổi. Cùng một cờ trong kho vẫn cần hai
-     cái tên trên màn khi nó đứng ở hai chỗ khác nhau. */
-  if (l.rieng_tu) return '<span class="lcb-loai">🔒 Cá nhân</span>';
-  const o = l.tieu_diem_ma && timO(l.tieu_diem_ma);
-  if (!o) return '';
-  return `<span class="lcb-loai"><span class="o-so nho l${o.luong}">${soCamKet(o.ma)}</span>`
-       + ` ${chuSach(o.ten || o.ma)}</span>`;
+     cái tên trên màn khi nó đứng ở hai chỗ khác nhau.
+     BUỔI RIÊNG THÌ CHỈ ĐỌC, không có ô chọn: cờ riêng tư của sự kiện cai quản
+     mọi việc sinh ra từ nó (`tg_cham_rieng_tu_theo_su_kien`), nên bày một ô
+     chọn ở đây là mời người ta khai một thứ mà máy chủ sẽ ghi đè. */
+  if (l.rieng_tu) return `<div class="lcb-dong"><span class="lcb-loai">🔒 Cá nhân</span></div>`;
+  const t = LC_VIEC[id + '|' + ngay];
+  const v = t ? giaTriO(t) : lcLoaiSeDe(l);
+  return `<div class="lcb-dong lcb-loai-toi"><select`
+       + ` aria-label="Loại việc của riêng bạn cho buổi này"`
+       + ` onchange="lcDoiLoai(${id}, '${ngay}', this.value)">${optCamKet(v)}</select></div>`;
+}
+
+/* Giá trị ô chọn sẽ mở ra với, KHI VIỆC CHƯA ĐẺ. Chép đúng luật thừa hưởng bên
+   máy chủ (`cham_theo_su_kien_cha`, vá 07/09) chứ không đoán lấy: cam kết của
+   sự kiện chỉ xuống tới việc khi hạt ấy là luống của CHÍNH người đang xem, và
+   `timO` tra đúng tập luống ấy nên nó cũng là phép thử chủ hạt. Không phải thì
+   rơi về nhãn loại — cố định nếu buổi lặp, phát sinh nếu không.
+   Sai lệch giữa hai bên là ô mở ra một đằng rồi việc đẻ ra một nẻo, mà không
+   một lỗi nào báo; nên sửa một bên thì sửa cả bên kia. */
+const lcLoaiSeDe = l =>
+  (l.tieu_diem_ma && timO(l.tieu_diem_ma)) ? l.tieu_diem_ma
+  : (CO_LOAI_VIEC && l.lap && l.lap !== 'khong') ? O_CO_DINH : '';
+
+/* ĐỔI LOẠI = đổi loại của VIỆC CỦA MÌNH, không đụng ô Loại của sự kiện. Cùng
+   một buổi, Sydney xếp vào cam kết của Sydney còn tôi để phát sinh — hai dòng
+   việc riêng, hai câu trả lời riêng (Tracy chốt 07/09).
+   Đẻ việc TRƯỚC nếu chưa có: đi qua `lcDeViec`, đúng cửa duy nhất đẻ việc của
+   buổi — dựng riêng một lệnh ghi ở đây là đường thứ hai, và hai đường thì sớm
+   muộn trôi lệch nhau.
+   Ghi hỏng thì VẪN vẽ lại: ô chọn đang đứng ở giá trị người ta vừa bấm, mà kho
+   thì không đổi — không vẽ lại là để lại một cái ô nói dối. */
+async function lcDoiLoai(id, ngay, v){
+  const t = await lcDeViec(id, ngay);
+  if (!t) return void lcBaoKhongDeDuoc();
+  const manh = manhLoai(v);
+  const {error} = await sb.from('task').update(manh).eq('id', t.id);
+  if (error) toast(baoLoiTask(error)); else Object.assign(t, manh);
+  await lcVeLai(id, ngay);
 }
 
 function lcNhanPhamVi(l){
@@ -23790,7 +24132,7 @@ function lcNhanPhamVi(l){
      lúc mở cửa buổi họp ra. */
   /* KHÔNG còn nhánh riêng cho `rieng_tu` (gỡ 04/09, khi sự kiện cá nhân mời
      được người). Một buổi riêng nay cũng là một danh sách tên, nên nó rơi đúng
-     vào nhánh dưới và in ra cùng một câu. Chữ "Cá nhân" thì `lcNhanLoai` lo,
+     vào nhánh dưới và in ra cùng một câu. Chữ "Cá nhân" thì `lcOLoaiToi` lo,
      ở dòng của nó — nói hai lần cùng một điều trên hai dòng liền nhau là bắt
      mắt đọc một thứ đã biết. */
   if (l.pham_vi === 'ca_nhan')
@@ -24142,8 +24484,8 @@ function lcCuaNgayTu(d, g, loc, bong){
               chot: l.da_chot !== false,
               tu: luot.tu, den: luot.den, doi: luot.doi, lap: l.lap,
               /* Kéo được hay không đọc đúng luật ghi của máy chủ (`sua_lich`):
-                 CHỈ HOST. Người dự — kể cả lead — vẫn chạm mở được cửa buổi, chỉ
-                 không mọc tay nắm. Hỏi ở đây chứ không ở chỗ vẽ: chỗ vẽ nhận một
+                 host, quản trị, hoặc khách được host cấp quyền. Người dự thường
+                 — kể cả lead — vẫn chạm mở được cửa buổi, chỉ không mọc tay nắm. Hỏi ở đây chứ không ở chỗ vẽ: chỗ vẽ nhận một
                  khối đã chốt, không nhận cả dòng lịch. */
               sua: lcDuocSua(l),
               khoi: l.pham_vi === 'khoi',
@@ -25240,7 +25582,18 @@ const DB_NHAN_NAC = {chua: 'chưa trả lời', nhan: 'đã nhận lời',
 
    NẤC `dung` KHÔNG CÓ NHÃN CHỮ — nên bảng nhãn dưới chỉ có hai mục (Tracy
    chốt 03/09: *"bỏ chữ đúng kế hoạch đi"*, thay bằng tên buổi tô xanh). */
-const DB_NHAN_BUOI = {chua: 'chưa chốt', doi: 'đã dời đi'};
+/* NHÃN `chua` LÀ "CHƯA XONG", KHÔNG PHẢI "CHƯA CHỐT" (Tracy chốt 07/09).
+   Chữ cũ đụng thẳng cặp *Đã chốt · Dự kiến* của ô "Trạng thái lịch" trong cửa
+   sửa — mà hai thứ ấy đọc hai nguồn khác nhau và trả lời hai câu khác nhau:
+   ô kia đọc `lich_chung.da_chot` và nói *chuỗi lịch này có chắc không*, nhãn
+   này đọc `dbNacBuoi` và nói *buổi đã qua giờ mà chủ trì chưa tick xong*. Một
+   sự kiện khai Đã chốt mà danh sách dán cho nó chữ "chưa chốt" thì màn hình
+   tự cãi nhau, dù cả hai con số đều đúng.
+   Chữ mới là chữ chính khối này đã dùng để phân biệt hai câu ấy — xem chú
+   thích "ĐÃ DỰ XONG THÌ CHUỖI TỰ THÀNH ĐÃ CHỐT" dưới: *bỏ tick nói "buổi này
+   chưa xong", không nói "lịch này chưa chốt"*. Nét đứt `.chua-chot` giữ
+   nguyên tên lẫn nghĩa: nó vẫn là dấu của `da_chot === false`. */
+const DB_NHAN_BUOI = {chua: 'chưa xong', doi: 'đã dời đi'};
 
 function dbNacBuoi(b, g, xong){
   if (b.bong) return 'doi';
@@ -25375,7 +25728,7 @@ function dbVeChung(khu, d, tu, den, ai, xong){
           + (g === hn ? '<i>Hôm nay</i>' : '')
           + `<span class="dbc-dem">${soThat} buổi`
           + (dem.dung ? ` · <em class="dung">${dem.dung} đúng kế hoạch</em>` : '')
-          + (dem.chua ? ` · <em class="chua">${dem.chua} chưa chốt</em>` : '')
+          + (dem.chua ? ` · <em class="chua">${dem.chua} chưa xong</em>` : '')
           + (dem.doi  ? ` · <em class="doi">${dem.doi} dời đi</em>` : '')
           + '</span></div>';
 
@@ -25437,7 +25790,7 @@ function dbVeChung(khu, d, tu, den, ai, xong){
                      `${b.nhan} nhận · ${b.choi} từ chối · ${b.chua} chưa trả lời`,
                      b.daXong ? `${b.daXong} đã dự xong` : '',
                      b.nac === 'dung' ? 'Đã diễn ra đúng kế hoạch' : '',
-                     b.nac === 'chua' ? 'Đã qua giờ, người chủ trì chưa chốt' : '',
+                     b.nac === 'chua' ? 'Đã qua giờ, người chủ trì chưa đánh dấu xong' : '',
                      b.gc  ? 'Đã có ghi chú của người chủ trì' : ''].filter(Boolean).join(' — ');
         /* TÊN BUỔI TÔ XANH thay cho một thẻ chữ "đúng kế hoạch" (Tracy chốt
            03/09). Buổi chạy trót lọt là ĐA SỐ; gắn cho mỗi cái một thẻ là dựng
@@ -25578,7 +25931,7 @@ function dbKhoiGio(b, cao){
                `${b.nhan}/${b.tong} đã nhận`,
                b.daXong ? `${b.daXong} đã dự xong` : '',
                b.nac === 'dung' ? 'Đã diễn ra đúng kế hoạch' : '',
-               b.nac === 'chua' ? 'Đã qua giờ, người chủ trì chưa chốt' : '',
+               b.nac === 'chua' ? 'Đã qua giờ, người chủ trì chưa đánh dấu xong' : '',
                b.gc ? 'Đã có ghi chú của người chủ trì' : ''].filter(Boolean).join(' — ');
   return `<button type="button" class="dbt-k${b.nac ? ' ' + b.nac : ''}${co}" ${cho}`
        + ` title="${chuSach(ghi)}" onclick="lcMoBuoi(${b.lich}, '${b.ngay}')">`
@@ -25732,7 +26085,7 @@ function dbTheThang(b){
                `${b.nhan}/${b.tong} đã nhận`,
                b.daXong ? `${b.daXong} đã dự xong` : '',
                b.nac === 'dung' ? 'Đã diễn ra đúng kế hoạch' : '',
-               b.nac === 'chua' ? 'Đã qua giờ, người chủ trì chưa chốt' : '',
+               b.nac === 'chua' ? 'Đã qua giờ, người chủ trì chưa đánh dấu xong' : '',
                b.gc ? 'Đã có ghi chú của người chủ trì' : ''].filter(Boolean).join(' — ');
   /* NÉT ĐỨT = CHƯA CHỐT, một dấu một nghĩa (luật gốc 03/09, TRI-71). Buổi đã
      dự xong thì thôi mang dấu: nó đã xảy ra rồi, còn dự kiến gì nữa. */
@@ -25873,7 +26226,7 @@ async function lcTraLoi(id, ngay, kieu, go){
   if (!await lcGhiThamDu(id, ngay, kieu !== 'khong')) return;
   const t = await lcDeViec(id, ngay);
   if (kieu === 'deep'){
-    if (!t) return void toast('Máy chủ chưa có cột việc của sự kiện — chạy nang-cap-viec-cua-buoi.sql');
+    if (!t) return void lcBaoKhongDeDuoc();
     /* `lcDongHan`, KHÔNG `lcDongBuoi`: hàm kia nay có thể DỪNG LẠI để hỏi
        "bỏ phần vừa sửa?", mà ở đây cú đóng phải xảy ra thật — không thì màn
        deepwork mở lên với cửa sự kiện còn nằm nguyên phía sau. Đánh đổi: ghi
@@ -26002,7 +26355,7 @@ async function lcXoaThamDu(id, ngay){
 async function lcTickXong(id, ngay, xong){
   if (xong) await lcGhiThamDu(id, ngay, true);
   const t = await lcDeViec(id, ngay);
-  if (!t) return void toast('Máy chủ chưa có cột việc của sự kiện — chạy nang-cap-viec-cua-buoi.sql');
+  if (!t) return void lcBaoKhongDeDuoc();
   await doiTrangThai(t.id, xong ? 'Done' : 'Chua_lam');
   if (xong) await lcChotViDaXong(id);
   LC_KHO = {};
@@ -26015,21 +26368,43 @@ async function lcTickXong(id, ngay, xong){
 }
 
 /* ── AI ĐƯỢC SỬA MỘT CHUỖI LỊCH ────────────────────────────────────────────
-   CHỈ HOST — tức `tao_boi`, đúng người đeo ★ trên bảng lịch (Tracy chốt 04/09:
-   *"với các sự kiện thì chỉ có host mới có thể thay đổi thông tin và thời
-   gian"*). Trước đó vế `la_lead` mở cửa cho bất kỳ ai mang cờ lead sửa mọi sự
-   kiện của mọi người; hôm nay cả 7 người trong đội đều bật cờ ấy, nên trên
-   thực tế luật cũ là *ai cũng sửa được lịch của ai*.
+   BA CỬA, đọc từ hẹp ra rộng: HOST · QUẢN TRỊ · KHÁCH ĐƯỢC HOST CẤP QUYỀN.
 
-   HÀNG RÀO THẬT NẰM Ở MÁY CHỦ — `nang-cap-quyen-host-su-kien.sql` nói đúng câu
-   này ở ba chính sách `sua_lich` · `xoa_lich` · `ghi_lich_ngoai`. Hàm này chỉ
-   để người không có quyền khỏi thấy một cái nút bấm vào là bị chối.
+   KHÔNG CÓ CỬA NÀO CHO LEAD, và đó là chỗ dễ nhầm nhất của hàm này. Vế
+   `la_lead` từng đứng đây mở cửa cho bất kỳ ai mang cờ lead sửa mọi sự kiện của
+   mọi người — mà cả 7 người trong đội đều bật cờ ấy, nên nó đọc ra *ai cũng sửa
+   được lịch của ai*. Đóng lại 04/09, và `nang-cap-quyen-khach.sql` phải sửa hồi
+   quy sáng 07/09 vì chép lại một tệp cũ hơn. Tracy nói cả hai vế trong cùng một
+   ngày, đừng gộp chúng: sáng *"Lead không sửa được mọi sự kiện trên lịch chung,
+   chỉ có host có quyền đó"*, chiều *"cho Tracy và Andy quyền chỉnh sửa toàn bộ
+   sự kiện dù không phải mình host"* — cờ `la_quan_tri` đang bật đúng hai người.
+
+   HÀNG RÀO THẬT NẰM Ở MÁY CHỦ — `nang-cap-quyen-quan-tri-su-kien.sql` nói đúng
+   câu này ở bốn chính sách `sua_lich` · `xoa_lich` · `ghi_lich_ngoai` ·
+   `ghi_tb_buoi`. Hàm này chỉ để người không có quyền khỏi thấy một cái nút bấm
+   vào là bị chối.
 
    ĐÃ GOM XONG ba chỗ chép tay (`lcCuaNgayTu` · `lcDaiCuaKhung` · `lcMoBuoi`) —
    cả ba nay gọi hàm này. Đổi luật lần sau thì sửa đúng một dòng dưới đây, và
    nhớ sửa kèm hàng rào máy chủ: mặt hình một mình không chặn được ai. */
 function lcDuocSua(l){
-  return !!(ME && l && l.tao_boi === ME.id);
+  if (!ME || !l) return false;
+  if (l.tao_boi === ME.id) return true;
+  /* QUẢN TRỊ (07/09) — mọi sự kiện TRỪ loại cá nhân. Vế `rieng_tu` không phải
+     sự thận trọng chung chung: policy `doc_lich` không cho quản trị ĐỌC sự kiện
+     cá nhân của người khác, nên bày nút sửa cho một dòng họ còn không thấy là
+     dựng một cánh cửa mở ra bức tường.
+     Hai cột `tao_boi` và `rieng_tu` vẫn ngoài tầm quản trị — cò
+     `tg_chan_khach_sua_cot_cam` kéo chúng về giá trị cũ trước khi ghi, nên sửa
+     được nội dung mà không sang tên được sự kiện. */
+  if (ME.la_quan_tri && !l.rieng_tu) return true;
+  /* KHÁCH ĐƯỢC HOST CẤP QUYỀN (07/09). Tracy: *"host cấp quyền cho khách thì
+     khách được thôi"*. Policy `sua_lich` đã mở đúng vế này từ
+     `nang-cap-quyen-khach.sql`, nhưng hàm ở đây thì chưa — nên người được cấp
+     quyền có cửa trên máy chủ mà không thấy cái nút nào để đi qua nó. Một
+     quyền không có nút bấm là một quyền không tồn tại.
+     Đòi CẢ HAI, đúng như policy: cờ bật, VÀ có tên trong danh sách mời. */
+  return !!(l.khach_sua && (l.nguoi_ids || []).includes(ME.id));
 }
 
 /* ── ĐÃ DỰ XONG THÌ CHUỖI TỰ THÀNH ĐÃ CHỐT (Tracy chốt 03/09) ──────────────
@@ -26182,7 +26557,7 @@ function lcMoBuoi(id, ngay){
          thuộc CẢ CHUỖI, mà cửa này đang nói về đúng một buổi. */''}${
       l.da_chot === false ? ' <i class="lcb-doi">· còn dự kiến</i>' : ''}</div>
     <div class="lcb-dong dim">${chuSach(lcNhanPhamVi(l))} · ${chuSach(lcNhanLap(l))}</div>
-    ${lcNhanLoai(l) ? `<div class="lcb-dong">${lcNhanLoai(l)}</div>` : ''}
+    ${lcOLoaiToi(l, id, ngay)}
     ${/* Ô TRƯỚC CUỘC HỌP đứng ĐÂY, trên hàng trả lời — nó thế chỗ khối "thông
           tin chung mọi buổi" mà Tracy gỡ 01/09, và đứng đúng chỗ ấy là có lý:
           người ta đọc buổi này bàn gì RỒI mới trả lời có đi hay không. Ô sau
@@ -26620,7 +26995,11 @@ function lcVeLaiGhiChu(khi){
   const {id, ngay} = LC_NHAP;
   const l = (LC_HIEN?.ds || []).find(x => x.id === id);
   const khu = document.getElementById('lcb-tb-khu-' + khi);
-  if (khu) khu.innerHTML = lcOThongBao(id, ngay, !!(ME && l && l.tao_boi === ME.id), khi);
+  /* 🪤 Chỗ này TỪNG chép tay `l.tao_boi === ME.id` thay vì gọi `lcDuocSua`, và
+     nó là chỗ thứ ba nói khác hai chỗ kia. Cắn ngay khi quản trị được quyền sửa
+     (07/09): ô mở ra ghi được, nhưng vẽ lại một lượt là nó tự đóng thành chỉ
+     đọc — mà cú vẽ lại xảy ra sau mỗi lần bấm nở ô. Gọi thẳng hàm chung. */
+  if (khu) khu.innerHTML = lcOThongBao(id, ngay, lcDuocSua(l), khi);
   lcVeNutLuu();
 }
 
@@ -26877,13 +27256,13 @@ async function lcHuy(pham){
    nói ra phải làm gì trước. Cùng lý lẽ mà `lcHoiHuy` và `lcKeoTha` dùng để rẽ
    nhánh theo `lap`.
 
-   CHỈ HOST, và hỏi lại dù nút đã gác. Nút chỉ dựng khi `laHost`, nhưng một hàm
-   không nên tin cái nút gọi nó — máy chủ cũng nói cùng câu ấy qua `sua_lich`. */
+   HỎI LẠI DÙ NÚT ĐÃ GÁC. Nút chỉ dựng khi `laHost`, nhưng một hàm không nên tin
+   cái nút gọi nó — máy chủ cũng nói cùng câu ấy qua `sua_lich`. */
 function lcSangViec(){
   if (!LC_BUOI) return;
   const l = (LC_HIEN?.ds || []).find(x => x.id === LC_BUOI.id);
   if (!l) return void toast('⚠️ Không tìm thấy sự kiện này — thử tải lại trang.');
-  if (!lcDuocSua(l)) return void toast('Chỉ người tạo sự kiện mới đổi được nó.');
+  if (!lcDuocSua(l)) return void toast('Bạn không có quyền đổi sự kiện này.');
   if (l.lap && l.lap !== 'khong')
     return void toast('Sự kiện định kỳ chưa chuyển được — vào ✏️ bỏ lặp lại trước đã.');
   hopHoiMo(`<div class="hoi-dau"><h3>Chuyển thành việc</h3>
@@ -26973,14 +27352,19 @@ async function lcKeoTha(k, doiNgay){
                ngay: doiNgay ? k.ngayMoi : null};
   if (l.lap === 'khong') return void await lcLuuDoi('tat_ca', moi);
   LC_KEO = moi;
-  /* Hai lựa chọn, không ba. Hộp xoá có thêm *"và các sự kiện tiếp theo"* vì xoá
-     chỉ cần đặt một điểm dừng cho luật lặp. Dời thì không: "từ đây trở đi" nghĩa
-     là cắt chuỗi làm hai luật, một luật cũ dừng lại và một luật mới bắt đầu — cả
-     một nhánh mã riêng, và mọi ô tick, ghi chú, việc đã đẻ của nhánh sau đều mất
-     khoá. Chưa ai xin nó, nên chưa dựng. */
+  /* BA NẤC từ 07/09 (TRI-146). Đoạn này trước đó khai chỉ có hai, vì "từ đây
+     trở đi" nghĩa là chia chuỗi làm hai luật — một nhánh mã riêng, và mọi ô
+     tick, ghi chú, việc đã đẻ của nửa sau đều mất khoá nếu không ai chuyển
+     chúng. Lời khai ấy kết bằng *"chưa ai xin nó"*; Tracy xin ngày 07/09, kèm
+     ảnh hộp ba nấc của Lịch Google. Việc chuyển năm bảng con nay do
+     `cat_chuoi_lich` lo, trọn trong một giao dịch ở máy chủ.
+     Nấc giữa chỉ hiện khi máy chủ đã có hàm ấy. */
   hopHoiMo(`<div class="hoi-dau"><h3>Dời sự kiện định kỳ</h3></div>
     <div class="lch-ds">
-      <label><input type="radio" name="lcd" value="buoi" checked> Sự kiện này</label>
+      <label><input type="radio" name="lcd" value="buoi" checked> Sự kiện này</label>${
+      CO_CAT_CHUOI
+        ? `<label><input type="radio" name="lcd" value="tu_day"> Sự kiện này và các sự kiện tiếp theo</label>`
+        : ''}
       <label><input type="radio" name="lcd" value="tat_ca"> Tất cả sự kiện${
         moi.ngay ? ' <i class="lcb-doi">chỉ đổi giờ, giữ nguyên ngày</i>' : ''}</label>
     </div>
@@ -27126,10 +27510,173 @@ function lcDaiDoiTheo(){
   return lcDaiLuuDoi(o ? o.value : 'buoi', LC_KEO);
 }
 
+/* ══ ĐƯỜNG LUI CHO CÚ KÉO DỜI SỰ KIỆN (07/09, TRI-157) ══════════════════════
+
+   Cú kéo trên lịch là thao tác NẶNG nhất trong app — một cú ở phạm vi *Tất cả
+   sự kiện* của một chuỗi định kỳ đổi giờ mọi lượt, rồi kéo theo mọi việc đã đẻ
+   từ chuỗi ấy, kể cả việc của đồng đội. Từ 31/08 tới nay nó là cú duy nhất
+   không có đường lui.
+
+   BA NHÁNH, HAI ĐƯỢC HỨA. Nhánh «từ đây trở đi» đi qua `cat_chuoi_lich`: nó
+   đẻ một sự kiện mới, đặt điểm dừng cho cái cũ, rồi chuyển năm bảng con sang id
+   mới — bảy thao tác. Lùi nó cần một hàm máy chủ nối chuỗi lại, chưa có, nên ở
+   đó KHÔNG hứa: `lcChupDoi` trả `null` và cú kéo chạy y như hôm qua. Đúng luật
+   ② của mục hoàn tác: thà không có nút còn hơn một nút lùi không hết.
+
+   VÌ SAO KHÔNG PHẢI ĐỌC NGƯỢC VIỆC CỦA CẢ ĐỘI. `doi_gio_viec_theo_chuoi` đặt
+   giờ mỗi việc BẰNG giờ của chuỗi, không cộng trừ gì vào giá trị đang có. Nên
+   lùi là gọi lại chính nó với giờ cũ — máy này không cần đọc, cũng không cần
+   quyền đọc, dòng việc của người khác. Luật *"còn sạch"* của nó vẫn nguyên: việc
+   ai đã cầm trong tay thì cú lùi cũng không đụng, y như cú đi.
+
+   CHỤP TRẠNG THÁI BUỔI TRƯỚC KHI GHI, bằng `lcLuot` — đúng hàm mà lưới dùng để
+   biết vẽ buổi ấy ở đâu, nên bản chụp và cái mắt đang nhìn không thể nói hai
+   điều khác nhau. */
+
+/* Dòng ngoại lệ của MỘT buổi. Hai cảnh, và cảnh thứ hai dễ quên: buổi này có
+   thể ĐÃ được dời riêng từ trước, lúc ấy lùi là trả lại dòng cũ chứ không phải
+   xoá nó — xoá là kéo buổi về hàng của chuỗi, tức lùi luôn một quyết định cũ mà
+   người ta không xin (Tracy chốt ở bản duyệt: lùi đúng MỘT cú). */
+async function lcChupBuoi(lichId, goc){
+  const rq = await sb.from('lich_chung_ngoai_le').select('*')
+               .eq('lich_id', lichId).eq('ngay_goc', goc).maybeSingle();
+  if (rq.error) return null;
+  const cu = rq.data || null;
+  return async () => cu
+    ? await sb.from('lich_chung_ngoai_le').upsert(cu, {onConflict: 'lich_id,ngay_goc'})
+    : await sb.from('lich_chung_ngoai_le').delete()
+        .eq('lich_id', lichId).eq('ngay_goc', goc);
+}
+
+/* Cú kéo KHỐI GIỜ. Trả một cú cho ngăn hoàn tác, hoặc `null` khi không hứa. */
+async function lcChupDoi(pham, moi, l){
+  if (!l || !sb || (pham !== 'buoi' && pham !== 'tat_ca')) return null;
+  const luot = lcLuot(l, moi.goc);          // buổi ấy ĐANG hiện ở đâu, trước cú kéo
+  const veCho = async () => {
+    /* Việc đã đẻ đi theo cú lùi, qua ĐÚNG hai đường mà cú đi đã dùng — một buổi
+       lẻ thì `lcTheoViec`, cả chuỗi thì `lcTheoChuoi`. Đi lệch đường là lùi
+       được sự kiện mà bỏ việc lại ở giờ mới, tức tự tay dựng ra cái lệch mà cả
+       hai hàm kia sinh ra để chữa. */
+    if (pham === 'buoi' || l.lap === 'khong')
+      await lcTheoViec(moi.lich, moi.goc,
+                       {ngay: luot.ngay, tu: luot.tu, den: luot.den, phut: luot.phut});
+    else
+      await lcTheoChuoi(moi.lich, luot.tu, luot.den, luot.phut);
+  };
+
+  if (pham === 'buoi'){
+    const lui = await lcChupBuoi(moi.lich, moi.goc);
+    if (!lui) return null;
+    return {moTa: 'buổi ' + ngayDep(moi.goc) + ' của «' + (l.ten || 'sự kiện') + '»',
+            lam: async () => { const r = await lui(); if (r.error) return r; await veCho(); }};
+  }
+
+  /* Cả chuỗi: chụp đúng những cột mà nhánh ấy ghi. `sua_luc` KHÔNG nằm trong
+     bản chụp — nó là dấu *sửa lần cuối lúc nào*, mà một cú lùi cũng là một lần
+     sửa; trả nó về mốc cũ là để lại một dòng nói dối về chính lịch sử của nó. */
+  const rq = await sb.from('lich_chung')
+               .select('gio_bat_dau,so_phut,ngay_bat_dau,ngay_ket_thuc')
+               .eq('id', moi.lich).maybeSingle();
+  if (rq.error || !rq.data) return null;
+  const cu = rq.data;
+  return {moTa: 'giờ của «' + (l.ten || 'sự kiện') + '»', lam: async () => {
+    const r = await sb.from('lich_chung')
+                .update({...cu, sua_luc: new Date().toISOString()}).eq('id', moi.lich);
+    if (r.error) return r;
+    await veCho();
+  }};
+}
+
+/* Cú kéo DẢI NHIỀU NGÀY. Cùng hai nhánh, nhẹ hơn một bậc: dải không đẻ việc nên
+   không có gì phải kéo theo. */
+async function lcChupDai(pham, moi, l){
+  if (!l || !sb || (pham !== 'buoi' && pham !== 'tat_ca')) return null;
+  if (pham === 'buoi'){
+    const lui = await lcChupBuoi(moi.lich, moi.goc);
+    return lui && {moTa: 'lượt ' + ngayDep(moi.goc) + ' của «' + (l.ten || 'sự kiện') + '»',
+                   lam: lui};
+  }
+  const rq = await sb.from('lich_chung')
+               .select('so_ngay,ngay_bat_dau,ngay_ket_thuc').eq('id', moi.lich).maybeSingle();
+  if (rq.error || !rq.data) return null;
+  const cu = rq.data;
+  return {moTa: 'độ dài «' + (l.ten || 'sự kiện') + '»', lam: async () =>
+    await sb.from('lich_chung').update({...cu, sua_luc: new Date().toISOString()})
+      .eq('id', moi.lich)};
+}
+
+/* ══ ĐƯỜNG LUI CHO CỬA SỬA SỰ KIỆN VÀ CÚ CHIA CHUỖI (07/09, TRI-161) ════════
+   Tracy: *"lịch trình liên quan đến người khác và toàn công ty nên đều phải có
+   nút hoàn tác cho an toàn"*. Hai lối ghi cuối cùng của cụm lịch còn thiếu
+   đường lui — cửa sửa bằng biểu mẫu, và nhánh chia chuỗi ở cả hai chỗ gọi nó. */
+
+/* CỬA SỬA. Một cú bấm Lưu ghi đè cả bản ghi sự kiện — tên, luật lặp, giờ,
+   phạm vi, người được mời — nên chụp theo `dong` sắp gửi đi, đúng lối
+   `htChupTheo` đã đặt cho cửa sửa việc. Đọc từ MÁY CHỦ: người ta vừa bấm Lưu và
+   đang chờ một vòng mạng rồi, mà bản trong `LC_HIEN` thì thiếu cột. */
+async function lcChupSua(lichId, dong, l){
+  const cot = Object.keys(dong || {});
+  if (!lichId || !sb || !cot.length) return null;
+  const rq = await sb.from('lich_chung').select(cot.join(',')).eq('id', lichId).maybeSingle();
+  if (rq.error || !rq.data) return null;
+  const cu = rq.data;
+  return {moTa: '«' + (l && l.ten || cu.ten || 'sự kiện') + '»', lam: async () => {
+    /* `sua_luc` đặt MỚI, không trả về mốc cũ — cú lùi cũng là một lần sửa. */
+    const r = await sb.from('lich_chung')
+                .update({...cu, sua_luc: new Date().toISOString()}).eq('id', lichId);
+    if (r.error) return r;
+    /* Việc đã đẻ đi theo giờ CŨ, qua đúng đường mà cú đi đã dùng. Chỉ khi bản
+       chụp có đủ hai cột giờ: biểu mẫu luôn gửi chúng, nhưng một cửa sau này
+       gọi với `dong` hẹp hơn thì thà bỏ lượt kéo việc còn hơn tính giờ từ
+       `undefined` rồi ghi một khoảng vô nghĩa xuống máy chủ. */
+    if (cu.gio_bat_dau != null && cu.so_phut != null)
+      await lcTheoChuoi(lichId, cu.gio_bat_dau, cu.gio_bat_dau + cu.so_phut, cu.so_phut);
+  }};
+}
+
+/* CÚ CHIA CHUỖI — hai nhịp, vì thứ phải chụp nằm ở hai thời điểm khác nhau.
+   `lcChupTruocChia` gọi TRƯỚC `lcCatChuoi` để lấy điểm dừng cũ của nửa trước
+   (sau cú chia nó đã bị ghi đè, không đọc lại được nữa). `lcCuChia` gọi SAU,
+   khi đã biết id của nửa sau và đọc được dấu `sua_luc` của nó.
+
+   Dấu ấy là HÀNG RÀO: `noi_chuoi_lich` từ chối nối nếu nửa sau đã bị người khác
+   sửa tiếp. Lịch trình này chạm cả công ty — thà báo không lùi được còn hơn âm
+   thầm ghi đè lên việc người ta vừa làm (Tracy chốt ở bản duyệt). */
+async function lcChupTruocChia(lichCu){
+  if (!lichCu || !sb) return null;
+  const rq = await sb.from('lich_chung').select('ngay_ket_thuc,ten').eq('id', lichCu).maybeSingle();
+  return (rq.error || !rq.data) ? null : rq.data;
+}
+
+/* Dò bằng chính LƯỢT GỌI RỖNG, cùng lối `lcTheoChuoi` dùng cho
+   `doi_gio_viec_theo_chuoi`: hàm nhận `p_lich_cu` null thì trả null và không
+   chạm gì. Chưa chạy `nang-cap-noi-chuoi-lich.sql` thì PostgREST trả PGRST202,
+   ta ghi nhớ là chưa có và từ đó KHÔNG hứa nữa — nút vắng mặt, không phải hiện
+   ra rồi báo lỗi lúc bấm (Tracy chốt). */
+async function lcCoNoiChuoi(){
+  if (CO_NOI_CHUOI !== null) return CO_NOI_CHUOI;
+  const r = await sb.rpc('noi_chuoi_lich',
+                         {p_lich_cu: null, p_lich_moi: null, p_ngay_ket_thuc_cu: null});
+  CO_NOI_CHUOI = !r.error;
+  return CO_NOI_CHUOI;
+}
+
+async function lcCuChia(lichCu, idMoi, truoc){
+  if (!truoc || !idMoi || !sb) return null;
+  if (!await lcCoNoiChuoi()) return null;
+  const rq = await sb.from('lich_chung').select('sua_luc').eq('id', idMoi).maybeSingle();
+  if (rq.error || !rq.data) return null;
+  const suaLuc = rq.data.sua_luc;
+  return {moTa: 'cú chia chuỗi «' + (truoc.ten || 'sự kiện') + '»', lam: async () =>
+    await sb.rpc('noi_chuoi_lich', {p_lich_cu: lichCu, p_lich_moi: idMoi,
+                                    p_ngay_ket_thuc_cu: truoc.ngay_ket_thuc,
+                                    p_sua_luc: suaLuc})};
+}
+
 async function lcDaiLuuDoi(pham, moi){
   if (!moi) return;
   const l = (LC_HIEN?.ds || []).find(x => x.id === moi.lich);
-  let r, chu;
+  let r, chu, ban = null;
   if (pham === 'buoi'){
     /* NGÀY GỐC là khoá và nó KHÔNG đi theo dải — cùng lời cảnh báo viết sẵn
        trên bảng `lich_chung_ngoai_le` từ ngày dựng nó. */
@@ -27140,6 +27687,7 @@ async function lcDaiLuuDoi(pham, moi){
        chẳng khai gì cả, và ràng buộc `ngoaile_doi_du_tham_so` chặn nó. Ghi
        `ngay_moi` bằng chính ngày gốc để dòng luôn có ít nhất một thứ làm chứng. */
     if (!dong.ngay_moi && dong.so_ngay_moi == null) dong.ngay_moi = moi.tu;
+    ban = await lcChupDai(pham, moi, l);
     r = await sb.from('lich_chung_ngoai_le').upsert(dong, {onConflict: 'lich_id,ngay_goc'});
     chu = '📆 Đã dời riêng lượt ' + ngayDep(moi.goc) + ' · '
         + lcNgayGon(moi.tu) + '–' + lcNgayGon(moi.den);
@@ -27152,6 +27700,7 @@ async function lcDaiLuuDoi(pham, moi){
       patch.ngay_bat_dau = moi.tu;
       if (l.ngay_ket_thuc && l.ngay_ket_thuc < moi.tu) patch.ngay_ket_thuc = moi.tu;
     }
+    ban = await lcChupDai(pham, moi, l);
     r = await sb.from('lich_chung').update(patch).eq('id', moi.lich);
     chu = l && l.lap === 'khong'
       ? '📆 ' + lcNgayGon(moi.tu) + '–' + lcNgayGon(moi.den) + ' · ' + moi.soNgay + ' ngày'
@@ -27167,7 +27716,7 @@ async function lcDaiLuuDoi(pham, moi){
       : 'Không dời được: ' + r.error.message);
   }
   hopHoiDong(); LC_KHO = {};
-  toast(chu);
+  toast(chu, htNhan(ban));
   await veTimeline();
 }
 
@@ -27175,8 +27724,28 @@ async function lcLuuDoi(pham, moi){
   if (!moi) return;
   const phut = moi.den - moi.tu;
   const l = (LC_HIEN?.ds || []).find(x => x.id === moi.lich);
-  let r, chu;
-  if (pham === 'buoi'){
+  let r, chu, idMoi = null, ban = null;
+  /* NẤC GIỮA (TRI-146) đứng TRƯỚC hai nhánh cũ vì nó có thể RƠI XUỐNG nhánh
+     "tất cả": ngày chia chính là ngày mở chuỗi thì không có gì để chia. Đổi
+     `pham` rồi để mã chảy xuống, thay vì chép lại câu ghi ấy lần thứ hai. */
+  if (pham === 'tu_day'){
+    /* Chụp TRƯỚC cú chia: điểm dừng cũ của nửa trước bị chính cú ấy ghi đè, sau
+       đó không còn chỗ nào đọc lại được (TRI-161). */
+    const truoc = await lcChupTruocChia(moi.lich);
+    const rc = await lcCatChuoi(moi.lich, moi.goc,
+                                {gio_bat_dau: moi.tu, so_phut: phut});
+    if (rc.error) r = rc;
+    else if (rc.catRong) pham = 'tat_ca';
+    else {
+      idMoi = rc.data;
+      r = {};
+      ban = await lcCuChia(moi.lich, idMoi, truoc);
+      chu = '🕘 Đã tách chuỗi từ ' + ngayDep(moi.goc) + ' trở đi · ' + tlgHHMM(moi.tu);
+    }
+  }
+  if (r !== undefined){
+    /* nhánh trên đã lo xong — không rơi vào hai nhánh cũ */
+  } else if (pham === 'buoi'){
     /* NGÀY GỐC là khoá, và nó KHÔNG đi theo buổi. Dời rồi mà khoá chạy theo chỗ
        mới thì lượt gốc mọc lại ở chỗ cũ ngay lượt vẽ sau — chính lời cảnh báo
        viết sẵn trên bảng `lich_chung_ngoai_le` từ ngày dựng nó. Nên dời một buổi
@@ -27186,6 +27755,11 @@ async function lcLuuDoi(pham, moi){
     /* Gửi một cột chưa tồn tại là cả câu lệnh hỏng, không phải một trường bị bỏ
        qua — nên độ dài chỉ đi khi cờ dò cột nói là có chỗ chứa. */
     if (CO_DOI_PHUT) dong.so_phut_moi = phut;
+    /* Chụp TRƯỚC câu ghi, cùng nhịp hai bước đã dựng cho cú kéo việc: chụp lúc
+       máy chủ còn giữ bản cũ, nhận vào ngăn chỉ khi ghi đã lọt. Thêm một lượt
+       `select` vào giữa cú kéo — chịu được, vì tới đây người ta đã bấm nút Dời
+       trong hộp hỏi phạm vi và đang chờ sẵn. */
+    ban = await lcChupDoi(pham, moi, l);
     r = await sb.from('lich_chung_ngoai_le').upsert(dong, {onConflict: 'lich_id,ngay_goc'});
     const hutDai = !CO_DOI_PHUT && l && phut !== l.so_phut;
     chu = hutDai
@@ -27203,6 +27777,7 @@ async function lcLuuDoi(pham, moi){
       patch.ngay_bat_dau = moi.ngay;
       if (l.ngay_ket_thuc && l.ngay_ket_thuc < moi.ngay) patch.ngay_ket_thuc = moi.ngay;
     }
+    ban = await lcChupDoi(pham, moi, l);
     r = await sb.from('lich_chung').update(patch).eq('id', moi.lich);
     chu = l && l.lap === 'khong'
       ? '🕘 ' + ngayDep(moi.ngay || moi.goc) + ' · ' + tlgHHMM(moi.tu) + '–' + tlgHHMM(moi.den)
@@ -27227,9 +27802,13 @@ async function lcLuuDoi(pham, moi){
       await lcTheoViec(moi.lich, moi.goc, {ngay: moi.ngay || moi.goc, tu: moi.tu,
                                            den: moi.den, phut});
     else
-      await lcTheoChuoi(moi.lich, moi.tu, moi.den, phut);
+      /* Chuỗi vừa chia thì việc của nửa SAU nay mang id mới — gọi bằng id cũ là
+         đi dời việc của nửa TRƯỚC, đúng nửa không ai đụng tới. */
+      await lcTheoChuoi(idMoi || moi.lich, moi.tu, moi.den, phut);
   }
-  toast(chu);
+  /* Nhánh «từ đây trở đi» đi tới đây với `ban` vẫn là null — `lcChupDoi` không
+     hứa ở đó, nên `htNhan` trả `undefined` và thông báo chạy y như trước. */
+  toast(chu, htNhan(ban));
   await veTimeline();
   /* Bảng Hôm nay đọc `TASKS`, thứ chỉ `taiHomNay` dựng — `veTimeline` không chạm
      tới nó, nên thiếu lượt này thì dòng việc vẫn đứng ở giờ cũ tới lần tải sau. */
@@ -27372,6 +27951,182 @@ async function lcTheoChuoi(lichId, tu, den, phut){
   if (ids.length > 1) toast(`🕘 ${ids.length} việc CỦA TÔI đã đi theo giờ mới`);
 }
 
+/* ══ SỬA CẢ CHUỖI HAY CHỈ MỘT BUỔI (TRI-143, Tracy chốt 07/09) ═════════════
+
+   Cửa sửa ghi thẳng lên `lich_chung`, tức là viết lại LUẬT LẶP — nên đổi giờ ở
+   đó là đổi mọi buổi của chuỗi. Tracy 07/09:
+
+     *"nếu mà tôi ấn vào cửa sổ chỉnh sửa và chỉnh sửa giờ thì nó sửa luôn cả
+      chuỗi, chỗ này bạn bổ sung cho tôi cửa sổ hỏi là toàn bộ sự kiện hay chỉ
+      sự kiện này"*
+
+   Cú kéo (`lcKeoTha`) và cú xoá (`lcHoiHuy`) đã có nấc hỏi này từ trước; cửa
+   sửa là chỗ còn sót. Hộp chép đúng khuôn của `lcKeoTha` — HAI nấc, không ba,
+   cùng một lý lẽ: *"và các sự kiện tiếp theo"* nghĩa là chia chuỗi thành hai
+   luật, một nhánh mã riêng làm mọi ô tick, ghi chú và việc đã đẻ của nửa sau
+   mất khoá. Chưa ai xin nó.
+
+   CHỈ HỎI KHI GIỜ THẬT SỰ ĐỔI (Tracy chốt cùng ngày). Sửa mỗi cái tên mà bị
+   hỏi phạm vi là hỏi thừa: hai nghĩa của *"buổi này"* và *"cả chuỗi"* chỉ khác
+   nhau ở giờ, vì giờ là thứ duy nhất một buổi lẻ mang riêng được.
+
+   VÌ SAO MỘT BUỔI CHỈ MANG RIÊNG ĐƯỢC GIỜ. Chỗ chứa của nó là một dòng
+   `kieu='doi'` trong `lich_chung_ngoai_le`, và bảng ấy có đúng ba cột đổi được:
+   `ngay_moi` · `gio_moi` · `so_phut_moi`. Tên, mô tả, màu, nhóm nhận, luật lặp
+   chỉ có MỘT chỗ đứng là chính dòng luật. Nên khi người ta vừa đổi giờ vừa đổi
+   tên rồi chọn *"Sự kiện này"*, ta NÓI RA và không ghi gì — ghi nửa vời là
+   hỏng theo cách im lặng, thứ tệ nhất trong ba cách hỏng. Nới bảng ngoại lệ để
+   một buổi mang được tên riêng thì làm được, cần một tệp SQL và một lượt sửa
+   chỗ vẽ; Tracy gạt ra ngoài nhát này (07/09).
+
+   KHÔNG ĐỘNG tới đường ghi cũ. Nhánh *"Tất cả sự kiện"* gọi lại đúng `lcLuu`
+   với cờ phạm vi đặt sẵn, nên nó chạy y như trước 07/09, kể cả lượt
+   `lcTheoChuoi` kéo việc đã đẻ đi theo. */
+
+/* Cột → tên gọi trên màn. Nhiều cột chung một tên vì người khai nhìn thấy MỘT
+   ô: nhịp lặp là tám cột, nhóm nhận là hai. Kể tên cột ra là bắt họ dịch. */
+const LC_MUC_CHUNG = [
+  ['ten', 'tên'], ['ghi_chu', 'mô tả'], ['mau', 'màu'],
+  ['pham_vi', 'nhóm nhận'], ['chuc_nang_ids', 'nhóm nhận'], ['nguoi_ids', 'người mời'],
+  ['tieu_diem_ma', 'loại'], ['rieng_tu', 'loại'], ['da_chot', 'trạng thái chốt'],
+  ['ca_ngay', 'cả ngày'], ['so_ngay', 'cả ngày'],
+  ['lap', 'nhịp lặp'], ['thu', 'nhịp lặp'], ['tuan_thang', 'nhịp lặp'],
+  ['ngay_thang', 'nhịp lặp'], ['bo_cn', 'nhịp lặp'], ['buoc', 'nhịp lặp'],
+  ['so_lan', 'nhịp lặp'], ['ngay_bat_dau', 'nhịp lặp'], ['ngay_ket_thuc', 'nhịp lặp'],
+  ['khach_sua', 'quyền của khách'], ['khach_moi', 'quyền của khách'],
+  ['khach_xem_ds', 'quyền của khách']
+];
+
+/* Những mục vừa đổi mà KHÔNG đi riêng cho một buổi được.
+
+   Chỉ soi cột CÓ MẶT trong `dong`: cột vắng là cột máy chủ chưa có (một cờ dò
+   cột đang tắt), không phải một mục vừa bị xoá trắng — kể tên nó ra là báo oan.
+
+   So SAU khi chuẩn hoá, vì hai vế về từ hai đường khác nhau: kho trả `null` cho
+   ô text bỏ trống còn form trả chuỗi rỗng, kho trả số còn form có chỗ trả chuỗi,
+   và thứ tự phần tử trong một mảng không mang nghĩa gì. Phép so lệch thì hỏng
+   theo hướng an toàn: hộp nói "áp cho cả chuỗi", người ta chọn nấc kia, và
+   đường ghi vẫn đúng như hôm qua — không mất một dòng dữ liệu nào. */
+function lcMucChung(goc, dong){
+  const chuan = v => Array.isArray(v) ? JSON.stringify(v.map(String).sort())
+                   : v == null ? '' : String(v);
+  const ra = [];
+  for (const [cot, ten] of LC_MUC_CHUNG){
+    if (!(cot in dong) || ra.includes(ten)) continue;
+    if (chuan(goc[cot]) !== chuan(dong[cot])) ra.push(ten);
+  }
+  return ra;
+}
+
+/* Chữ dưới nấc đầu chỉ hiện khi lượt này CÓ đổi thứ khác ngoài giờ — lúc ấy nó
+   nói đúng thứ mắt không tự thấy: nấc này sẽ bỏ lại mấy mục kia. Không có gì
+   khác thì không có gì để nói, và một dòng chữ thừa dưới một nấc radio là chỗ
+   người ta dừng lại đọc rồi phân vân. */
+/* Ba nấc, xếp HẸP TRƯỚC RỘNG SAU đúng như Lịch Google — cú bấm nhầm khi ấy
+   luôn nhầm về phía ít người bị ảnh hưởng hơn.
+
+   NẤC NÀO KHÔNG LÀM ĐƯỢC GÌ THÌ KHÔNG BÀY:
+   · nấc GIỮA cần hàm `cat_chuoi_lich` ở máy chủ — chưa chạy tệp SQL thì hai nấc
+     cũ nguyên vẹn, y như trước 07/09;
+   · nấc ĐẦU chỉ ghi được GIỜ, nên khi lượt này không đổi giờ (đổi mỗi cái tên
+     chẳng hạn) thì nó rỗng nghĩa. Bày ra là bày một lựa chọn hỏng, rồi chặn
+     người ta lại bằng một câu toast — hai lần phiền cho cùng một chuyện.
+   Nấc đầu tiên còn đứng lại mang dấu chọn sẵn. */
+function lcHoiSuaChuoi(){
+  const k = LC_SUA_CHO;
+  if (!k) return;
+  const nac = [];
+  if (k.gioDoi)
+    nac.push([`buoi`, `Sự kiện này`,
+              k.khac.length ? `chỉ đổi được giờ` : '']);
+  if (CO_CAT_CHUOI)
+    nac.push([`tu_day`, `Sự kiện này và các sự kiện tiếp theo`, '']);
+  nac.push([`tat_ca`, `Tất cả sự kiện`, '']);
+  hopHoiMo(`<div class="hoi-dau"><h3>Sửa sự kiện định kỳ</h3></div>
+    <div class="lch-ds">${nac.map(([v, ten, phu], i) =>
+      `<label><input type="radio" name="lcs" value="${v}"${i ? '' : ' checked'}> ${ten}${
+        phu ? ` <i class="lcb-doi">${phu}</i>` : ''}</label>`).join('')}
+    </div>
+    <div class="hoi-nut">
+      <button class="phu" onclick="lcThoiSua()">Hủy</button>
+      <button class="ok" onclick="nutCho(this,'Đang lưu…',lcSuaTheo)">Lưu</button>
+    </div>`);
+}
+
+async function lcSuaTheo(){
+  const k = LC_SUA_CHO;
+  if (!k) return false;
+  /* Đọc nấc đang chọn. KHÔNG ngã về 'buoi' nữa: nấc ấy vắng mặt ở lượt không
+     đổi giờ, và ngã về một nấc không có trên màn là ghi một thứ chẳng ai bấm.
+     Ngã về 'tat_ca' — nấc DUY NHẤT luôn có mặt. */
+  const o = document.querySelector('input[name="lcs"]:checked');
+  const v = o ? o.value : 'tat_ca';
+  /* NẤC GIỮA KHÔNG BỊ GIỚI HẠN như nấc đầu: chuỗi mới là một dòng `lich_chung`
+     đầy đủ, nên tên, mô tả, màu, nhóm nhận, cả luật lặp đều đi được. Muốn đổi
+     tên cho nửa sau của một chuỗi thì đây là nấc phải chọn. */
+  if (v === 'tu_day'){
+    LC_SUA_PHAM = 'tu_day';
+    LC_SUA_CHO = null;
+    hopHoiDong();
+    return lcLuu();
+  }
+  if (v === 'tat_ca'){
+    /* Đường cũ, không đổi một dòng nào: mở lại `lcLuu` với phạm vi đặt sẵn nên
+       nó đi thẳng xuống lượt ghi. Đọc lại form thay vì mang theo bản `dong` vừa
+       dựng — cửa vẫn đang mở nguyên, và một bản dựng lại từ cùng một form thì
+       luôn đúng, còn một bản mang theo là một thứ phải giữ cho khỏi cũ. */
+    LC_SUA_PHAM = 'tat_ca';
+    LC_SUA_CHO = null;
+    hopHoiDong();
+    return lcLuu();
+  }
+  if (k.khac.length){
+    /* KHÔNG ghi gì, và KHÔNG đóng hộp: người ta còn phải chọn lại. */
+    toast('Chỉ đổi được giờ cho riêng một buổi — ' + k.khac.join(', ')
+      + ' áp cho cả chuỗi. Chọn "Tất cả sự kiện" nếu bạn muốn đổi cả những mục ấy.');
+    return false;
+  }
+  /* Đọc TRƯỚC `lcDongCua`: hàm ấy dọn sạch mọi cờ của cửa, kể cả cái đang cầm.
+     `ngay: null` — NGÀY do luật lặp quyết, đúng vế ② mà `lcTheoChuoi` đã ghi.
+     Dời một buổi sang hẳn ngày khác là việc của cú kéo, nơi ngón tay chỉ rõ
+     ngày đích; ở đây không ô nào nói lên điều ấy. */
+  const moi = {lich: k.lich, goc: k.ngay, tu: k.tu, den: k.den, ngay: null};
+  LC_SUA_CHO = null;
+  hopHoiDong();
+  lcDongCua();
+  await lcLuuDoi('buoi', moi);
+  return true;
+}
+
+/* Bỏ nấc hỏi giữa chừng. KHÔNG vẽ lại gì — khác hẳn `lcThoiKeo`, nơi khối đang
+   nằm ở chỗ ngón tay vừa thả nó xuống nên màn hình đang nói một điều máy chủ
+   chưa biết. Ở đây chưa có gì nhúc nhích: cửa sửa còn nguyên với mọi thứ vừa
+   gõ, và người ta quay lại sửa tiếp hoặc bấm Lưu lần nữa. */
+function lcThoiSua(){ LC_SUA_CHO = null; hopHoiDong(); }
+
+/* ══ CHIA CHUỖI TỪ MỘT NGÀY TRỞ ĐI (TRI-146, Tracy chốt 07/09) ══════════════
+
+   Tracy đưa ảnh hộp của Lịch Google: *"à trong gg calendar nó có 3 lựa chọn ấy
+   — có 1 option là sửa sự kiện này và các sự kiện tiếp theo"*. Mã cũ khai nấc
+   này bị bỏ vì *"chưa ai xin nó"* — nay có người xin. Cùng bài học làn TV
+   05/09: lời tự khai trong mã không phải quyết định của Tracy.
+
+   MỘT LƯỢT GỌI, KHÔNG BẢY. Chia chuỗi là đặt điểm dừng cho luật cũ, đẻ luật
+   mới, rồi chuyển năm bảng con sang id mới — bảy thao tác phải cùng đứng hoặc
+   cùng ngã. Hỏng nửa chừng là chuỗi đã bị chia mà dữ liệu nằm hai nơi, không
+   màn nào nói ra. Thêm nữa, ba trong năm bảng giữ dòng của người khác mà RLS
+   chặn theo dòng. Cả hai lẽ dẫn về cùng một chỗ: một hàm ở máy chủ.
+   Đầy đủ: `nang-cap-cat-chuoi-lich.sql`. */
+async function lcCatChuoi(lichId, ngayCat, dong){
+  const r = await sb.rpc('cat_chuoi_lich',
+                         {p_lich_id: lichId, p_ngay_cat: ngayCat, p_dong: dong});
+  if (r.error) return r;
+  /* 0 = ngày chia CHÍNH LÀ ngày mở chuỗi, và hàm không chia gì cả. Khi ấy "từ
+     đây trở đi" với "tất cả" là một chuyện — chạy tiếp nhánh sửa cả chuỗi,
+     đúng thứ người bấm đang muốn. `lcHuy` đã đi đúng lối này cho hộp xoá. */
+  return r.data === 0 ? {catRong: true} : {data: r.data};
+}
+
 /* ── CỬA KHAI LỊCH — danh sách, rồi biểu mẫu ────────────────────────────── */
 /* Cửa này mở THẲNG ra form khai sự kiện mới từ 31/08 (Tracy: *"không cần list sự
    kiện này nữa, thay bằng nút thêm sự kiện luôn... khi nào tôi muốn chỉnh sửa sự
@@ -27400,10 +28155,18 @@ function lcMoCua(ngay){
 function lcSuaChuoi(id){
   const l = (LC_HIEN?.ds || []).find(x => x.id === id);
   if (!l) return void toast('⚠️ Không tìm thấy sự kiện này — thử tải lại trang.');
+  /* NGÀY GỐC của buổi đang mở, đọc TRƯỚC `lcDongHan` — hàm ấy xoá `LC_BUOI`.
+     Đặt lại SAU `lcMoForm`, vì chính `lcMoForm` dọn cờ này về null. */
+  const ngayGoc = (LC_BUOI && LC_BUOI.id === id) ? LC_BUOI.ngay : null;
+  /* Bung lượt ấy ra TRƯỚC khi đóng cửa buổi, cùng lẽ với ngày gốc ở trên.
+     `lcLuot` đọc `LC_HIEN.doi` — đúng bản tra mà lưới đang vẽ, nên giờ trong
+     form và giờ trên lưới không thể nói hai điều khác nhau. */
+  const luot = ngayGoc ? lcLuot(l, ngayGoc) : null;
   LC_DS_SUA[id] = l;
   lcDongHan();
   document.getElementById('lc-cua').classList.add('hien');
-  lcMoForm(id);
+  lcMoForm(id, luot);
+  LC_SUA_NGAY = ngayGoc;
 }
 /* ĐÓNG LÀ DỌN TRẮNG KHUNG, không chỉ giấu nó đi. Đây là cái giá của việc hai
    cửa sự kiện cố ý dùng CHUNG tên ô (`lc-lap` · `lc-tu` · `lc-phut` …) để `lcLuu`
@@ -27420,15 +28183,29 @@ function lcDongCua(){
      cũng lôi dòng việc cũ vào nối — một cú bấm ✕ hôm nay đổi nghĩa một cú Lưu
      mười phút sau, và không một chữ nào báo. */
   TV_SANG_SK = null;
+  /* Bốn cờ của nấc hỏi phạm vi (TRI-143), cùng một lẽ với dòng ngay trên. Một
+     `LC_SUA_NGAY` sót lại là lượt khai SAU đó tưởng mình đang sửa một buổi cụ
+     thể của một chuỗi khác.
+     ĐỨNG DƯỚI `TV_SANG_SK`, không đứng trên: `thu-doi-loai.js` dò cờ ấy trong
+     400 ký tự đầu của hàm, nên một khối chèn phía trên đẩy nó ra ngoài tầm và
+     bài thử đỏ oan. Chèn thêm gì vào đây thì chèn xuống dưới. */
+  LC_SUA_NGAY = null; LC_SUA_CHO = null; LC_SUA_PHAM = null; LC_SUA_GIO = null;
   document.getElementById('lc-cua').classList.remove('hien');
   const than = document.getElementById('lc-than');
   if (than) than.innerHTML = '';
 }
 
-function lcMoForm(id){
+/* `luot` là lượt CỤ THỂ mà cửa được mở từ đó — thứ `lcLuot` bung ra, đã tính
+   cả cú dời riêng. Không truyền thì form bày giờ của LUẬT như trước 07/09:
+   đúng cho nút ＋ Sự kiện, và đúng cho mọi lối vào không đứng ở một buổi nào. */
+function lcMoForm(id, luot){
   const than = document.getElementById('lc-than');
   const l = id ? (LC_DS_SUA[id] || null) : null;
   LC_SUA = id;
+  /* Mở form là bắt đầu một lượt khai mới — bốn cờ của nấc hỏi phải trắng. Bỏ
+     lại một `LC_SUA_PHAM` cũ là lượt sau bỏ qua nấc hỏi mà không ai bấm gì.
+     `lcSuaChuoi` đặt lại `LC_SUA_NGAY` ngay sau khi gọi hàm này. */
+  LC_SUA_NGAY = null; LC_SUA_CHO = null; LC_SUA_PHAM = null; LC_SUA_GIO = null;
   /* Tiêu đề nói rõ đang ở nhánh nào: cửa nay mở thẳng vào form, không còn bước
      danh sách để người ta đọc ra mình vừa bấm gì. */
   const ten = document.getElementById('lc-ten-cua');
@@ -27463,6 +28240,16 @@ function lcMoForm(id){
   const caNgay = !!(l && l.ca_ngay);
   const tuDau  = l ? l.ngay_bat_dau : homNay();
   const denNgay = lcNgayDich(tuDau, Math.max(1, Number(l && l.so_ngay) || 1) - 1);
+  /* GIỜ NỀN — giờ THẬT của buổi vừa bấm vào, không phải giờ của luật (TRI-145).
+     Trước 07/09 form luôn nạp `l.gio_bat_dau`, nên một buổi đã kéo lệch riêng
+     mở ra vẫn nói giờ gốc: chuỗi 9h, buổi này đã ở 10h, ô giờ nói 9h. Đúng cách
+     Lịch Google làm — cửa sửa nói giờ của buổi bạn đang đứng.
+     NGÀY thì KHÔNG đi theo: với chuỗi lặp, ô ngày là NGÀY MỞ CHUỖI, không phải
+     ngày buổi. Nhét ngày buổi vào đó là viết lại luật sau lưng người sửa. */
+  const gioNen  = luot ? luot.tu   : (l ? l.gio_bat_dau : 510);
+  const phutNen = luot ? luot.phut : (l ? l.so_phut     : 60);
+  /* Nhớ lại thứ vừa bày ra, để `lcLuu` biết người ta có động vào nó không. */
+  LC_SUA_GIO = l ? {tu: gioNen, phut: phutNen} : null;
   than.innerHTML = `
     <!-- ══ TẦNG TRÊN: cái gì · lúc nào ══════════════════════════════════════
          Xếp theo Lịch Google (Tracy 04/09: *"tôi muốn thiết kế giống gg
@@ -27486,7 +28273,7 @@ function lcMoForm(id){
          vì ba chỗ khác đọc nó (lcVeRanh để tìm khe trống, lcChonKhe, và
          lcLuu) — bỏ hẳn là phải sửa ba nơi cho một cú đổi hình.
          lcDongBoPhut giữ nó khớp với hai ô giờ. -->
-    <input type="hidden" id="lc-phut" value="${l ? l.so_phut : 60}">
+    <input type="hidden" id="lc-phut" value="${phutNen}">
     <div class="lc-hang lc-tg">
       <!-- HAI CỤM, không phải bốn ô rời. Bốn ô rời thì lúc màn hẹp nó gãy ở
            bất cứ đâu — chữ "toi" nằm lại cuối dòng trên còn giờ kết thúc rơi
@@ -27616,11 +28403,11 @@ function lcMoForm(id){
      tìm phần tử theo id — nên phần tử phải có mặt trước. Nhãn lúc trống khác
      nhau ("Giờ" · "Đến"), đúng cái tham số `nhan` sinh ra để làm: hai ô cùng
      hàng mà cùng một chữ thì không đọc ra cái nào là đầu. */
-  const gioDau = l ? tlgHHMM(l.gio_bat_dau) : '08:30';
+  const gioDau = tlgHHMM(gioNen);
   document.getElementById('lc-gio-o').innerHTML =
     oGio('lc-gio', gioDau, 'Giờ', 'Giờ bắt đầu buổi');
   document.getElementById('lc-gio-den-o').innerHTML =
-    oGio('lc-gio-den', lcGioCong(gioDau, l ? l.so_phut : 60), 'Đến', 'Giờ kết thúc buổi');
+    oGio('lc-gio-den', lcGioCong(gioDau, phutNen), 'Đến', 'Giờ kết thúc buổi');
   lcVeNac();
   lcDoiLoai();
   LC_QUYEN = {sua: !!(l && l.khach_sua),
@@ -28396,7 +29183,7 @@ function lcVeMoi(boQuaRanh){
 /* Cả đội, trừ chính mình — mình luôn có mặt ở sự kiện mình khai, mời thêm là
    thừa một dòng. */
 function lcDsMoi(){
-  return (typeof DOI !== 'undefined' ? DOI : []).filter(x => !(ME && x.id === ME.id));
+  return (typeof DOI_CHON !== 'undefined' ? DOI_CHON() : []).filter(x => !(ME && x.id === ME.id));
 }
 
 /* Vẽ lại RUỘT hộp, không vẽ lại cả hộp. Bản cũ gọi `lcMoHopMoi()` sau mỗi cú
@@ -28604,12 +29391,72 @@ async function lcLuu(){
     dong.khach_moi    = !!LC_QUYEN.moi;
     dong.khach_xem_ds = !!LC_QUYEN.xem;
   }
-  const r = LC_SUA
-    ? await sb.from('lich_chung').update(dong).eq('id', LC_SUA)
+  /* ── NẤC HỎI PHẠM VI (TRI-143) ──────────────────────────────────────────
+     Đứng ở ĐÂY, sau mọi phép kiểm và sau khi `dong` đã dựng xong. Hỏi sớm hơn
+     là bắt người ta trả lời một câu rồi vứt đi vì form còn thiếu tên; mà muộn
+     hơn thì đã ghi mất rồi. `dong` phải có sẵn thì mới so được giờ mới với giờ
+     cũ — đó cũng là phép thử quyết định có hỏi hay không.
+     Bốn vế phải cùng đúng: đang SỬA (không phải thêm), chuỗi CÓ lặp, biết mình
+     mở từ buổi nào, và giờ thật sự đổi. Thiếu vế nào thì đường ghi chạy y như
+     trước 07/09. */
+  const goc = LC_SUA ? (LC_HIEN?.ds || []).find(x => x.id === LC_SUA) : null;
+  const daChon = LC_SUA_PHAM; LC_SUA_PHAM = null;
+  /* GIỜ CÓ ĐỔI HAY KHÔNG thì so với thứ MẮT VỪA THẤY, không so với luật
+     (TRI-145). Từ 07/09 form bày giờ THẬT của buổi, nên với một buổi đã dời
+     riêng hai mốc ấy khác nhau — so nhầm là hỏi phạm vi cho một người chẳng
+     động vào ô giờ nào. */
+  const gioDoi = !!LC_SUA_GIO
+    && (dong.gio_bat_dau !== LC_SUA_GIO.tu || dong.so_phut !== LC_SUA_GIO.phut);
+  /* CHƯA AI ĐỘNG VÀO GIỜ THÌ LUẬT GIỮ NGUYÊN GIỜ CỦA LUẬT — vế nặng nhất của
+     nhát này, và là cái giá của việc bày giờ thật. Form nay bày 10h của một
+     buổi đã dời riêng; ghi thẳng con số ấy lên luật là KÉO CẢ CHUỖI về giờ của
+     một buổi, chỉ vì có người mở cửa ra sửa cái tên. Hỏng im lặng, và hỏng cho
+     cả team. */
+  if (goc && LC_SUA_GIO && !gioDoi){
+    dong.gio_bat_dau = goc.gio_bat_dau;
+    dong.so_phut     = goc.so_phut;
+  }
+  /* CÓ GÌ ĐỂ HỎI KHÔNG. Khi hộp còn HAI nấc thì chỉ giờ mới đáng hỏi: hai nấc
+     ấy chỉ khác nhau ở giờ, vì giờ là thứ duy nhất một buổi lẻ mang riêng được
+     (Tracy chốt 07/09). Nhưng nấc GIỮA đẻ ra một chuỗi mới đầy đủ, nên nó ghi
+     được cả tên — và lúc ấy đổi tên cũng có hai nghĩa: từ đây, hay tất cả. Nên
+     phép thử nới đúng bằng chỗ nấc giữa có mặt, không nới hơn. */
+  const mucKhac = goc ? lcMucChung(goc, dong) : [];
+  const dangDoi = gioDoi || (CO_CAT_CHUOI && mucKhac.length > 0);
+  if (!daChon && goc && goc.lap !== 'khong' && LC_SUA_NGAY && dangDoi){
+    LC_SUA_CHO = {lich: LC_SUA, ngay: LC_SUA_NGAY, tu: dong.gio_bat_dau,
+                  den: dong.gio_bat_dau + dong.so_phut, khac: mucKhac, gioDoi};
+    lcHoiSuaChuoi();
+    /* `false` để cửa gộp (`if (await lcLuu()) vcDong()`) đứng yên: chưa ghi gì
+       thì chưa có gì để đóng. Cửa ấy chỉ THÊM sự kiện nên không bao giờ vào tới
+       đây, nhưng một giá trị trả về phải đúng ở mọi đường ra. */
+    return false;
+  }
+  /* BA ĐƯỜNG GHI, theo nấc người bấm chọn. Nấc GIỮA đi qua một hàm ở máy chủ
+     vì nó chạm bảy thứ phải cùng đứng cùng ngã — xem `lcCatChuoi`. Hai đường
+     kia không đổi một dòng nào so với trước 07/09. */
+  /* `ban` — cú cho ngăn hoàn tác, dựng ở CẢ BA đường trừ đường tạo mới: lùi một
+     cú tạo là xoá một sự kiện có thể đã mời người, chuyện nặng hơn hẳn và nằm
+     ngoài phạm vi Tracy duyệt 07/09 (TRI-161). */
+  let r, ban = null;
+  if (daChon === 'tu_day' && LC_SUA && LC_SUA_NGAY){
+    const truoc = await lcChupTruocChia(LC_SUA);
+    r = await lcCatChuoi(LC_SUA, LC_SUA_NGAY, dong);
+    /* Ngày chia chính là ngày mở chuỗi thì không có gì để chia — rơi xuống
+       đúng nhánh sửa cả chuỗi, thứ người bấm đang muốn. */
+    if (r.catRong){
+      ban = await lcChupSua(LC_SUA, dong, goc);
+      r = await sb.from('lich_chung').update(dong).eq('id', LC_SUA);
+    } else if (!r.error) ban = await lcCuChia(LC_SUA, r.data, truoc);
+  } else if (LC_SUA){
+    ban = await lcChupSua(LC_SUA, dong, goc);
+    r = await sb.from('lich_chung').update(dong).eq('id', LC_SUA);
+  } else {
     /* `.select('id')` để nhánh ĐỔI LOẠI nối được dòng việc cũ vào sự kiện vừa
        sinh — không có id thì không có gì để nối. Nhánh sửa không cần: nó đã
        cầm `LC_SUA` trong tay. */
-    : await sb.from('lich_chung').insert({...dong, tao_boi: ME?.id || null}).select('id');
+    r = await sb.from('lich_chung').insert({...dong, tao_boi: ME?.id || null}).select('id');
+  }
   if (r.error){
     /* Câu máy chủ trả về lúc thiếu cột là "column ... does not exist" — đúng
        nhưng không ai đọc ra phải làm gì. Dịch nó thành việc phải làm. */
@@ -28627,18 +29474,29 @@ async function lcLuu(){
         ? 'Máy chủ chưa có sự kiện nhiều ngày — chạy nang-cap-su-kien-nhieu-ngay.sql'
       : /da_chot/.test(loi)
         ? 'Máy chủ chưa có cột chốt lịch — chạy nang-cap-chot-su-kien.sql'
+      : /cat_chuoi_lich/.test(loi)
+        ? 'Máy chủ chưa có lối chia chuỗi — chạy nang-cap-cat-chuoi-lich.sql'
       : 'Không lưu được: ' + loi);
     return false;
   }
   LC_KHO = {};
-  toast(LC_SUA ? 'Đã sửa sự kiện' : 'Đã thêm sự kiện');
+  /* Nói ra thứ vừa xảy ra, không nói một câu chung: chia một chuỗi làm hai là
+     việc nặng hơn hẳn sửa nó, và người bấm phải đọc được rằng mình vừa làm
+     điều ấy. `r.data` rỗng nghĩa là nhánh chia đã rơi xuống sửa cả chuỗi. */
+  toast(daChon === 'tu_day' && r.data
+          ? 'Đã tách chuỗi từ ' + ngayDep(LC_SUA_NGAY) + ' trở đi'
+        : LC_SUA ? 'Đã sửa sự kiện' : 'Đã thêm sự kiện', htNhan(ban));
   /* GIỜ MỚI KÉO VIỆC ĐI THEO, kể cả khi đổi bằng cửa này chứ không bằng cú kéo
      (TRI-107). Chú thích cũ ngay dưới đây từng viết *"nhánh SỬA không đẻ việc
      nào nên không ai gọi hộ"* — đúng vế đầu, nhưng vế sau bỏ sót: việc đã đẻ
      từ những lượt trước vẫn còn đó, và giờ của chúng vừa cũ đi.
      Đọc `LC_SUA` TRƯỚC `lcDongCua()`: cửa đóng thì cờ ấy về null. */
   const daSua = LC_SUA;
-  if (daSua) await lcTheoChuoi(daSua, dong.gio_bat_dau,
+  /* VIỆC ĐI THEO CHUỖI NÀO. Nấc giữa vừa chuyển việc của nửa SAU sang một id
+     mới; gọi bằng id cũ là đi dời việc của nửa TRƯỚC — đúng nửa không ai đụng
+     tới, và nửa đáng dời thì đứng nguyên. Cả hai chiều đều im lặng. */
+  const idViec = (daChon === 'tu_day' && r.data) ? r.data : daSua;
+  if (daSua) await lcTheoChuoi(idViec, dong.gio_bat_dau,
                                dong.gio_bat_dau + dong.so_phut, dong.so_phut);
   /* VIỆC CŨ ĐI THEO, khi cửa này được mở bằng nút đổi loại ở cửa Thông tin việc
      (05/09). Nối TRƯỚC `lcDongCua` — hàm ấy dọn sạch cờ, đọc sau là đọc null. */
@@ -28747,6 +29605,20 @@ async function lcDeVieckHomNay(){
 /* Lấy việc của một lượt; chưa có thì đẻ. Đây là cửa DUY NHẤT đẻ ra việc của
    sự kiện — ba chỗ gọi nó (ba hướng trả lời · ô tick xong trên khối · lượt tự
    đẻ đầu ngày) không chỗ nào tự dựng lệnh ghi riêng. */
+/* KHÔNG ĐẺ ĐƯỢC VIỆC CHO BUỔI — nói đúng lý do, hoặc im.
+   Câu "máy chủ chưa có cột việc của sự kiện" từng đứng thẳng ở hai chỗ gọi, và
+   nó nói dối mọi lần `lcDeViec` ngã vì một lý do khác: Tracy bấm 💧 trên một
+   sự kiện mình không host (07/09) thì thấy hai câu chồng nhau — câu thật của
+   máy chủ, rồi câu này đè lên nói máy chủ thiếu cột. Hai câu, một cái sai, và
+   cái sai chỉ tay sang một tệp SQL không liên quan.
+   Máy chủ THIẾU cột thì `lcDeViec` về `null` mà chưa kịp nói gì — chỉ ca ấy
+   mới cần câu này. Còn lại `lcDeViec` đã toast đúng lý do rồi, nói thêm là
+   nói đè. */
+function lcBaoKhongDeDuoc(){
+  if (!CO_VIEC_BUOI)
+    toast('Máy chủ chưa có cột việc của sự kiện — chạy nang-cap-viec-cua-buoi.sql');
+}
+
 async function lcDeViec(id, ngay){
   const khoa = id + '|' + ngay;
   if (LC_VIEC[khoa]) return LC_VIEC[khoa];
@@ -30313,8 +31185,8 @@ function tlgThanLuoi(ngays, phien, tasks, camKet, duAn, kho, nac){
        phạm vi là một chuyện nên ghi thẳng, không hỏi. "Sự kiện này" ghi xuống
        `lich_chung_ngoai_le` — chỗ kho đã dựng sẵn cho nó từ ngày đầu.
 
-       Tay nắm chỉ mọc cho NGƯỜI ĐƯỢC SỬA (`k.sua`) — từ 04/09 là CHỈ HOST, đúng
-       luật ghi `sua_lich` của máy chủ. Người dự — kể cả lead — vẫn chạm mở được
+       Tay nắm chỉ mọc cho NGƯỜI ĐƯỢC SỬA (`k.sua`) — luật đầy đủ ở `lcDuocSua`,
+       đúng luật ghi `sua_lich` của máy chủ. Người dự — kể cả lead — vẫn chạm mở được
        cửa buổi; cho họ kéo là bày ra một thao tác mà máy chủ sẽ từ chối.
 
        Ô tick ở đây LÀ "xong" (Tracy đổi nghĩa 31/08) — cùng hình dạng VÀ cùng
@@ -30819,6 +31691,14 @@ async function tvLuu(){
     return true;
   }
 
+  /* Cửa sửa việc CHÍNH — một cú bấm Lưu ghi đè tên, loại, ngày, giờ, thời
+     lượng, trạng thái, màu và ghi chú cùng lúc, nên đây là chỗ cần đường lui
+     hơn cả năm cửa kéo-thả cộng lại. `htChupTheo` chụp đúng ngần ấy cột, không
+     hơn: cột nào `patch` không gửi thì cú lùi cũng không đụng tới, để nó khỏi
+     ghi đè thứ người khác vừa đổi từ máy của họ.
+     Nhánh Nghẽn ở trên KHÔNG có nút — nó đẻ việc gỡ nghẽn, xem chú thích ở
+     `luuSuaTaskCK`. */
+  const ban = await htChupTheo(id, patch, `«${nd}»`);
   const {error} = await sb.from('task').update(patch).eq('id', id);
   if (error){ toast(baoLoiTask(error)); return false; }
   tvDong();
@@ -30826,7 +31706,7 @@ async function tvLuu(){
   /* `lamMoiCuaToi` đổ đệm dải lịch rồi vẽ lại — đệm không có đường tự biết mình
      đã cũ. Thiếu bước này thì lưu xong khối vẫn nằm nguyên chỗ cũ. */
   await lamMoiCuaToi();
-  toast(patch.ngay ? `Đã lưu «${nd}».` : `Đã lưu — «${nd}» về 🧺 kho việc.`);
+  toast(patch.ngay ? `Đã lưu «${nd}».` : `Đã lưu — «${nd}» về 🧺 kho việc.`, htNhan(ban));
   return true;
 }
 
@@ -31506,15 +32386,23 @@ const HT_COT  = ['ngay','deadline','gio_start','gio_end','thoi_luong_du_kien'];
 const HT_TRAN = 10;
 let   HT_NGAN = [];
 
-/* Dòng việc đang nằm ở đâu đó trong máy. Ba chỗ, vì bốn cửa ghi kia đứng ở ba
-   màn khác nhau: kho việc của dải lịch · đệm theo dải của nấc đang xem · bản
-   chụp của tab Vườn. */
+/* Dòng việc đang nằm ở đâu đó trong máy. Ba chỗ đầu là của dải lịch, vì năm cửa
+   kéo-thả đứng ở ba màn khác nhau: kho việc của dải lịch · đệm theo dải của nấc
+   đang xem · bản chụp của tab Vườn.
+
+   Từ 07/09 (TRI-156) hỏi thêm `tvTim` ở cuối. Bản cũ chỉ soi ba kho ấy, nên một
+   việc đang mở từ tab Cam kết hay từ bảng Hôm nay là chụp hụt — mà chụp hụt thì
+   theo luật ② ở trên là KHÔNG hứa, tức nút Hoàn tác lặng lẽ vắng mặt ở đúng
+   những chỗ người ta hay sửa nhất. `tvTim` đã gom sẵn cả `TLG_VIEC`, `TL_PHU`
+   và `timTask` (TASKS · KHO · TASK_CK), nên mượn nó thay vì chép lại danh sách
+   kho lần thứ hai rồi để hai bản trôi dạt khỏi nhau. Sau cùng CHỨ KHÔNG trước:
+   ba kho của dải lịch là bản đang vẽ trên màn người ta vừa thao tác. */
 function htTimTask(id){
   const nguon = [TL_KHO_DS || []];
   Object.values(TL_KHO || {}).forEach(k => nguon.push(k.tasks || []));
   if (typeof TK_TASKS !== 'undefined') nguon.push(TK_TASKS || []);
   for (const ds of nguon){ const t = ds.find(x => x && x.id === id); if (t) return t; }
-  return null;
+  return (typeof tvTim === 'function' ? tvTim(id) : null) || null;
 }
 
 /* HAI NHỊP, cố ý tách đôi: `htChup` gọi TRƯỚC câu `update` (lúc bản trong máy
@@ -31526,11 +32414,73 @@ function htChup(id, moTa){
   if (!t) return null;
   const truoc = {};
   HT_COT.forEach(c => { if (c in t) truoc[c] = t[c] ?? null; });
-  /* `deadline` là `not null default ''` (schema.sql:139) — trả `null` vào đó là
-     máy chủ từ chối cả câu, tức bấm Hoàn tác xong thì không có gì đổi và người
-     ta chỉ thấy một dòng lỗi. Cột trống của nó là chuỗi rỗng, không phải null. */
-  if ('deadline' in truoc && truoc.deadline == null) truoc.deadline = '';
-  return {id, moTa, truoc};
+  return htCu(moTa, [{id, truoc}]);
+}
+
+/* MỘT KHUÔN CHO MỌI CÚ: `{moTa, dong:[{id, truoc}]}` (07/09, TRI-156). Trước đó
+   một cú là `{id, moTa, truoc}` — đúng một dòng việc, vì cả năm cửa kéo-thả đều
+   chỉ đụng một dòng. Nút *Kéo hết về hôm nay* đụng vài chục dòng cùng lúc, mỗi
+   dòng một ngày cũ riêng, nên hoặc mở khuôn ra, hoặc `hoanTac` mọc hai nhánh
+   chạy song song mãi mãi. Mở khuôn rẻ hơn: một dòng cũng là một danh sách dài
+   một phần tử, và mọi thứ phía sau chỉ còn một đường.
+
+   `deadline` là `not null default ''` (schema.sql:139) — trả `null` vào đó là
+   máy chủ từ chối cả câu, tức bấm Hoàn tác xong thì không có gì đổi và người ta
+   chỉ thấy một dòng lỗi. Cột trống của nó là chuỗi rỗng, không phải null. Vá ở
+   ĐÂY chứ không ở từng chỗ chụp: ba lối chụp bên dưới đều đi qua cửa này, mà
+   một luật về cột thì chỉ nên có đúng một chỗ để quên. */
+function htCu(moTa, dong){
+  dong.forEach(d => {
+    if ('deadline' in d.truoc && d.truoc.deadline == null) d.truoc.deadline = '';
+  });
+  return dong.length ? {moTa, dong} : null;
+}
+
+/* CHỤP TỪ MÁY CHỦ, đúng những cột mà câu ghi sắp đụng tới (07/09, TRI-156).
+
+   `htChup` ở trên chụp từ bản trong máy và chỉ năm cột lịch. Đó là lối đúng cho
+   kéo-thả: mỗi cú đụng đúng năm cột ấy, và một vòng mạng chen vào giữa lúc ngón
+   tay đang thả là thấy khựng. Cửa CHỈNH SỬA khác ở hai chỗ, nên nó cần lối khác:
+
+     ① Nó đụng cột nào là tuỳ cái người ta vừa gõ — tên việc, trạng thái, ghi
+        chú, màu, loại. Một danh sách cột viết cứng sẵn sẽ trả lại đúng ngày giờ
+        mà bỏ rơi cái tên vừa bị ghi đè: một nút hứa lùi mà lùi không hết còn tệ
+        hơn không có nút, vì người ta bấm xong thì thôi không đi tìm nữa. Nên
+        đọc thẳng danh sách cột từ chính `patch` sắp gửi đi.
+     ② Người ta vừa bấm Lưu và đang chờ một vòng mạng rồi, nên chụp từ MÁY CHỦ
+        được. Đắt hơn một lượt `select`, đổi lại bản chụp đủ mọi cột và đúng cả
+        những cột đệm trong máy không nạp về — đệm thiếu một cột thì `c in t`
+        lặng lẽ bỏ qua cột ấy, và lùi xong vẫn mất chữ mà không ai được báo.
+
+   Hụt cái gì thì KHÔNG hứa: `patch` rỗng, hoặc `select` hỏng, thì trả `null` và
+   chỗ gọi chạy y như trước khi có nút — đúng luật ② ở đầu mục. */
+async function htChupTheo(id, patch, moTa){
+  const cot = Object.keys(patch || {});
+  if (!id || !cot.length) return null;
+  const {data, error} = await sb.from('task').select(cot.join(',')).eq('id', id).single();
+  if (error || !data) return null;
+  const truoc = {};
+  cot.forEach(c => { truoc[c] = data[c] ?? null; });
+  return htCu(moTa, [{id, truoc}]);
+}
+
+/* Cùng lối trên nhưng cho một cú chạm NHIỀU dòng — mỗi dòng giữ giá trị cũ của
+   riêng nó, vì «kéo hết về hôm nay» gom những việc đang nằm ở mười ngày khác
+   nhau. Một câu `select … in(...)` cho cả lượt, không phải mỗi việc một vòng.
+
+   Chụp được ít hơn số việc đã xin thì VẪN hứa phần chụp được. Ở đây thiếu một
+   dòng không phải là đoán mò — nó là một việc vừa bị ai đó xoá — nên lùi chín
+   việc còn hơn bỏ cả chín. Chụp trắng tay mới là không hứa. */
+async function htChupNhieu(ids, patch, moTa){
+  const cot = Object.keys(patch || {}).filter(c => c !== 'id');
+  if (!ids || !ids.length || !cot.length) return null;
+  const {data, error} = await sb.from('task').select(['id', ...cot].join(',')).in('id', ids);
+  if (error || !data || !data.length) return null;
+  return htCu(moTa, data.map(r => {
+    const truoc = {};
+    cot.forEach(c => { truoc[c] = r[c] ?? null; });
+    return {id: r.id, truoc};
+  }));
 }
 
 /* Nhận một cú vào ngăn rồi trả về đúng cái nút để gắn lên thông báo — để chỗ
@@ -31543,17 +32493,59 @@ function htNhan(ban){
   return {chu:'↩️ Hoàn tác', lam: hoanTac};
 }
 
+/* MỘT CÚ ĐƯỢC PHÉP MANG CÁCH LÙI RIÊNG (07/09, TRI-157). Mười ba cửa đầu đều
+   lùi bằng cùng một động tác — ghi ngược mấy cột của một dòng `task` — nên lõi
+   viết cứng động tác ấy là đủ. Cú kéo dời sự kiện thì không: nó ghi vào
+   `lich_chung` hoặc `lich_chung_ngoai_le` tuỳ phạm vi, và còn phải kéo theo
+   những việc đã đẻ từ buổi ấy, kể cả việc của đồng đội mà máy này không có
+   quyền đọc.
+
+   Nên cú ấy tự mang theo `lam` — một hàm biết cách lùi chính nó, trả `{error}`
+   khi hỏng và bất cứ gì khác khi xong. Lõi không cần hiểu nó làm gì; nó chỉ giữ
+   đúng hai lời hứa vốn có: hỏng thì trả cú về ngăn, và xong thì nói ra.
+
+   ⚠️ Chỗ dễ tưởng khó mà hoá dễ: lùi việc của cả đội KHÔNG cần đọc ngược từng
+   dòng. Đường ghi hiện tại đặt giờ việc BẰNG giờ của sự kiện, nên lùi chính là
+   gọi lại đúng đường ghi ấy với giờ cũ — cùng một hàm máy chủ, chỉ khác tham
+   số. Không thêm quyền nào, không thêm tệp SQL nào. */
+async function htLuiRieng(b){
+  const r = await b.lam();
+  if (r && r.error){ HT_NGAN.push(b); return toast('⚠️ Chưa hoàn tác được: ' + r.error.message); }
+  toast('↩️ Đã hoàn tác: ' + b.moTa);
+  /* Vẽ lại CẢ HAI: lưới lịch mang cái vừa lùi, còn bảng Hôm nay mang những việc
+     đã đi theo nó. `veTimeline` chỉ có khi cụm lịch đã nạp — hỏi trước khi gọi
+     để lõi này còn chạy được trong bộ thử cắt lát. */
+  if (typeof veTimeline === 'function') await veTimeline();
+  await lamMoiCuaToi();
+}
+
+/* Lùi từng dòng một, vì mỗi dòng mang giá trị cũ của riêng nó — không có câu
+   `update` nào ghi mười giá trị khác nhau cho mười dòng trong một lượt. */
 async function hoanTac(){
   const b = HT_NGAN.pop();
   if (!b) return toast('Không còn gì để hoàn tác.');
-  const {error} = await sb.from('task').update(b.truoc).eq('id', b.id);
-  /* Ghi hỏng thì TRẢ CÚ ẤY VỀ NGĂN. Nuốt luôn là mất đường lui vĩnh viễn chỉ vì
-     một lần mạng chập — bấm lại một cái là xong. */
-  if (error){ HT_NGAN.push(b); return toast('⚠️ Chưa hoàn tác được: ' + error.message); }
-  const t = htTimTask(b.id);
-  if (t) Object.assign(t, b.truoc);
-  toast('↩️ Đã hoàn tác: ' + b.moTa);
-  await lamMoiCuaToi();
+  if (b.lam) return htLuiRieng(b);
+  const con = [];        // dòng chưa lùi được, để trả lại ngăn
+  let loi = null;
+  for (const d of b.dong){
+    const {error} = await sb.from('task').update(d.truoc).eq('id', d.id);
+    if (error){ loi = error; con.push(d); continue; }
+    const t = htTimTask(d.id);
+    if (t) Object.assign(t, d.truoc);
+  }
+  /* Ghi hỏng thì TRẢ PHẦN CHƯA LÙI VỀ NGĂN — chỉ phần ấy, không phải cả cú.
+     Nuốt luôn là mất đường lui vĩnh viễn chỉ vì một lần mạng chập; mà đẩy về cả
+     cú thì bấm lần nữa sẽ lùi lại những dòng đã lùi rồi, lần này bằng giá trị
+     chúng vốn đã mang — vô hại, nhưng câu thông báo sẽ đếm sai và người ta
+     tưởng còn sót nhiều hơn thực tế. */
+  if (con.length) HT_NGAN.push({...b, dong: con});
+  const xong = b.dong.length - con.length;
+  toast(con.length
+    ? `⚠️ Chưa hoàn tác được ${con.length}/${b.dong.length} việc: ` + loi.message
+    : '↩️ Đã hoàn tác: ' + b.moTa);
+  /* Chỉ vẽ lại khi thật sự có gì đổi. Lùi hụt sạch thì máy chủ vẫn y nguyên,
+     và một lượt tải lại chỉ để bày đúng cái màn đang bày là tốn không. */
+  if (xong) await lamMoiCuaToi();
 }
 
 /* Ctrl+Z (Windows) · ⌘Z (Mac). Hai lời nhường, cả hai đều cần:
@@ -31751,8 +32743,23 @@ async function dwSuaPhien(id){
      bịa nằm sẵn trong ô ngay cạnh nút xanh đầu tiên, bấm một cái là 30 phút
      tưởng tượng vào vườn. */
   const troi = Math.floor((Date.now() - bd.getTime() - (Number(p.nghi_ms)||0))/60000);
-  const goiY = treo ? Math.max(DW_SAN_PHUT, Math.min(DW_TRAN_PHUT, troi))
-             : song ? Math.max(DW_SAN_PHUT, phut) : 30;
+  /* NHỊP TIM LÀ SỐ ĐO TỐT NHẤT CÓ ĐƯỢC cho một phiên không ai tắt (07/09, QK).
+     `troi` đo tới BÂY GIỜ, nên một phiên bỏ quên từ sáng thì tới chiều nó đọc
+     ra trọn cả quãng bỏ quên và bị kẹp lên trần — con số to nhất, không phải
+     con số đáng tin nhất. Nhịp tim thì dừng đúng lúc máy ngừng nói, nên người
+     bỏ máy đi lúc 10:30 được mời khai 78 phút chứ không phải 180.
+     Lấy số NHỎ HƠN giữa hai cách đo: chúng chỉ lệch nhau khi phiên đã im, và
+     lúc ấy cách đo nào thấp hơn là cách đo không thổi phồng.
+     Máy chủ chưa chạy `nang-cap-may-va-nhip-tim.sql` thì cột này vắng — rơi về
+     đúng nết cũ, không bịa ra một số đo nào. */
+  const theoNhip = p.nhip_cuoi
+    ? Math.floor((new Date(p.nhip_cuoi).getTime() - bd.getTime() - (Number(p.nghi_ms)||0))/60000)
+    : null;
+  const doDuoc = theoNhip === null ? troi : Math.min(troi, theoNhip);
+  const goiY = treo ? Math.max(DW_SAN_PHUT, Math.min(DW_TRAN_PHUT, doDuoc))
+             : song ? Math.max(DW_SAN_PHUT, phut)
+             : theoNhip === null ? 30
+             : Math.max(DW_SAN_PHUT, Math.min(DW_TRAN_PHUT, theoNhip));
   const im   = dwImLangPhut(p);
   /* Nói rõ VÌ SAO phiên này đóng lại được — người dùng vừa bị một câu phỏng
      đoán làm hoảng, nên chỗ này phải trưng ra bằng chứng chứ không chỉ mở cửa. */
@@ -31827,7 +32834,10 @@ async function dwLuuPhut(id){
   if (r.error) return toast(baoLoiPhien(r.error));
   /* Cả HAI: nắn giờ một phiên đổi dải lịch (màn Của tôi) lẫn chuỗi ngày (màn
      Bảng đo). Từ 28/08 hai khối ấy ở hai màn nên phải gọi hai hàm. */
-  await Promise.all([taiTaskList(), taiHanhTrinh()]);
+  /* `cbTaiLai` đi cùng hai hàm kia từ 07/09 (QK): phiên vừa khai xong thì dòng
+     mời khai trong khối Chờ bạn phải rụng ngay, không đợi nhịp soát 5 phút —
+     một dòng chờ còn nằm đó sau khi đã xử là thứ dạy người ta thôi tin cả khối. */
+  await Promise.all([taiTaskList(), taiHanhTrinh(), cbTaiLai()]);
   toast(`Đã ghi ${gioChu(phut)} cho phiên này.`);
 }
 
@@ -31878,7 +32888,10 @@ async function dwXoaThat(id){
   hopHoiDong();
   const {error} = await sb.from('phien_deepwork').delete().eq('id', id);
   if (error) return toast('⚠️ '+error.message);
-  await Promise.all([taiTaskList(), taiHanhTrinh()]);
+  /* `cbTaiLai` đi cùng hai hàm kia từ 07/09 (QK): phiên vừa khai xong thì dòng
+     mời khai trong khối Chờ bạn phải rụng ngay, không đợi nhịp soát 5 phút —
+     một dòng chờ còn nằm đó sau khi đã xử là thứ dạy người ta thôi tin cả khối. */
+  await Promise.all([taiTaskList(), taiHanhTrinh(), cbTaiLai()]);
   toast('Đã bỏ phiên đó.');
 }
 
@@ -32218,7 +33231,7 @@ function veHoSo(){
     + doc('Vai', ME.vai)
     + `<div class="hs-hang"><span class="hs-nhan">Chức năng</span>`
       + (khoi.length
-          ? `<span class="hs-gt cn">${khoi.map(t => `<i>${chuSach(t)}</i>`).join('')}</span>`
+          ? `<span class="hs-gt hs-cn">${khoi.map(t => `<i>${chuSach(t)}</i>`).join('')}</span>`
           : '<span class="hs-gt mo hs-chua">chưa xếp</span>')
     + '</div>'
     + doc('Cấp trên', cap ? cap.ten : '');
@@ -32574,17 +33587,19 @@ const DON_TT = [
   {ma:'Da_huy',    nhan:'✕ Dừng',       hoi:'Vì sao dừng?',                 goi:'không làm nữa vì…', cho:true}
 ];
 
-/* Chữ trên nút Lưu nói đúng việc nó sắp làm. Nút nói một đằng làm một nẻo là
-   chỗ việc rơi vào kho một cách im lặng — đúng thứ luật 3b sinh ra để dừng. */
-function nhanNutDon(dinh, ngay, hanGo){
-  if (dinh.ma === 'Blocked')   return hanGo
-    ? 'Lưu và tạo việc gỡ — hạn ' + hanGo.slice(8,10) + '/' + hanGo.slice(5,7)
-    : 'Lưu và tạo việc gỡ chặn';
-  if (dinh.ma === 'Da_huy')    return 'Dừng hẳn việc này';
-  if (dinh.ma === 'Chua_xong') return ngay
-    ? '▶️ Lưu và hẹn ' + ngay.slice(8,10) + '/' + ngay.slice(5,7)
-    : '📦 Lưu và về kho';
-  return 'Lưu';
+/* GỠ 06/09 — `nhanNutDon`, chữ trên nút Lưu của TỪNG dòng. Cả hai màn nay chỉ
+   còn một cú lưu ở cuối (TRI-138), nên không còn nút nào để đặt chữ. Thứ nó
+   từng nói ra vẫn nằm trên màn, ở ngay chỗ đặt ra nó: ô ngày nói "ngày sẽ làm"
+   hoặc "để trống thì việc về kho", ô hạn việc gỡ nói ngày mặc định. Luật đứng
+   sau nó thì không mất: chữ phải nói đúng việc sắp làm — nay là việc của nút
+   dưới cùng và của dòng phụ ngay trên nó.
+
+   Trạng thái một dòng ĐANG mang: nháp vừa chọn, hay câu đã trả lời tối qua. Ba
+   nơi cần biết — lúc vẽ dòng, lúc đếm "còn mấy lời chưa trả lời" cho nút dưới
+   cùng, và lúc ghi xuống máy chủ. Một hàm cho cả ba thì không nơi nào đọc lệch
+   nơi nào. */
+function donTT(t){
+  return (DON_TAM[t.id] || {}).tt || (t.da_chot ? t.trang_thai : null);
 }
 
 function kiemDon(){
@@ -32614,7 +33629,12 @@ function kiemDon(){
      lần, và người ta sẽ bỏ nghi thức tối. Nợ cũ (nếu có) vẫn nằm ở mục "Còn
      nợ từ hôm trước" của màn Hôm nay, không biến mất đi đâu. */
   if (!NO_CU.length || DA_CHOT_QUA){ man.classList.remove('hien'); return; }
-  DON_TAM = {};
+  /* Nháp chỉ dựng lại khi màn VỪA MỞ RA. Từ khi cả màn gộp về một cú lưu ở cuối
+     (TRI-138), một lượt tải lại giữa chừng — kênh tin máy chủ bắn về, hay chính
+     cú lưu của máy này — mà xoá trắng `DON_TAM` là mất câu trả lời của MỌI việc
+     đang điền dở, chứ không phải một việc như hồi mỗi dòng lưu riêng. Cùng một
+     con bọ mà cửa tối vừa chữa sáng nay, nay cửa sáng cũng mắc phải. */
+  if (!man.classList.contains('hien')) DON_TAM = {};
   man.classList.add('hien');
   veDon();
 }
@@ -32627,6 +33647,10 @@ function kiemDon(){
    "Hoàn thành" theo nghĩa Integrity: việc CHƯA XONG vẫn hoàn tất được, miễn
    mỗi lời có một câu đi kèm — không lời nào treo trong im lặng. */
 let DON_KIEU = 'sang';
+/* Cú lưu gộp đang chạy. Nút dưới cùng khoá suốt lượt ghi: `veDon` chạy lại sau
+   MỖI dòng ghi xong, và nếu nó tự mở khoá giữa chừng thì một cú bấm thứ hai
+   len được vào, ghi lần nữa những dòng còn sót. */
+let DON_DANG_LUU = false;
 
 function veDon(){
   const toi = DON_KIEU === 'toi';
@@ -32636,19 +33660,31 @@ function veDon(){
   document.getElementById('don-tieude').textContent = toi ? '🌾 Nghi thức hoàn tất' : '🧹 Dọn việc hôm qua';
   document.getElementById('don-thoat').style.display = toi ? '' : 'none';
   nut.textContent = toi ? 'Hoàn tất ngày ✓' : 'Vào việc hôm nay →';
+  /* Còn mấy việc chưa chọn cửa. Phải ĐẾM chứ không đọc độ dài danh sách được
+     nữa: từ TRI-138 dòng đã trả lời VẪN NẰM LẠI trên màn (không còn nút Lưu
+     riêng để nó biến mất), nên danh sách chỉ ngắn đi sau cú lưu cuối cùng. Đọc
+     `NO_CU.length` ở đây là dòng phụ đứng ì ở "còn 3 lời" trong khi cả ba đã
+     trả lời xong — một câu nói dối ngay trên cái nút vừa sáng lên. */
+  const chuaTL = NO_CU.filter(t => !donTT(t)).length;
   if (!NO_CU.length){
     ds.innerHTML  = toi
       ? '<div class="trong">Mọi lời của hôm nay đã có câu trả lời.</div>'
       : '<div class="trong">Sạch rồi — không còn việc nào của hôm qua đứng chờ.</div>';
     phu.textContent = toi ? 'Điền số việc cố định bên dưới rồi hoàn tất.' : 'Xong. Mở ra một ngày mới.';
-    nut.disabled  = false;
+    nut.disabled  = DON_DANG_LUU;
   } else {
-    phu.innerHTML = toi
-      ? `Còn <b>${NO_CU.length}</b> lời của hôm nay chưa có câu trả lời. `
-        + `Đóng từng việc: xong, dời, hay tuyên bố không làm — chưa xong vẫn hoàn tất được.`
-      : `Còn <b>${NO_CU.length}</b> việc của hôm qua chưa được gọi tên. `
-        + `Mỗi việc chọn một ô — không đặt ngày thì việc về kho, không mất đi đâu.`;
-    nut.disabled  = true;
+    /* Nhánh "đã đủ" nói ra chỗ bấm, và đó là thứ duy nhất mắt không tự thấy:
+       tới đây chưa một dòng nào xuống máy chủ cả. Thiếu câu này thì người ta
+       trả lời xong là tưởng đã lưu, rồi bấm ✕ mất trắng. */
+    phu.innerHTML = chuaTL
+      ? (toi
+        ? `Còn <b>${chuaTL}</b> lời của hôm nay chưa có câu trả lời. `
+          + `Đóng từng việc: xong, dời, hay tuyên bố không làm — chưa xong vẫn hoàn tất được.`
+        : `Còn <b>${chuaTL}</b> việc của hôm qua chưa được gọi tên. `
+          + `Mỗi việc chọn một ô — không đặt ngày thì việc về kho, không mất đi đâu.`)
+      : `Cả <b>${NO_CU.length}</b> việc đã có câu trả lời — bấm `
+        + `<b>${toi ? 'Hoàn tất ngày' : 'Vào việc hôm nay'}</b> để ghi.`;
+    nut.disabled  = DON_DANG_LUU || chuaTL > 0;
     ds.innerHTML  = (toi ? `<div class="ht-muc-ten">KẾT QUẢ HÔM NAY</div>` : '')
                   + NO_CU.map(veDonDong).join('');
   }
@@ -32681,8 +33717,9 @@ function veDon(){
 function veDonDong(t){
   const tam  = DON_TAM[t.id] || {};
   /* Đã chốt tối qua thì lấy luôn trạng thái đó làm mặc định — đỡ bắt gõ lại
-     thứ mình đã trả lời. Vẫn đổi được, vì một đêm ngủ dậy có thể nghĩ khác. */
-  const tt   = tam.tt || (t.da_chot ? t.trang_thai : null);
+     thứ mình đã trả lời. Vẫn đổi được, vì một đêm ngủ dậy có thể nghĩ khác.
+     Luật ấy nay nằm trong `donTT` vì nút dưới cùng cũng phải đọc đúng nó. */
+  const tt   = donTT(t);
   const dinh = DON_TT.find(x => x.ma === tt);
   const o    = timO(t.tieu_diem_ma);
   /* Hết cửa HẸN NGÀY, không phải hết cửa làm tiếp: quá ba lần hoãn thì ô ngày
@@ -32744,10 +33781,6 @@ function veDonDong(t){
                        onclick="donNgay(${t.id}, '')">📦 về kho</button>`
             : `<span>để trống thì việc về kho</span>`}
         </div>`)}
-
-      <div class="don-nut mot" style="margin-top:9px">
-        <button class="chon" onclick="donHanhDong(${t.id})">${nhanNutDon(dinh, ngay, hanGo)}</button>
-      </div>
     `}
   </div>`;
 }
@@ -32820,12 +33853,12 @@ function donNgayHen(t, tam){
 /* Ba hàm dưới CHỈ ghi vào bộ nhớ tạm, không vẽ lại — vẽ lại giữa lúc gõ là
    mất con trỏ trong ô nhập. */
 function donGhiChu(id, v){ (DON_TAM[id] = DON_TAM[id] || {}).ghi_chu = v; }
-/* Ô ngày thì NGƯỢC LẠI, phải vẽ lại ngay: nút Lưu đổi chữ theo nó, có ngày thì
-   ghi "Lưu và hẹn 12/08", trống thì ghi "Lưu và về kho" — xem `nhanNutDon`.
+/* Ô ngày thì NGƯỢC LẠI, phải vẽ lại ngay: chữ bên cạnh ô đổi theo nó — có ngày
+   thì "ngày sẽ làm" kèm nút 📦 về kho, trống thì "để trống thì việc về kho".
    Vẽ lại ở đây không mất con trỏ vì đây là ô ngày, chọn bằng lịch chứ không gõ. */
 function donNgay(id, v){ (DON_TAM[id] = DON_TAM[id] || {}).ngay = v; veDon(); }
-/* Hạn cho việc gỡ nghẽn. Cũng vẽ lại ngay như `donNgay` và cùng một lý do: nút
-   Lưu nói ra ngày mình sắp hẹn, nên nó phải đổi chữ theo ô này. */
+/* Hạn cho việc gỡ nghẽn. Cũng vẽ lại ngay như `donNgay` và cùng một lý do: dòng
+   nhắc dưới ô nói ra ngày mặc định, nên nó phải đổi chữ theo ô này. */
 function donHanGo(id, v){ (DON_TAM[id] = DON_TAM[id] || {}).han_go = v; veDon(); }
 function donCho(id, v){    (DON_TAM[id] = DON_TAM[id] || {}).co_nguoi_cho = v; }
 
@@ -32839,8 +33872,11 @@ function donDatTT(id, tt){
    Task con tạo TRƯỚC, cha đóng SAU — trigger kiem_da_chuyen bắt đúng thứ tự
    này, và nó cũng là thứ tự đúng về nghĩa: chưa biết làm gì thay thì chưa
    được đóng cái cũ. */
+/* Trả `true` khi dòng đã xuống máy chủ, `false` khi không. Cú lưu gộp đứng lại
+   ngay ở dòng hỏng đầu tiên chứ không đi tiếp: đi tiếp là để lại một ngày đóng
+   sổ nửa vời mà không ai đọc được đã ghi tới đâu. */
 async function donLuu(id, patch, conMoi, ngayCon){
-  const t = NO_CU.find(x => x.id === id); if (!t) return;
+  const t = NO_CU.find(x => x.id === id); if (!t) return false;
   if (conMoi && conMoi.length){
     /* Con hẹn theo NGÀY MẶC ĐỊNH CỦA CỬA (`donNgayMoi`), không hẹn theo ngày của
        cha. Việc gỡ chặn và việc báo lại người đang chờ là việc của ngày làm sắp
@@ -32863,37 +33899,62 @@ async function donLuu(id, patch, conMoi, ngayCon){
       };
     });
     const {error:e1} = await sb.from('task').insert(rows);
-    if (e1) return toast('⚠️ ' + e1.message);
+    if (e1){ toast('⚠️ ' + e1.message); return false; }
   }
   const {error} = await sb.from('task').update(patch).eq('id', id);
-  if (error) return toast('⚠️ ' + error.message);
+  if (error){ toast('⚠️ ' + error.message); return false; }
   await dwTheoTrangThai(id, patch.trang_thai);   // phiên đi theo việc (TRI-126)
   HT_DA_DON.add(id);                            // đã trả lời — đừng hỏi lại lượt sau
   NO_CU = NO_CU.filter(x => x.id !== id);
   delete DON_TAM[id];
   veDon();
+  return true;
+}
+
+/* Thứ CÒN THIẾU ở một dòng, hoặc chuỗi rỗng nếu dòng ấy ghi được ngay.
+
+   Tách ra khỏi `donHanhDong` vì cú lưu gộp phải soi TRỌN màn TRƯỚC khi ghi dòng
+   đầu tiên. Ghi được ba dòng rồi mới kêu dòng thứ tư thiếu chữ là để lại một
+   ngày đóng sổ dở dang — mà đây là phút mệt nhất trong ngày, đúng lúc không ai
+   còn sức lần lại xem cái gì đã xuống máy chủ và cái gì chưa.
+
+   Nghẽn không khai thứ chặn là bị máy chủ chặn bằng ràng buộc
+   nghen_phai_khai_thu_chan. Bắt ở đây trước để báo bằng tiếng người. Ô Output
+   của Done thì cố ý KHÔNG bắt buộc: với nhiều việc thì chính cái tên việc đã là
+   output ("gọi 40 khách list A"). Ép gõ ở đó là đặt ma sát vào đúng chỗ đáng
+   thưởng nhất. */
+function donThieuGi(t){
+  const tam  = DON_TAM[t.id] || {};
+  const dinh = DON_TT.find(x => x.ma === donTT(t));
+  if (!dinh) return 'chưa chọn kết quả';
+  const gc = (tam.ghi_chu ?? t.ghi_chu_chot ?? '').trim();
+  if (dinh.batBuoc && !gc) return 'chưa đặt tên cho việc gỡ nghẽn';
+  return '';
 }
 
 /* MỘT ĐƯỜNG RA DUY NHẤT. Bản hai tầng có bốn nhánh (`luu` · `lamtiep` · `huy`
    · `dong`/`thay` chỉ để mở khối chọn); nay chọn cửa nào là biết ngay ghi gì,
-   nên hàm không còn nhận tham số hành động. */
+   nên hàm không còn nhận tham số hành động.
+   Từ 06/09 chỉ còn `donLuuTatCa` gọi tới — nút Lưu của từng dòng đã gỡ. Vẫn giữ
+   nguyên hàm này làm đường ghi DUY NHẤT cho một dòng: dựng đường thứ hai cho cú
+   lưu gộp thì vài tháng sau hai đường lệch nhau, và chỗ lệch chỉ lộ ra vào lúc
+   một việc rơi vào kho lặng lẽ. */
 async function donHanhDong(id){
-  const t    = NO_CU.find(x => x.id === id); if (!t) return;
+  const t    = NO_CU.find(x => x.id === id); if (!t) return false;
   const tam  = DON_TAM[id] || {};
-  const tt   = tam.tt || (t.da_chot ? t.trang_thai : null);
-  const dinh = DON_TT.find(x => x.ma === tt); if (!dinh) return;
+  const tt   = donTT(t);
+  const dinh = DON_TT.find(x => x.ma === tt); if (!dinh) return false;
   /* `??` chứ không `||`: chưa chạm vào ô thì lấy dòng cửa deepwork đã ghi sẵn
      (đúng thứ đang hiện trên màn), còn xoá trắng ô là có ý, đừng điền lại. */
   const gc   = (tam.ghi_chu ?? t.ghi_chu_chot ?? '').trim();
   const gio  = new Date().toISOString();
 
-  /* Nghẽn không khai thứ chặn là bị máy chủ chặn bằng ràng buộc
-     nghen_phai_khai_thu_chan. Bắt ở đây trước để báo bằng tiếng người.
-     Ô Output của Done thì cố ý KHÔNG bắt buộc: với nhiều việc thì chính cái
-     tên việc đã là output ("gọi 40 khách list A"). Ép gõ ở đó là đặt ma sát
-     vào đúng chỗ đáng thưởng nhất. */
-  if (dinh.batBuoc && !gc)
-    return toast('⚠️ Đặt tên cho task gỡ nghẽn đã nhé — không có tên thì không tạo được việc gỡ.');
+  /* Lưới chắn cuối. Cú lưu gộp đã soi cả màn trước đó, nên tới đây thường sạch
+     — nhưng hàm này là đường ghi duy nhất, và một đường ghi thì tự gác lấy. */
+  if (donThieuGi(t)){
+    toast('⚠️ Đặt tên cho task gỡ nghẽn đã nhé — không có tên thì không tạo được việc gỡ.');
+    return false;
+  }
 
   const patch = {trang_thai: tt, ghi_chu_chot: gc, chot_luc: gio};
   const con   = [];
@@ -32955,7 +34016,41 @@ async function donHanhDong(id){
    `Da_chuyen` vẫn nằm trong ràng buộc của máy chủ vì còn 1 dòng lịch sử mang
    giá trị ấy — đụng vào là viết lại lịch sử để đổi lấy đúng một chữ. */
 
-function donDong(){
+/* CÚ LƯU GỘP — cả màn ghi trong MỘT lần (Tracy chốt 06/09: *"chỗ nghi thức hoàn
+   tất bỏ qua nút lưu và hẹn ngày đi — cho mọi người dọn dẹp hết các task rồi lưu
+   1 lần là được"*, rồi *"sao k làm dọn dẹp của hôm qua luôn đi"*). Trước đó mỗi
+   dòng một nút Lưu: dọn năm việc là năm cú bấm, cộng một cú nữa để đóng sổ.
+
+   SOÁT TRỌN MÀN TRƯỚC, GHI SAU — hai nửa tách hẳn. Nửa đầu không chạm máy chủ,
+   nửa sau không còn cửa nào để từ chối. Trộn hai nửa thì một dòng thiếu chữ ở
+   cuối màn để lại ba dòng đã ghi và hai dòng chưa, một trạng thái không ai đọc
+   được.
+
+   Chụp lại `NO_CU` trước khi ghi: `donLuu` cắt dần chính mảng ấy sau mỗi dòng
+   xong, nên duyệt thẳng trên nó là bỏ sót một nửa danh sách. */
+async function donLuuTatCa(){
+  const ds = NO_CU.slice();
+  for (const t of ds){
+    const thieu = donThieuGi(t);
+    if (thieu){ toast('⚠️ ' + t.noi_dung + ' — ' + thieu + '.'); return false; }
+  }
+  for (const t of ds) if (!await donHanhDong(t.id)) return false;
+  return true;
+}
+
+/* Nút dưới cùng: ghi cả màn rồi mới đi tiếp. Chữ trên nút giữ nguyên (Tracy
+   06/09) — thứ nó sắp làm được dòng phụ ngay trên nó nói ra. */
+async function donDong(){
+  if (DON_DANG_LUU) return;
+  DON_DANG_LUU = true;
+  const nut = document.getElementById('don-vao');
+  if (nut) nut.disabled = true;
+  let dat = false;
+  try { dat = await donLuuTatCa(); }
+  finally { DON_DANG_LUU = false; }
+  /* Không ghi được thì đứng nguyên tại màn, mở khoá nút cho lượt sửa: dòng
+     thiếu chữ vẫn còn đó, và toast vừa gọi đúng tên nó. */
+  if (!dat) return veDon();
   if (DON_KIEU === 'toi') return htHoanThanh();
   document.getElementById('don').classList.remove('hien');
   taiHomNay();
@@ -33002,7 +34097,10 @@ function htGomViec(){
 
 function htMo(){
   DON_KIEU  = 'toi';
-  DON_TAM   = {};
+  /* KHÔNG xoá `DON_TAM` ở đây. Từ khi cả màn gộp về một cú lưu, bấm ✕ giữa
+     chừng là chưa dòng nào xuống máy chủ — xoá nháp lúc mở lại thì người ta gõ
+     lại từ đầu đúng thứ vừa gõ xong. Nháp cũ vô hại: nó khoá theo mã việc, việc
+     nào không còn trên màn thì không ai đọc tới. */
   HT_DA_DON = new Set();
   HT_GUONG  = false;
   htGomViec();
@@ -33150,8 +34248,51 @@ const CB_LOAI = {
      mở thêm một hộp thứ hai làm cùng một việc. Cùng lối `loi-moi`. */
   'van-de':   {hinh:'⚠️', mo:d => cbMoVanDe(d),
               chu:d => `<b>${chuSach(d.ai)}</b> nêu một vấn đề cho phòng bạn — <b>${chuSach(d.ten)}</b>`,
-              phu:d => `Nêu ${cbBaoLau(d.luc)} — chờ bạn nhận trong 24 giờ`}
+              phu:d => `Nêu ${cbBaoLau(d.luc)} — chờ bạn nhận trong 24 giờ`},
+  /* ── PHIÊN DEEP WORK QUÊN TẮT (07/09, làn QK — TRI-162) ─────────────────
+     Andy 07/09 làm thật 09:12–12:12, nhịp tim đập đều tới phút cuối, nhưng
+     không bấm ⏹ nên phiên bị lượt dọn khép thành `heo` và cả buổi hiện ra
+     thành 0 giờ. Tracy: *"đừng để héo luôn"* — nên phiên ấy nay có một dòng
+     gọi tên nó ở đây, và chính chủ tự khai. Không ai ghi nhận hộ ai.
+
+     Cùng lối `cho-nhan`: mở thẳng hộp thao tác tại chỗ thay vì đưa mắt sang
+     màn khác. Hộp khai số phút (`dwSuaPhien`) vốn đã xử đúng cả ba trạng thái
+     phiên; chỗ thiếu xưa nay chỉ là một lời mời, vì cửa vào duy nhất của nó là
+     một khối nhỏ trên dải Lịch trình mà không ai biết chạm vào.
+
+     `d.ai` ở nhánh này chở KHUNG GIỜ, không chở tên người — khung nhìn có sáu
+     cột cứng và thứ người đọc cần là "phiên nào của tôi". */
+  'phien-quen-khai':{hinh:'💧', mo:d => dwSuaPhien(Number(d.khoa)),
+              chu:d => `Phiên <b>${chuSach(d.ai)}</b> chưa khai — <b>${chuSach(d.ten)}</b>`,
+              phu:d => `Quên bấm kết thúc ${cbBaoLau(d.luc)} — giờ chưa vào vườn`}
 };
+
+/* Nạp lại RIÊNG khối Chờ bạn. Có `taiHomNay` rồi vẫn cần hàm này: nhánh phiên
+   quên tắt bật lên theo GIỜ chứ không theo thao tác của ai, nên không tin nào
+   tới báo. Mà gọi `taiHomNay` mỗi lượt soát là kéo theo cả chục truy vấn cho
+   một khối bảy dòng.
+   Lỗi thì IM LẶNG giữ nguyên khối đang có — cùng nết `veChoBan`: đây là thứ
+   thêm vào, không được phép làm gãy màn Hôm nay. */
+let CB_LUC = 0;      // lúc soát gần nhất, để hai đường không hỏi dồn nhau
+
+async function cbTaiLai(){
+  if (!ME || !ME.id) return;
+  CB_LUC = Date.now();
+  const kq = await sb.from('cho_ban').select('*').order('luc');
+  if (kq.error) return;
+  veChoBan(kq);
+}
+
+/* NHỊP SOÁT 5 PHÚT — chỗ duy nhất bắt được lúc một phiên vượt trần trong khi
+   người ta vẫn đang ngồi trong app. Ba đường kia đều không tới được ca ấy:
+   `taiHomNay` chỉ chạy lúc mở màn, realtime không nghe `phien_deepwork` (cố ý,
+   nhịp tim 60 giây sẽ kéo theo một lượt tải lại nặng), còn `visibilitychange`
+   thì chỉ nổ khi tab đi rồi về.
+   Tab ở nền thì đứng im: trình duyệt vốn đã bóp nhịp của tab nền, mà lúc quay
+   lại đã có dây bảo hiểm ngay trên lo. */
+setInterval(() => {
+  if (document.visibilityState === 'visible' && ME && Date.now() - CB_LUC > 240000) cbTaiLai();
+}, 300000);
 
 /* Đưa mắt sang nấc Vấn đề của kênh thông báo. Đặt nấc TRƯỚC khi mở màn: `moTab`
    gọi `vdTai` rồi `vdVe`, mà `vdVe` đọc `KTB_NAC` để quyết ẩn hay hiện — đặt
@@ -33454,7 +34595,13 @@ async function cbKyNhan(ma){
      song, `taiVuon` đọc lại biến toàn cục SAU `await` nên lượt cũ về sau sẽ ghi
      `DONG_DOI = []` và xoá trắng khối vừa mở, kèm câu báo sai "không thấy cam
      kết đó". Bật trước thì chỉ còn một lượt, và nó xin đúng thứ cần ngay. */
-  if (!vuonCaDoi){ vuonCaDoi = true; capNhatDaiDoi(); }
+  /* GIỚI HẠN ① CỦA MEMBER — đường thứ hai vào phạm vi cả đội, và nó gán thẳng
+     vào cờ chứ không đi qua `ckDoiPhamVi`, nên luật phải nhắc lại ở đây. Member
+     giữ nguyên phạm vi "Của tôi": cam kết chờ họ ký, nếu có, cũng phải nằm
+     trong danh sách của chính họ — mà nếu không nằm thì họ không được nhìn nó
+     ngay từ đầu, đúng luật vừa đặt. Khối "Đã hoàn thành" gấp lại vẫn được gỡ ở
+     dòng dưới, nên đường ký của họ không mất, chỉ hẹp lại đúng phần được thấy. */
+  if (!vuonCaDoi && !laMember()){ vuonCaDoi = true; capNhatDaiDoi(); }
   /* 29/08 — SỬA LỖI ĐANG SỐNG. Dòng này gọi `moTab('toi')`, mà `#man-toi` đã bị
      xoá hẳn ngày 28/08 (làn AN3). `moTab` đọc `getElementById('man-toi')` ra
      `null` rồi chạm `.classList` của nó, tức bấm "ký nhận" ở khối Chờ bạn là ném
@@ -33686,6 +34833,15 @@ function duVeLuoi(){
   const tt  = document.getElementById('du-loc-tt').value;
   const chu = document.getElementById('du-loc-chu').value;
   let ds = DUAN.slice();
+  /* GIỚI HẠN ② CỦA MEMBER (Tracy chốt 07/09: *"dự án cũng chỉ hiện các dự án có
+     tên mình thôi"*). Lọc ở ĐÂY chứ không ở `taiDuAn`: `DUAN` còn nuôi ô lọc
+     PIC, ô lọc phòng ban và màn hồ sơ dự án; cắt từ nguồn là ba chỗ kia cùng
+     hụt theo mà không ai thấy. Lưới là chỗ duy nhất câu hỏi "tôi thấy gì" được
+     trả lời, nên luật đứng đúng ở đó.
+     "Có tên mình" = đứng PIC hoặc được mời gánh. Chỉ tính PIC thì người được
+     mời vào dự án sẽ mất luôn dự án mình đang làm. */
+  if (laMember())
+    ds = ds.filter(d => d.nguoi_id === ME.id || (d.nguoi_ganh || []).includes(ME.id));
   // 'dang' = còn trong danh mục kỳ này, tức bỏ hai nấc đã ra khỏi bàn.
   if (tt === 'dang')      ds = ds.filter(d => ['kho','dang-chay','nghen'].includes(d.trang_thai));
   else if (tt)            ds = ds.filter(d => d.trang_thai === tt);
@@ -33919,7 +35075,7 @@ function veHoSoDuAn(){
         ? `<button title="Rút khỏi dự án" onclick="nutCho(this,'',()=>duRutNguoi('${id}'))">✕</button>`
         : ''}
     </span>`).join('');
-  const chuaVao = DOI.filter(n => !dsTV.includes(n.id));
+  const chuaVao = DOI_CHON().filter(n => !dsTV.includes(n.id));
   /* Lời chuyển giao đang treo hiện NGAY Ở KHỐI THÀNH VIÊN, không giấu trong
      form Sửa: đây là khối nói ai đứng đâu, mà một vai đang chờ đổi chủ thì
      đúng là chuyện của nó. `DUAN_HS.pic` rỗng (máy chủ chưa chạy tệp SQL) thì
@@ -34142,7 +35298,7 @@ function duMoSua(id){
             d.phong_ban === c.ten ? 'selected' : ''}>${chuSach(c.ten)}</option>`).join('')}</select>`)}
     ${d.nguoi_id !== ME.id ? '' : o('dus-pic', 'PIC',
         `<select class="dus-o" id="dus-pic" onchange="duPicChon(this.value)">
-          ${DOI.map(n => `<option value="${n.id}" ${n.id === d.nguoi_id ? 'selected' : ''}>${
+          ${DOI_CHON().map(n => `<option value="${n.id}" ${n.id === d.nguoi_id ? 'selected' : ''}>${
             chuSach(n.ten)}${n.id === ME.id ? ' — bạn' : ''}</option>`).join('')}</select>
          <div id="dutr-ruot"></div>`)}
     ${o('dus-mota', 'Mô tả',
@@ -34245,7 +35401,7 @@ function duPicChon(){ duPicVe(); }
 function duTraoMo(){
   if (!DUAN_HS) return;
   const d = DUAN_HS.duan;
-  const chuaVao = DOI.filter(n => n.id !== d.nguoi_id);
+  const chuaVao = DOI_CHON().filter(n => n.id !== d.nguoi_id);
   if (!chuaVao.length)
     return toast('Team chưa có ai khác để chuyển giao.');
   DU_SUA_ID = d.id;
@@ -34345,7 +35501,7 @@ function duMoMoi(){
   if (!DUAN_HS) return;
   const d = DUAN_HS.duan;
   const dsTV = d.nguoi_ganh && d.nguoi_ganh.length ? d.nguoi_ganh : [d.nguoi_id];
-  const chuaVao = DOI.filter(n => !dsTV.includes(n.id));
+  const chuaVao = DOI_CHON().filter(n => !dsTV.includes(n.id));
   if (!chuaVao.length) return hopHoiDong();
   /* Tiêu đề trong THANH GHIM: đội đông thì danh sách dài hơn màn, cuộn xuống là
      mất câu hỏi nếu để `<h3>` trần — đúng luật hai-đầu-ghim của `.hoi`. */
@@ -36988,8 +38144,9 @@ const MOC_LE = {
     {id:'dh-hoso',  hinh:'kho',      ten:'Hồ sơ'}
   ]
 };
-/* Màn nào đang bày mốc. Rỗng = màn ấy không có mốc nào, thanh lề chỉ còn avatar
-   và nút đổi nền. */
+/* Cụm mốc ĐANG BÀY là của màn nào — không nhất thiết là màn đang mở. Màn không
+   có cụm riêng thì MƯỢN cụm của Hôm nay (xem `moTab`), nên ở phần lớn các màn
+   `MAN_MOC` khác `MAN_DANG`. Rỗng chỉ còn ở lúc chưa vào app. */
 let MAN_MOC = '';
 const mocHienNay = () => MOC_LE[MAN_MOC] || [];
 
@@ -37102,13 +38259,33 @@ function dongLe(){ document.body.classList.remove('mo-le'); }
 let leHen;
 function leNhay(id, nut){
   dongLe();
+  /* Cụm mốc có thể là cụm MƯỢN của màn khác (xem `MAN_MOC` trong `moTab`). Khối
+     đích lúc ấy nằm trong một màn đang đóng, mà `scrollIntoView` trên khối bị
+     `.man{display:none}` giấu thì không đi đâu cả — bấm nút xong không thấy gì
+     xảy ra. Nên mở màn chủ TRƯỚC, rồi cuộn ở khung hình sau, khi trình duyệt đã
+     tính xong bố cục và khối mới có toạ độ.
+     ⚠️ Không chuyền `nut` sang lượt sau: `moTab` gọi `veThanhLe`, hàm ấy ghi lại
+     `innerHTML` của cụm mốc nên cái nút vừa bấm đã bị thay bằng một nút mới. Bôi
+     `khoe` lên cái cũ là bôi lên một phần tử đã rời khỏi trang — không ai thấy.
+     `leCuonToi` tự tra lại nút theo `data-di`. */
+  if (MAN_MOC && MAN_DANG !== MAN_MOC){
+    moTab(MAN_MOC);
+    requestAnimationFrame(() => leCuonToi(id));
+    return;
+  }
+  leCuonToi(id, nut);
+}
+
+function leCuonToi(id, nut){
   const el = document.getElementById(id);
   if (!el) return;
+  nut = nut || document.querySelector(`.le button[data-di="${id}"]`);
   const em = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
   el.scrollIntoView({behavior: em, block:'start'});
   /* Điện thoại không có con trỏ nên không có trạng thái rê chuột: tên bảng hiện
      một nhịp rồi tự rút, đủ để biết mình vừa nhảy tới đâu. */
   document.querySelectorAll('.le button[data-di]').forEach(b => b.classList.remove('khoe'));
+  if (!nut) return;
   nut.classList.add('khoe');
   clearTimeout(leHen);
   leHen = setTimeout(() => nut.classList.remove('khoe'), 1300);
@@ -37119,9 +38296,27 @@ function leNhay(id, nut){
    thắng chứ không phải cái đúng. Ở đây mỗi lần cuộn tính lại: khối nào có mép
    trên đã đi qua ngưỡng một phần tư màn mà còn gần ngưỡng nhất thì đang đọc nó. */
 let leCho = false;
+
+/* "Khối này có nằm trên màn không" — câu hỏi phải trả lời được CẢ khi đang đứng
+   ở màn khác. `offsetParent` là phép đo thật, nhưng nó rỗng cho mọi khối của một
+   màn đang đóng: hỏi nó lúc đang mượn cụm mốc thì nó trả lời "không" cho tất cả,
+   cả cụm ăn lớp `tat` — mà `tat` là `display:none`, không phải bôi mờ — nên thanh
+   lề lại rụng đúng ba nút vừa giữ được.
+   Ở màn khác thì hỏi chính khối ấy thay vì hỏi bố mẹ nó: khối tự giấu mình trong
+   cụm này đều làm bằng `style.display`, hiện chỉ có *Chờ bạn* (`#cb-the`, ẩn khi
+   không ai chờ). ⚠️ Thêm một mốc TỰ ẨN BẰNG CLASS thì phải khai thêm ở đây, không
+   thì nó hiện trên thanh lề ở màn khác và mất khi về màn chủ. */
+const khoiDangBay = el =>
+  !!el && (MAN_DANG === MAN_MOC ? el.offsetParent !== null : el.style.display !== 'none');
+
 function soiThanhLe(){
   leCho = false;
   if (!document.body.classList.contains('co-moc') || !mocHienNay().length) return;
+  /* Đang bày cụm MƯỢN của màn khác. Vòng lặp dưới vẫn chạy để giữ đúng nút nào
+     có mặt, nhưng phép đo "đang đọc tới đâu" thì dừng: ở màn khác không có gì
+     đang được đọc cả, và nút sáng lúc ấy phải là nút của chính màn ấy —
+     `veThanhLe` đã lo. Để lọt xuống dưới là hai nút cùng sáng một lúc. */
+  const muon = MAN_DANG !== MAN_MOC;
   const nguong = innerHeight * 0.25;
   let chon = null;
   /* Lọc bỏ CẢ vạch lẫn mốc hành động. Mốc hành động không phải một khối trên
@@ -37129,13 +38324,17 @@ function soiThanhLe(){
      nút tự sáng lên như đang đọc tới — hoặc tệ hơn, tự tắt vì không tìm thấy. */
   mocHienNay().filter(m => !m.vach && !m.lam).forEach(m => {
     const el = document.getElementById(m.id);
-    /* `offsetParent === null` = khối đang ẩn. Khối *Chờ bạn* tự ẩn khi rỗng, và
-       một mốc dẫn tới chỗ không có gì là một nút bấm vào không tới đâu. */
-    const hien = el && el.offsetParent !== null;
+    /* Khối *Chờ bạn* tự ẩn khi rỗng, và một mốc dẫn tới chỗ không có gì là một
+       nút bấm vào không tới đâu. Phép đo nằm trong `khoiDangBay` ngay trên. */
+    const hien = khoiDangBay(el);
     const nut = document.querySelector(`.le button[data-di="${m.id}"]`);
     if (nut) nut.classList.toggle('tat', !hien);
-    if (hien && el.getBoundingClientRect().top <= nguong) chon = m.id;
+    if (!muon && hien && el.getBoundingClientRect().top <= nguong) chon = m.id;
   });
+  if (muon){
+    document.querySelectorAll('.le button[data-di]').forEach(b => b.classList.remove('chon'));
+    return;
+  }
   /* Chạm đáy trang thì khối cuối luôn thắng — không thì hai khối ngắn ở đáy
      không bao giờ lên tới ngưỡng và mốc của chúng thành nút chết. */
   const day = innerHeight + scrollY >= document.documentElement.scrollHeight - 4;
@@ -37617,13 +38816,20 @@ function tmDoiView(v){
 const tmChuTat = t => (t || '?').trim().slice(0,2).toUpperCase();
 const tmTenKhoi = id => (CHUC_NANG.find(c => c.id === id) || {}).ten || '';
 
-/* Ba mức quyền, và KHÔNG có chip cho người không quyền: một chip mà ai cũng
-   đeo thì thôi mang tin. Thứ tự đi từ hẹp tới rộng, trái sang phải. */
+/* CẤP đứng trước, rồi tới quyền lẻ. Thứ tự đi từ hẹp tới rộng, trái sang phải.
+   ⚠️ CẤP LÀ MỘT CHIP, KHÔNG PHẢI HAI (sửa 07/09). Bản trước hỏi từng cờ một,
+   mà quản trị mang CẢ HAI cờ — nên Tracy và Andy đeo cùng lúc "Lead" và "Quản
+   trị", đọc thành hai chức chồng nhau thay vì một cấp. Nay hỏi `capCua` để chỗ
+   này và mọi giới hạn của Member cùng đọc một nguồn.
+   Member CÓ chip, khác bản trước: từ 07/09 cấp ấy mang một bộ quyền riêng, nên
+   một dòng người không chip nữa là một dòng thiếu tin, không phải một dòng gọn.
+   `la_dieu_hanh` vẫn là quyền LẺ, cắt ngang ba cấp — Tracy chưa gộp nó vào cấp
+   nào, nên nó giữ chip riêng. */
 function tmChips(n){
-  let h = '';
-  if (n.la_lead)      h += '<span class="tm-q">Lead</span>';
+  const cap = capCua(n);
+  const lop = cap === CAP.QUAN_TRI ? ' qt' : cap === CAP.MEMBER ? ' mb' : '';
+  let h = `<span class="tm-q${lop}">${cap}</span>`;
   if (n.la_dieu_hanh) h += '<span class="tm-q dh">Điều hành</span>';
-  if (n.la_quan_tri)  h += '<span class="tm-q qt">Quản trị</span>';
   return h;
 }
 
@@ -37638,8 +38844,12 @@ function veTeam(){
   if (TM_VIEW === 'nhansu'){
     /* Dòng đo của view này trả lời "team gồm những ai". View kia đếm chỗ ngồi
        — hai câu hỏi khác nhau thì hai con số khác nhau, đừng dùng chung. */
-    oDo.textContent = `${lam.length} người · ${lam.filter(n=>n.la_lead).length} lead`
-      + ` · ${lam.filter(n=>n.la_quan_tri).length} quản trị`;
+    /* Đếm theo CẤP, ba con số cộng lại đúng bằng quân số. Bản trước đếm theo
+       cờ nên "lead" gồm cả hai quản trị, và hai số cộng lại lớn hơn tổng — một
+       dòng đo mà tự nó không cộng được là một dòng đo không ai tin. */
+    const dem = c => lam.filter(n => capCua(n) === c).length;
+    oDo.textContent = `${lam.length} người · ${dem(CAP.QUAN_TRI)} quản trị`
+      + ` · ${dem(CAP.LEAD)} lead · ${dem(CAP.MEMBER)} member`;
     khu.innerHTML = '<div class="tm-ds">' + lam.map(n => {
       const ks = (n.chuc_nang_ids || []).map(tmTenKhoi).filter(Boolean);
       const chip = ks.length
@@ -37779,7 +38989,7 @@ function tmRuot(n){
   <div class="tm-nhom">Thông tin tài khoản</div>
 
   <div class="tm-o"><label>Email đăng nhập${them ? ' *' : ''}</label>
-    <input type="text" id="tm-email" value="${chuSach(g.email || '')}" placeholder="nguoi-08@vidu.com">
+    <input type="text" id="tm-email" value="${chuSach(g.email || '')}" placeholder="nguoi-10@vidu.com">
     <div class="tm-luuy">${them
       ? `Phải là <b>Gmail họ đang dùng</b>.`
       : `<b>Đây là cửa vào của người này.</b> Đổi email thì lần đăng nhập sau họ
@@ -38190,7 +39400,15 @@ function vdHangMot(v){
        + ' onclick="vdMoChiTiet(' + v.id + ')">'
        + '<span class="vd-uu' + (v.muc === 1 ? ' m1' : '') + '">'
          + '<i></i><i></i><i></i></span>'
-       + '<span class="vd-tt ' + vdNacTt(v) + '"></span>'
+       /* Vòng trạng thái là nút DUY NHẤT trên dòng. `stopPropagation` ngay
+          trong thuộc tính: thiếu nó thì cú bấm nổi lên tới `.vd-hang` và cửa
+          chi tiết bung ra che mất cái menu vừa mở. Ca thử canh chiều ngược
+          ("dòng thôi mang nút Nhận") vẫn đúng — đây là nút đổi nấc tại chỗ,
+          không phải mấy nút hành động đã rời xuống cửa từ làn VDL. */
+       + '<button type="button" class="vd-tt-nut" aria-haspopup="menu"'
+         + ' title="Đổi trạng thái"'
+         + ' onclick="event.stopPropagation();vdMoMenuNac(event,' + v.id + ')">'
+         + '<span class="vd-tt ' + vdNacTt(v) + '"></span></button>'
        + '<span class="vd-ma">VD-' + v.id + '</span>'
        + '<span class="vd-ten1">' + chuSach(v.tieu_de) + '</span>'
        + phai
@@ -38350,7 +39568,7 @@ function vdNhapDangCo(){
 }
 
 function vdOptNguoi(dangChon, deTrongDuoc){
-  const ds = DOI.filter(n => !n.ngay_nghi);
+  const ds = DOI_CHON().filter(n => !n.ngay_nghi);
   return '<option value="">'
     + (deTrongDuoc ? '— để lead phòng xử lý giao —' : '— chọn người —') + '</option>'
     + ds.map(n => '<option value="' + chuSach(n.id) + '"'
@@ -38418,17 +39636,37 @@ async function vdNhan(id){
   await vdTai();
 }
 
-/* Chỉ NGƯỜI NÊU đóng được. Hàng rào thật nằm ở cò `chan_sua_cot_van_de` trên
-   máy chủ; nút này chỉ để không bày ra một thao tác sẽ bị từ chối. */
+/* NGƯỜI NÊU đóng — và từ 06/09 quản trị đóng thay được (TRI-136). Hàng rào thật
+   nằm ở cò `chan_sua_cot_van_de` trên máy chủ; nút này chỉ để không bày ra một
+   thao tác sẽ bị từ chối.
+
+   ĐÓNG THAY THÌ ĐỂ LẠI MỘT DÒNG. Người nêu mở vấn đề của mình ra, thấy nó đã
+   đóng mà không câu nào nói vì sao, thì mất niềm tin vào cả cuốn sổ chứ không
+   chỉ vào một dòng. Ghi SAU khi đóng xong chứ không phải trước: câu ấy là dấu
+   vết của một việc đã xảy ra, ghi trước rồi cú đóng hỏng là để lại một dòng nói
+   dối. Ngược hẳn `vdChoBenKhac`, nơi câu viết là ĐIỀU KIỆN nên phải đi trước. */
 async function vdDongVanDe(id){
+  const v = VD_DS.find(x => x.id === id);
+  const thay = !!ME && !!v && v.nguoi_neu_id !== ME.id;
   const r = await sb.from('van_de').update({trang_thai: 'xong'}).eq('id', id);
   if (r.error){
     toast(/Chỉ người nêu/.test(r.error.message || '')
             ? r.error.message : 'Không đóng được: ' + (r.error.message || ''));
     return;
   }
+  if (thay){
+    const g = await sb.from('van_de_binh_luan')
+      .insert({van_de_id: id, nguoi_id: ME.id,
+               noi_dung: 'Đóng vấn đề này với quyền quản trị.'});
+    /* Câu hỏng thì vấn đề vẫn đóng — nó đã đóng thật rồi. Nói thẳng ra là thiếu
+       dấu vết, đừng nuốt lặng. */
+    if (g && g.error) toast('Đã đóng, nhưng không ghi được dòng ghi chú');
+    await vdTaiBl(id);
+    VD_BL_DEM[id] = VD_BL.length;
+  }
   toast('Đã đóng vấn đề');
   await vdTai();
+  if (VD_CT === id) vdVeChiTiet();
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -38465,6 +39703,31 @@ const vdToiXuLy = (v) => !!ME && !!v.nhan_luc && !vdDaDong(v)
 const vdToiBo = (v) => !!ME && !vdDaDong(v)
                        && (v.nguoi_neu_id === ME.id || !!ME.la_quan_tri);
 
+/* QUYỀN QUẢN TRỊ ĐỔI NẤC THAY  (Tracy chốt 06/09 · TRI-136) ─────────────────
+   Tracy và Andy đổi được nấc của MỌI vấn đề, kể cả vấn đề người khác nêu và
+   người khác đang cầm. Đi theo cột `la_quan_tri` chứ không khai riêng một
+   người: cột ấy vốn mang nghĩa *sửa được mọi thứ của người khác*, và dựng thêm
+   một luật quyền thứ hai cho một cái tên là thứ về sau không ai nhớ để sửa.
+
+   VÌ SAO ĐỨNG RIÊNG, không nới thẳng `vdToiXuLy` và `vdToiDong`: hai vị từ ấy
+   còn nuôi `vdDemDoi` — con số trên nấc Vấn đề đếm việc ĐANG ĐỢI CHÍNH MÌNH ra
+   tay. Nới chúng thì con số của quản trị phồng lên bằng gần cả bảng và thôi nói
+   được điều gì. Quyền đi lối riêng thì hàng nút rộng ra mà con số giữ nguyên
+   nghĩa cũ.
+
+   KHÔNG ĐÒI `nhan_luc` — và đây là chỗ nhát đầu làm sai. Bản đầu bắt vấn đề
+   phải có người bấm *Nhận* rồi quản trị mới đổi được nấc, lấy lý do `vdQuaHan`
+   đếm quá hạn theo `nhan_luc` nên một dòng chưa nhận mà mang nấc *đang xử lý*
+   sẽ tự mâu thuẫn. Lý do ấy đúng, nhưng chữa sai chỗ: Tracy mở app ra thì đúng
+   cái dòng cần tay quản trị nhất lại là dòng NẰM Ở NHÓM QUÁ HẠN NHẬN — giao rồi
+   mà người nhận chưa bấm, để đó năm tiếng. Chặn quản trị ở đúng những dòng ấy
+   là chặn đúng lúc cần nhất.
+
+   Cách chữa thật nằm ở `vdDatNac`: đặt nấc cho một vấn đề chưa nhận thì đóng
+   luôn mốc nhận, tức nhận thay. Mâu thuẫn biến mất vì mốc nhận không còn trống,
+   chứ không phải vì cấm người ta bấm. */
+const vdQuanTriNac = (v) => !!ME && !!ME.la_quan_tri && !vdDaDong(v);
+
 /* Hàng nút của cửa. MỘT nút đặc mỗi hàng, và nó luôn là BƯỚC TIẾP THEO của
    chính người đang nhìn. Người vừa nêu vừa cầm thì bước tiếp thật là *Đóng*,
    nên *Đang xử lý* tự lùi về nền chìm — không khai cứng chỗ nào, để thêm một
@@ -38472,19 +39735,230 @@ const vdToiBo = (v) => !!ME && !vdDaDong(v)
 function vdNutNac(v){
   const ds = [];
   if (vdToiNhan(v)) ds.push({chu:'Nhận', kieu:'chinh', lam:'vdNhan(' + v.id + ')'});
-  else if (vdToiXuLy(v)){
+  /* NHẬN THAY (Tracy 06/09: *"cho tôi full quyền đi để tôi tick hộ Hafi vì tôi
+     chưa triển khai"*). Quản trị bấm hộ người được giao khi người ấy chưa động
+     tới — nấc `da_nhan` là một nấc thật trong bảng trạng thái, và trước nay
+     không ai ngoài chính người nhận đặt được nó.
+     Nhãn nói rõ đang bấm hộ AI: `vdNhan` giữ nguyên ô người nhận khi ô ấy đã có
+     tên, nên đây là nhận HỘ chứ không phải giành lấy việc, và chữ trên nút phải
+     nói đúng điều đó. */
+  else if (vdQuanTriNac(v) && !v.nhan_luc && !!v.nguoi_nhan_id){
+    /* Tên gọi, không phải tên đầy đủ — nút phải vừa một hàng cùng bốn nút kia.
+       Ô người nhận có thể trỏ tới một người đã gỡ khỏi team, lúc ấy `btTenNguoi`
+       trả rỗng và nút lùi về hai chữ trần thay vì đeo một khoảng trắng cụt. */
+    const ten = String(btTenNguoi(v.nguoi_nhan_id) || '').trim().split(' ').pop();
+    ds.push({chu: ten ? 'Nhận thay ' + ten : 'Nhận thay',
+             kieu:'chinh', lam:'vdNhan(' + v.id + ')'});
+  }
+  /* Hai nấc giữa nói về một người đang cầm việc, nên chúng đòi một cái TÊN ở ô
+     người nhận — chưa bấm *Nhận* thì không sao, nhưng chưa giao cho ai thì hai
+     chữ *đang xử lý* rỗng nghĩa; lối của quản trị lúc ấy là *Giao cho ai*, dựng
+     sẵn ở tầng vẽ ngay dưới hàng nút này.
+     `if` ĐỘC LẬP, không nối `else` vào nhánh nhận ở trên: quản trị phải thấy CẢ
+     *Nhận thay* lẫn hai nấc tiến trên cùng một vấn đề. Chúng không chồng nhau —
+     *Nhận thay* dừng đồng hồ rồi để đó, *Đang xử lý* dừng đồng hồ và báo luôn
+     là đang làm. Người thường không lọt vào đây khi ô nhận còn trống, vì
+     `vdToiXuLy` đòi mốc nhận đã đóng. */
+  if (vdToiXuLy(v) || (vdQuanTriNac(v) && !!v.nguoi_nhan_id)){
     if (v.trang_thai !== 'dang_xu_ly')
       ds.push({chu:'Đang xử lý', kieu:'', lam:'vdDatNac(' + v.id + ",'dang_xu_ly')"});
     if (v.trang_thai !== 'cho_ben_khac')
       ds.push({chu:'Chờ bên khác', kieu:'chim', lam:'vdChoBenKhac(' + v.id + ')'});
   }
-  if (vdToiDong(v)) ds.push({chu:'Đóng vấn đề', kieu:'chinh',
+  if (vdToiDong(v) || vdQuanTriNac(v))
+                    ds.push({chu:'Đóng vấn đề', kieu:'chinh',
                              lam:'vdDongVanDe(' + v.id + ')'});
   if (vdToiBo(v))   ds.push({chu:'Không làm', kieu:'pha',
                              lam:'vdHoiKhongLam(' + v.id + ')'});
-  const daCoChinh = ds.some(x => x.kieu === 'chinh');
-  ds.forEach(x => { if (!x.kieu) x.kieu = daCoChinh ? 'chim' : 'chinh'; });
+  /* MỘT nút đặc mỗi hàng, và khi nhiều lối cùng khai "đặc" thì lối SỚM NHẤT
+     trong luồng giữ được nền ấy — thứ tự push ở trên chính là thứ tự luồng
+     (nhận → hai nấc giữa → đóng → lối ra). Trước 06/09 luật này tự đúng vì Nhận
+     và Đóng loại trừ nhau: một cái đòi ô nhận trống, cái kia đòi nó đã đầy. Từ
+     khi quản trị thấy cả hai trên một vấn đề chưa nhận thì chúng đứng cạnh nhau
+     thật, và hai nút đặc cạnh nhau thì mắt không còn biết đâu là bước tiếp. */
+  let daCoChinh = false;
+  ds.forEach(x => {
+    if (x.kieu !== 'chinh') return;
+    if (daCoChinh) x.kieu = 'chim'; else daCoChinh = true;
+  });
+  ds.forEach(x => {
+    if (x.kieu) return;
+    x.kieu = daCoChinh ? 'chim' : 'chinh';
+    daCoChinh = true;
+  });
   return ds;
+}
+
+/* Chia hàng nút của CỬA CHI TIẾT làm hai: **bước tiếp theo** đứng ngoài mặt,
+   mọi lối còn lại thu vào nút ⋯ (Tracy chốt 07/09 sau khi xem hai bản mẫu —
+   A gộp trọn vào một nút xổ, B là bản này).
+
+   VÌ SAO KHÔNG GỘP TRỌN NHƯ A: người không phải quản trị hầu như luôn chỉ có
+   đúng MỘT lối, và gộp trọn thì chính họ phải bấm hai lần để làm một việc. Ở
+   bản này, một lối thì không có nút ⋯ nào và không có gì đổi so với trước.
+
+   *Giao cho ai* nối vào ĐUÔI danh sách chứ không nằm trong `vdNutNac` — hàng
+   kia bày các nấc TRẠNG THÁI, còn đây là mở một cửa khác. Nó vào cùng một menu
+   với chúng, nhưng vào sau, và chỉ khi vấn đề còn sửa được.
+
+   Không có nút đặc nào thì lối ĐẦU danh sách ra đứng ngoài, giữ nguyên mặt nó.
+   Bỏ luật ấy đi thì một vấn đề chỉ còn *Giao cho ai* sẽ bày ra đúng một nút ⋯
+   câm — bắt người ta mở một cửa để đọc thứ vốn đã đọc được.
+
+   VÀ CHỈ GỘP TỪ HAI LỐI TRỞ LÊN. Gộp đúng một lối là lỗ vốn: cùng chừng ấy cú
+   bấm, mà một nút có chữ đổi thành một nút ⋯ câm. Người được giao một vấn đề
+   thấy *Nhận · Giao cho ai* — đúng cảnh ấy, và nó là cảnh thường gặp nhất của
+   người không phải quản trị, nên hàng nút của họ không đổi lấy một nét. */
+function vdChiaLoi(v){
+  const ds = vdNutNac(v);
+  if (vdSuaDuoc(v) && !vdDaDong(v))
+    ds.push({chu:'Giao cho ai', kieu:'chim', lam:'vdMoGiao(' + v.id + ')'});
+  let i = ds.findIndex(x => x.kieu === 'chinh');
+  if (i < 0) i = ds.length ? 0 : -1;
+  const ngoai = i < 0 ? [] : [ds[i]];
+  const trong = ds.filter((_, k) => k !== i);
+  return trong.length === 1 ? {ngoai: ngoai.concat(trong), trong: []}
+                            : {ngoai, trong};
+}
+
+/* ══ MENU ĐỔI NẤC NGAY TRÊN DÒNG ═══════════════════════════════════════════
+   Tracy 06/09, kèm ảnh Linear: *"ở linear ấn vào icon này là đổi đc trạng
+   thái"*. Danh sách đã mang hình bảng việc từ làn VDL, mà ở hình ấy vòng trạng
+   thái vừa là tín hiệu vừa là lối vào — hai cú bấm là xong, khỏi mở cửa nào.
+
+   MỘT NGUỒN QUYỀN, HAI CÁCH BÀY. Menu này liệt kê theo NẤC, hàng nút trong cửa
+   liệt kê theo HÀNH ĐỘNG, nhưng cả hai hỏi đúng những vị từ ở trên —
+   `vdToiNhan` · `vdToiXuLy` · `vdToiDong` · `vdToiBo` · `vdQuanTriNac`. Nấc nào
+   người đang nhìn không đặt được thì KHÔNG bày, chứ không bày rồi từ chối.
+
+   BA NẤC KÈM ĐIỀU KIỆN không làm ngầm sau lưng người bấm: *chờ bên khác* đòi
+   một câu nên nó mở cửa chi tiết và đặt con trỏ vào ô bàn luận · *không làm*
+   hỏi lại một lượt bằng hộp chung · *đã xong* khi là đóng thay thì để lại một
+   dòng, việc ấy `vdDongVanDe` đã lo sẵn.
+
+   `moi` KHÔNG có trong menu — không ai chủ động đặt một vấn đề về "mới", đó là
+   nấc lúc vừa ghi. Mở lại một vấn đề đã đóng cũng chưa làm: mọi vị từ đều đòi
+   `!vdDaDong`, nên menu của một dòng đã đóng rỗng và nút nói ra điều đó thay vì
+   bung một khung trống. */
+const VD_NAC_MENU = [
+  {ma:'da_nhan',      ten:'Đã nhận',      lop:'chay'},
+  {ma:'dang_xu_ly',   ten:'Đang xử lý',   lop:'chay'},
+  {ma:'cho_ben_khac', ten:'Chờ bên khác', lop:'cho'},
+  {ma:'xong',         ten:'Đã xong',      lop:'xong'},
+  {ma:'khong_lam',    ten:'Không làm',    lop:'bo'}
+];
+
+function vdDatDuocNac(v, ma){
+  /* Hai nấc giữa đi chung một điều kiện: đang cầm việc, hoặc quản trị trên một
+     vấn đề đã có tên người nhận. Chép đúng vế của `vdNutNac`. */
+  const cam = vdToiXuLy(v) || (vdQuanTriNac(v) && !!v.nguoi_nhan_id);
+  return ma === 'da_nhan'      ? (vdToiNhan(v)
+                                  || (vdQuanTriNac(v) && !v.nhan_luc && !!v.nguoi_nhan_id))
+       : ma === 'dang_xu_ly'   ? cam
+       : ma === 'cho_ben_khac' ? cam
+       : ma === 'xong'         ? (vdToiDong(v) || vdQuanTriNac(v))
+       : ma === 'khong_lam'    ? vdToiBo(v)
+       : false;
+}
+
+let VD_NAC_ID = null;   // id vấn đề đang mở menu nấc · null = menu đang đóng
+
+function vdMoMenuNac(ev, id){
+  const v    = VD_DS.find(x => x.id === id);
+  const menu = document.getElementById('vd-nac-menu');
+  const nen  = document.getElementById('vd-nac-nen');
+  if (!v || !menu || !nen) return;
+  /* Bày cả nấc đang đứng dù nó không "đặt được" — nó ở đó để đeo dấu chọn, cho
+     người ta biết mình đang ở đâu trước khi chọn đi đâu. */
+  const ds = VD_NAC_MENU.filter(n => v.trang_thai === n.ma || vdDatDuocNac(v, n.ma));
+  if (!ds.some(n => vdDatDuocNac(v, n.ma))){
+    toast(vdDaDong(v) ? 'Vấn đề đã đóng rồi'
+                      : 'Bạn không đổi được trạng thái của vấn đề này');
+    return;
+  }
+  VD_NAC_ID = id;
+  menu.innerHTML = ds.map(n => {
+    const dang = v.trang_thai === n.ma;
+    const lam  = dang ? 'vdDongMenuNac()'
+                      : 'vdChonNac(' + id + ",'" + n.ma + "')";
+    return '<button type="button" class="vd-nac-dong" role="menuitem" onclick="'
+         + lam + '">'
+         + '<span class="vd-tt ' + n.lop + '"></span>'
+         + '<span class="ten">' + n.ten + '</span>'
+         + (dang ? '<span class="dau">✓</span>' : '')
+         + '</button>';
+  }).join('');
+  nen.hidden = false;
+  menu.hidden = false;
+  vdNeoMenu(ev, menu);
+}
+
+/* Neo một menu vào nút vừa bấm, né hai mép màn. Tách ra khi cửa chi tiết cần
+   cái menu thứ hai (làn VDN): hai menu khác ruột nhưng chung một phép đo, và
+   phép ấy mang sẵn một bẫy đắt tiền — ĐO SAU KHI ĐÃ BỎ `hidden`, vì một khối
+   còn ẩn thì cao và rộng đều bằng 0, nên mọi phép né tính trên số 0 đều ra
+   "vừa vặn". Hai chỗ gọi đều bỏ `hidden` trước rồi mới gọi hàm này. */
+function vdNeoMenu(ev, menu){
+  const o = ev && ev.currentTarget && ev.currentTarget.getBoundingClientRect
+              ? ev.currentTarget.getBoundingClientRect() : null;
+  const cao = menu.offsetHeight, rong = menu.offsetWidth;
+  const man = (typeof window !== 'undefined' && window.innerHeight) || 800;
+  const ngang = (typeof window !== 'undefined' && window.innerWidth) || 400;
+  let tren = o ? o.bottom + 6 : 60, trai = o ? o.left : 12;
+  if (tren + cao > man - 8)  tren = Math.max(8, (o ? o.top : 60) - cao - 6);
+  if (trai + rong > ngang - 8) trai = Math.max(8, ngang - rong - 8);
+  menu.style.top  = tren + 'px';
+  menu.style.left = trai + 'px';
+}
+
+function vdDongMenuNac(){
+  VD_NAC_ID = null;
+  const menu = document.getElementById('vd-nac-menu');
+  const nen  = document.getElementById('vd-nac-nen');
+  if (menu){ menu.hidden = true; menu.innerHTML = ''; }
+  if (nen) nen.hidden = true;
+}
+
+/* MENU ⋯ CỦA CỬA CHI TIẾT. Dùng chung khung với menu nấc của dòng danh sách,
+   nhưng bày HÀNH ĐỘNG chứ không bày nấc — nên không có vòng trạng thái và
+   không có dấu chọn: ở đây không mục nào là "đang đứng", mọi mục đều là một
+   việc sắp làm. Ruột lấy nguyên từ `vdChiaLoi`, nên nó không thể lệch với hàng
+   nút bên ngoài, dù luật quyền có đổi thế nào.
+
+   Không đặt `VD_NAC_ID`: cờ ấy nói "dòng nào đang mở menu NẤC", còn đây là menu
+   của cửa. `vdDongMenuNac` vẫn đóng được vì nó chỉ dọn hai khối dùng chung. */
+function vdMoMenuLoi(ev, id){
+  const v    = VD_DS.find(x => x.id === id);
+  const menu = document.getElementById('vd-nac-menu');
+  const nen  = document.getElementById('vd-nac-nen');
+  if (!v || !menu || !nen) return;
+  const trong = vdChiaLoi(v).trong;
+  if (!trong.length) return;
+  menu.innerHTML = trong.map(x =>
+      '<button type="button" class="vd-nac-dong'
+    + (x.kieu === 'pha' ? ' pha' : '') + '" role="menuitem"'
+    + ' onclick="vdDongMenuNac();' + x.lam + '">'
+    + '<span class="ten">' + chuSach(x.chu) + '</span></button>').join('');
+  nen.hidden  = false;
+  menu.hidden = false;
+  vdNeoMenu(ev, menu);
+}
+
+async function vdChonNac(id, ma){
+  vdDongMenuNac();
+  if (ma === 'da_nhan')    return vdNhan(id);
+  if (ma === 'dang_xu_ly') { await vdDatNac(id, 'dang_xu_ly'); return; }
+  if (ma === 'khong_lam')  return vdHoiKhongLam(id);
+  if (ma === 'xong')       return vdDongVanDe(id);
+  if (ma === 'cho_ben_khac'){
+    /* Nấc này đòi một câu nói rõ đang chờ ai, và câu ấy thuộc về mạch bàn luận
+       chứ không thuộc một hộp hỏi dựng riêng. Nên menu giao người ta sang đúng
+       chỗ viết, con trỏ đặt sẵn trong ô. */
+    await vdMoChiTiet(id);
+    const o = document.getElementById('vd-bl-o');
+    if (o && o.focus) o.focus();
+    toast('Nêu rõ đang chờ ai, rồi bấm Chờ bên khác');
+  }
 }
 
 /* Giờ trong ngày, không chỉ đếm ngày. `cbBaoLau` trả *"hôm nay / từ hôm qua /
@@ -38553,8 +40027,6 @@ function vdVeChiTiet(){
   const kh = v.khach_sdt
     ? '<span class="bt-tag">' + chuSach((VD_KHACH[v.khach_sdt] || {}).ten
                                         || v.khach_sdt) + '</span>' : '';
-  const nut = vdNutNac(v);
-
   than.innerHTML =
       '<div class="bt-hang-tag">'
       + '<span class="bt-tag">' + chuSach(lcTenKhoi(v.chuc_nang_neu)) + '</span>'
@@ -38574,22 +40046,23 @@ function vdVeChiTiet(){
       + (v.nguoi_nhan_id ? '' : ' · chưa giao đích danh')
       + (v.loai_lap ? ' · nhãn gom: <b>' + chuSach(v.loai_lap) + '</b>' : '')
     + '</div></div>'
-    /* Cửa *Giao cho ai* về đây từ làn VDL: dòng danh sách nay không mang nút
-       nào, nên glyph ⇢ mất chỗ đứng — đây là lối vào DUY NHẤT còn lại, bỏ quên
-       là khoá luôn đường giao lại một vấn đề. Nó dựng ở TẦNG VẼ chứ không nhét
-       vào `vdNutNac`: hàng ấy là hàng đổi TRẠNG THÁI, còn đây là mở một cửa
-       khác. Trộn hai thứ vào một danh sách là làm hỏng nghĩa của cả hai. Và nó
-       luôn đi nền chìm, kể cả khi đứng một mình — một lối rẽ không đáng được
-       mời như một bước tiếp theo. */
+    /* Hàng nút: một bước tiếp theo, và một cửa ⋯ cho phần còn lại. Trước 07/09
+       cả năm lối bày cùng lúc và xuống hai dòng; `vdChiaLoi` giữ toàn bộ luật ai
+       thấy lối nào, đây chỉ quyết lối nào đứng ngoài mặt.
+       *Giao cho ai* là lối vào DUY NHẤT còn lại để giao lại một vấn đề (dòng
+       danh sách thôi mang glyph ⇢ từ làn VDL) — nó nằm trong ⋯, bỏ quên là khoá
+       luôn đường ấy. */
     + (() => {
-        const giao = vdSuaDuoc(v) && !vdDaDong(v)
-          ? '<button class="chim" onclick="vdMoGiao(' + v.id + ')">Giao cho ai</button>'
-          : '';
-        return (nut.length || giao)
-          ? '<div class="vd-nac-hang">' + nut.map(x =>
-              '<button class="' + x.kieu + '" onclick="' + x.lam + '">'
-              + chuSach(x.chu) + '</button>').join('') + giao + '</div>'
-          : '';
+        const {ngoai, trong} = vdChiaLoi(v);
+        if (!ngoai.length && !trong.length) return '';
+        return '<div class="vd-nac-hang">'
+          + ngoai.map(x => '<button class="' + x.kieu + '" onclick="' + x.lam + '">'
+                           + chuSach(x.chu) + '</button>').join('')
+          + (trong.length
+               ? '<button class="chim khac" aria-label="Lối khác"'
+                 + ' onclick="vdMoMenuLoi(event,' + v.id + ')">⋯</button>'
+               : '')
+          + '</div>';
       })()
     + '<div class="vd-vach"><h4>Bàn luận'
       + (VD_BL.length ? ' · ' + VD_BL.length : '') + '</h4></div>'
@@ -38647,7 +40120,17 @@ async function vdGuiBl(){
    `dang_xu_ly` đi thẳng. Hai nấc kia mỗi cái có một điều kiện riêng, và cả hai
    điều kiện đều nằm ngoài bảng `van_de` — nên chúng ở đây chứ không ở máy chủ. */
 async function vdDatNac(id, nac){
-  const r = await sb.from('van_de').update({trang_thai: nac}).eq('id', id);
+  const v = VD_DS.find(x => x.id === id);
+  const goi = {trang_thai: nac};
+  /* NHẬN THAY. Quản trị đẩy một vấn đề chưa ai bấm *Nhận* sang *đang xử lý* hay
+     *chờ bên khác* thì mốc nhận đóng luôn tại đây — hai nấc ấy khẳng định việc
+     đã có người cầm, mà `vdQuaHan` lại đọc mốc nhận để đếm quá hạn. Bỏ trống là
+     để lại một dòng vừa nói đang chạy vừa đếm giờ trễ.
+     `khong_lam` đứng ngoài, cố ý: bỏ một việc không phải là nhận nó. Máy chủ
+     cho ghi ô này đúng một lần — cò `chan_sua_cot_van_de` giữ nguyên mốc cũ khi
+     nó đã có, nên đây không phải đường lùi đồng hồ 24 giờ của ai. */
+  if (v && !v.nhan_luc && nac !== 'khong_lam') goi.nhan_luc = new Date().toISOString();
+  const r = await sb.from('van_de').update(goi).eq('id', id);
   if (r && r.error){
     toast(/row-level|policy|Chỉ người nêu/.test(r.error.message || '')
             ? (r.error.message || 'Bạn không đổi được nấc của vấn đề này.')
@@ -38722,8 +40205,19 @@ function moTab(ten, vuaNap){
   document.body.classList.add('co-le');
   dwVeDai();
   /* Mốc neo theo TỪNG MÀN. Đọc `ten` chứ không `tabSang`: hồ sơ dự án sáng ở
-     viên thuốc "Dự án" nhưng mốc của nó là của riêng nó (bẫy ② ở `DANG-LAM.md`). */
-  MAN_MOC = MOC_LE[ten] ? ten : '';
+     viên thuốc "Dự án" nhưng mốc của nó là của riêng nó (bẫy ② ở `DANG-LAM.md`).
+
+     Màn KHÔNG có cụm mốc riêng thì MƯỢN cụm của Hôm nay chứ không tắt hẳn cụm
+     (Tracy 06/09: *"khi ấn vào mục thông tin thì lề vẫn giữ như ảnh 2"* — sang
+     Kênh thông báo thanh lề rụng mất ba nút giữa cùng hai vạch, còn 6 biểu tượng
+     trong khi màn Hôm nay có 9). Một thanh điều hướng đổi hình theo màn bắt mắt
+     dò lại từ đầu ở mỗi lần chuyển; đứng yên thì mới nhớ được nút nào nằm đâu.
+
+     ⚠️ Từ đây `MAN_MOC` ĐƯỢC PHÉP khác `MAN_DANG`, và chỗ lệch ấy là thứ hai hàm
+     khác đọc: `leNhay` đọc để biết phải mở màn chủ TRƯỚC khi cuộn, `soiThanhLe`
+     đọc để biết đừng đo "đang đọc tới đâu". Ba chỗ đi thành một bộ — sửa một chỗ
+     thì soi cả ba. */
+  MAN_MOC = MOC_LE[ten] ? ten : 'homnay';
   /* Đặt TRƯỚC `veThanhLe()`: chính hàm ấy đọc nó để biết nút nào trên thanh lề
      phải sáng lên. Đặt sau là thanh lề luôn chậm một màn. */
   MAN_DANG = ten;

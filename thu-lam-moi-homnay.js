@@ -100,6 +100,11 @@ const MIEN_TRU = {
   /* ── Hàm phụ trợ: không phải cửa người dùng bấm ────────────────────────── */
   lcTheoViec:  'phụ trợ, chỉ gọi từ lcLuuDoi — cửa ấy đã làm mới ngay sau',
   lcTheoChuoi: 'phụ trợ, gọi từ lcLuuDoi và lcLuu — cả hai cửa đã làm mới ngay sau',
+  /* Không phải cửa, mà là NGƯỜI GIAO VIỆC LÙI (TRI-157): nó chỉ dựng sẵn một
+     hàm rồi trao cho ngăn hoàn tác. Đường về nằm ở `htLuiRieng` — gọi
+     `veTimeline` rồi `lamMoiCuaToi` ngay sau khi hàm ấy chạy xong. */
+  lcChupDoi:   'phụ trợ, trả cách lùi cho ngăn hoàn tác — htLuiRieng làm mới ngay sau',
+  lcChupSua:   'phụ trợ, trả cách lùi cho ngăn hoàn tác — htLuiRieng làm mới ngay sau',
   lcDonViec:   'phụ trợ, dọn việc của buổi vừa xoá; cửa gọi nó lo lượt vẽ',
   ghiTaskMoi:  'phụ trợ dùng chung của themTask, vcLuu, dwThemLuu',
   datNghen:    'phụ trợ, trả true/false cho cửa gọi rồi cửa ấy tự quyết',

@@ -97,6 +97,10 @@ const boi = {
   dwTaskChon: null,
   dwPhien: null,
   toast: m => TOAST.push(m),
+  /* Xem lời khai cùng nội dung ở `thu-luong-nghen.js` — bài này hỏi về bản doc
+     của phiên, không hỏi về đường lui (07/09, TRI-156). */
+  htChupTheo: async () => null,
+  htNhan: () => undefined,
   sb: {from: sb_from},
   document: {getElementById: id => id === 'dw-note' ? CUA_NOTE
                               : id === 'dw-note-o' ? O_NOTE

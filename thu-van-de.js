@@ -43,6 +43,23 @@ function catKhoi(dau, cuoi){
 }
 const NGUON = catKhoi('let BT_DS   = [];', 'function moTab(ten, vuaNap){');
 
+/* ── HÀM DÙNG CHUNG NẰM NGOÀI LÁT CẮT ───────────────────────────────────────
+   Lát trên bắt đầu ở `let BT_DS`, nhưng mã trong lát vẫn gọi ra ngoài nó:
+   `vdOptNguoi` gọi `DOI_CHON()`, thứ khai ở vùng biến chung cách đó gần 27.500
+   dòng. Ngày 07/09 điều đó làm **cả bài CHẾT ở dòng đầu** — `ReferenceError:
+   DOI_CHON is not defined` ngay lúc `vdMoCua`, nên 126 ca biến mất trong im
+   lặng còn bảng tổng chỉ nhích một con số.
+
+   NẠP NGUYÊN VĂN, KHÔNG CHÉP TAY. Chép một bản `DOI_CHON` vào khối cọc thì bài
+   thử chấm một luật của riêng nó: hôm app đổi cách lọc người ngoài ô chọn, cọc
+   vẫn lọc kiểu cũ và mọi ca vẫn xanh. Cắt thẳng dòng thật thì bài thử đi theo.
+
+   THÊM MỘT HÀM CHUNG NỮA THÌ NỐI VÀO ĐÂY, mỗi hàm một dòng `catKhoi` — mốc
+   cuối là `'\n'` nên nó lấy trọn đúng một dòng khai. */
+const CHUNG = [
+  catKhoi('const DOI_CHON = ()', '\n')
+].join('\n') + '\n';
+
 /* Cắt một vùng để SOI BẰNG VĂN BẢN (khác `catKhoi`, thứ cắt mã để chạy). Mốc
    cuối dò từ SAU mốc đầu — luật làn CV, 05/09: dò từ đầu tệp thì một bản chép
    sớm của mốc cuối làm vùng rơi về rỗng, mà vùng rỗng vừa đỏ oan vừa XANH oan
@@ -105,15 +122,18 @@ const sb = { from: (bang) => ({
 let VD_DU = [], BL_DU = [], SB_LOI_GHI = null, SB_LOI_BL = null;
 `;
 
-const M = new Function(COC + NGUON + `
+const M = new Function(COC + CHUNG + NGUON + `
   return {
     vdDaDong, vdQuaHan, vdCuaToi, vdSuaDuoc, vdToiNhan, vdToiDong, vdTrongKhoi,
     vdVanHanh, vdXep, vdHop, vdChuanSdt, vdDongHo, vdLap, vdDemDoi,
     vdVe, vdTai, vdVeCua, vdMoCua, vdLuu, vdNhan, vdDongVanDe, vdMoGiao,
     vdLuuGiao, vdChonKhoi, vdBungThem, vdTickKhach, vdDoiLoc, vdDoiXong,
     ktbNac, ktbVeNac, btChamMoi,
-    vdToiXuLy, vdToiBo, vdNutNac, vdLucBl, vdTaiBl, vdMoChiTiet, vdVeChiTiet,
+    vdToiXuLy, vdToiBo, vdQuanTriNac, vdNutNac, vdLucBl, vdTaiBl,
+    vdMoChiTiet, vdVeChiTiet,
     vdGuiBl, vdDatNac, vdChoBenKhac, vdHoiKhongLam, vdCoTin, vdDongCua,
+    vdDatDuocNac, vdMoMenuNac, vdDongMenuNac, vdChonNac, VD_NAC_MENU,
+    vdChiaLoi, vdMoMenuLoi,
     dat: (o) => {
       if ('me'  in o) ME = o.me;
       if ('doi' in o) DOI = o.doi;
@@ -225,9 +245,23 @@ M.dat(Object.assign({}, NEN, {me: NGOC}));
 ok('người nêu đóng được vấn đề đã có người nhận', M.vdToiDong(DANG_CHAY));
 M.dat(Object.assign({}, NEN, {me: HAFI}));
 ok('người xử lý KHÔNG đóng được',                !M.vdToiDong(DANG_CHAY));
+/* `vdToiDong` GIỮ NGUYÊN nghĩa hẹp "tôi là người nêu" kể cả sau khi quản trị
+   được trao quyền đóng thay (TRI-136, 06/09) — vì nó còn nuôi `vdDemDoi`, con
+   số đếm việc đang đợi CHÍNH MÌNH. Quyền quản trị đi bằng `vdQuanTriNac`. */
 M.dat(Object.assign({}, NEN, {me: TRACY}));
-ok('quản trị cũng không mọc nút Đóng — chỉ người nêu',
-   !M.vdToiDong(DANG_CHAY));
+ok('vị từ người-nêu vẫn hẹp với quản trị', !M.vdToiDong(DANG_CHAY));
+ok('nhưng quản trị đổi nấc được qua lối riêng', M.vdQuanTriNac(DANG_CHAY));
+ok('người xử lý thì không đi được lối ấy',
+   (() => { M.dat(Object.assign({}, NEN, {me: HAFI}));
+            return !M.vdQuanTriNac(DANG_CHAY); })());
+/* CHƯA AI BẤM NHẬN THÌ QUẢN TRỊ VẪN ĐỔI ĐƯỢC. Nhát đầu chặn đúng chỗ này và
+   Tracy vấp ngay dòng đầu tiên: một vấn đề đã giao cho Hafi, Hafi chưa bấm, để
+   quá hạn năm tiếng — đúng dòng cần tay quản trị nhất. Mâu thuẫn "đang xử lý mà
+   vẫn đếm quá hạn" được chữa ở `vdDatNac` bằng cách đóng luôn mốc nhận, chứ
+   không chữa bằng cách cấm bấm. */
+M.dat(Object.assign({}, NEN, {me: TRACY}));
+ok('chưa ai bấm Nhận thì quản trị vẫn đổi nấc được',
+   M.vdQuanTriNac(vd({nguoi_neu_id:'u-ngoc'})));
 M.dat(Object.assign({}, NEN, {me: NGOC}));
 ok('chưa ai nhận thì chưa có gì để đóng', !M.vdToiDong(vd({nguoi_neu_id:'u-ngoc'})));
 
@@ -474,7 +508,58 @@ ok('và nút đặc ấy là Đóng vấn đề, không phải Đang xử lý',
 bang('người ngoài cuộc không thấy nút nào', nutTen(DANHAN, ANDY), '');
 bang('vấn đề đã đóng thì hàng nút trống',
      nutTen(vd({trang_thai:'xong', nhan_luc:LUC(), dong_luc:LUC()}), NGOC), '');
-bang('quản trị bỏ được vấn đề người khác nêu', nutTen(DANHAN, TRACY), 'Không làm');
+/* QUẢN TRỊ THẤY CẢ BỐN NẤC trên vấn đề người khác nêu, người khác đang cầm
+   (TRI-136). Đây là ca canh cả hai tầng cùng lúc: bày đủ nút thì máy chủ phải
+   nhận — `nang-cap-van-de-quan-tri-doi-nac.sql` nới cò VÀ thay ràng buộc
+   `van_de_chi_nguoi_neu_dong`. Bày nút mà quên tệp SQL là hứa rồi từ chối. */
+bang('quản trị thấy đủ bốn nấc trên vấn đề của người khác', nutTen(DANHAN, TRACY),
+     'Đang xử lý|Chờ bên khác|Đóng vấn đề|Không làm');
+bang('và vẫn đúng MỘT nút đặc — Đóng vấn đề',
+     nutKieu(DANHAN, TRACY).split('|').filter(x => x.endsWith(':chinh')).join(),
+     'Đóng vấn đề:chinh');
+/* ĐÚNG CA TRACY VẤP 06/09: giao cho Hafi rồi, Hafi chưa bấm Nhận, dòng nằm ở
+   nhóm "Quá hạn nhận". Quản trị phải thấy đủ bốn nấc ở đây. */
+const CHUA_BAM = vd({nguoi_nhan_id:'u-hafi', nhan_luc:null, trang_thai:'moi'});
+bang('đã giao mà chưa ai bấm Nhận: quản trị thấy cả năm lối',
+     nutTen(CHUA_BAM, TRACY),
+     'Nhận thay Hafi|Đang xử lý|Chờ bên khác|Đóng vấn đề|Không làm');
+/* Nhãn gọi ĐÚNG TÊN người được giao — nút này bấm HỘ, không phải giành lấy;
+   `vdNhan` giữ nguyên ô người nhận khi ô ấy đã có tên. */
+ok('và nút ấy gọi đúng tên người được giao',
+   nutTen(CHUA_BAM, TRACY).startsWith('Nhận thay Hafi'));
+/* Bước tiếp của một vấn đề chưa ai bấm là NHẬN, nên nền đặc thuộc về nó — Đóng
+   lùi về nền chìm dù chỗ khác vẫn khai nó là "đặc". */
+bang('đúng MỘT nút đặc, và là nút nhận',
+     nutKieu(CHUA_BAM, TRACY).split('|').filter(x => x.endsWith(':chinh')).join(),
+     'Nhận thay Hafi:chinh');
+/* Người thường không có lối nhận thay — Hafi chỉ thấy nút Nhận của chính mình. */
+bang('người được giao vẫn chỉ thấy nút Nhận của mình', nutTen(CHUA_BAM, HAFI),
+     'Nhận');
+
+/* LUẬT MỘT NÚT ĐẶC, ca gắt nhất: quản trị đứng trong chính phòng nhận của một
+   vấn đề chưa giao đích danh — *Nhận* và *Đóng vấn đề* cùng khai "đặc" ở hai
+   chỗ rời nhau trong mã. Trước 06/09 ca này không tồn tại được vì hai lối loại
+   trừ nhau theo ô mốc nhận. */
+const CHUA_GIAO_CEO = vd({chuc_nang_nhan:1});
+bang('quản trị trong phòng nhận: vẫn đúng MỘT nút đặc',
+     nutKieu(CHUA_GIAO_CEO, TRACY).split('|').filter(x => x.endsWith(':chinh')).length, 1);
+bang('và nút đặc ấy là Nhận, không phải Đóng',
+     nutKieu(CHUA_GIAO_CEO, TRACY).split('|')[0], 'Nhận:chinh');
+
+/* Chưa giao cho AI thì hai nấc giữa rỗng nghĩa — *đang xử lý* nói về một người
+   đang cầm việc, mà chưa có người nào. Lối của quản trị lúc ấy là *Giao cho ai*,
+   dựng ở tầng vẽ chứ không nằm trong hàng nút này. */
+bang('vấn đề chưa giao cho ai: quản trị chỉ có lối ra và lối đóng',
+     nutTen(vd({}), TRACY), 'Đóng vấn đề|Không làm');
+bang('vấn đề đã đóng thì quản trị cũng không thấy nút nào',
+     nutTen(vd({trang_thai:'xong', nhan_luc:LUC(), dong_luc:LUC()}), TRACY), '');
+
+/* Con số trên nấc Vấn đề KHÔNG được phồng lên vì quyền mới. Nó đếm việc đang
+   đợi chính mình ra tay; một con số đếm cả bảng thì tuần nào cũng to và thôi
+   nói được điều gì. Đây là lý do `vdQuanTriNac` đứng riêng. */
+M.dat({...NEN, me:TRACY, ds:[DANHAN, vd({nguoi_nhan_id:'u-hafi', nhan_luc:LUC(),
+                                         trang_thai:'dang_xu_ly'})]});
+bang('quyền quản trị KHÔNG làm phồng con số đang đợi mình', M.vdDemDoi(), 0);
 
 /* ═══ 17. CỬA CHI TIẾT — một cửa, ba ruột ═══ */
 console.log('\n── 17. Cửa chi tiết ──');
@@ -586,6 +671,29 @@ await M.vdDatNac(DANHAN.id, 'dang_xu_ly');
 const goiNac = M.day().find(x => x.bang === 'van_de' && x.loai === 'update');
 ok('đặt được nấc Đang xử lý', !!goiNac && goiNac.g.trang_thai === 'dang_xu_ly');
 
+/* NHẬN THAY: đặt nấc cho một vấn đề chưa ai bấm Nhận thì đóng luôn mốc nhận.
+   Thiếu dòng này thì dòng ấy đổi nấc xong vẫn nằm nguyên ở nhóm "Quá hạn nhận"
+   và vẫn đếm giờ trễ — `vdQuaHan` đọc mốc nhận chứ không đọc nấc. */
+const CHUA_BAM2 = vd({nguoi_nhan_id:'u-hafi', nhan_luc:null, trang_thai:'moi'});
+M.dat({...NEN, me:TRACY, ds:[CHUA_BAM2], ct:CHUA_BAM2.id});
+await M.vdDatNac(CHUA_BAM2.id, 'dang_xu_ly');
+const goiThay = M.day().find(x => x.bang === 'van_de' && x.loai === 'update');
+ok('đặt nấc cho vấn đề chưa bấm Nhận thì đóng luôn mốc nhận',
+   !!goiThay && !!goiThay.g.nhan_luc && goiThay.g.trang_thai === 'dang_xu_ly');
+
+/* Đã có mốc nhận rồi thì ĐỪNG gửi lại — đồng hồ 24 giờ chỉ dừng một lần, và cò
+   trên máy chủ giữ nguyên mốc cũ, nên gửi thêm chỉ là gửi thừa. */
+M.dat({...NEN, me:HAFI, ds:[DANHAN], ct:DANHAN.id});
+await M.vdDatNac(DANHAN.id, 'dang_xu_ly');
+const goiCu = M.day().find(x => x.bang === 'van_de' && x.loai === 'update');
+ok('đã nhận rồi thì không gửi lại mốc nhận', !!goiCu && !goiCu.g.nhan_luc);
+
+/* `khong_lam` đứng ngoài: bỏ một việc không phải là nhận nó. */
+M.dat({...NEN, me:TRACY, ds:[CHUA_BAM2], ct:CHUA_BAM2.id});
+await M.vdDatNac(CHUA_BAM2.id, 'khong_lam');
+const goiBo = M.day().find(x => x.bang === 'van_de' && x.loai === 'update');
+ok('bỏ không làm thì KHÔNG đóng mốc nhận', !!goiBo && !goiBo.g.nhan_luc);
+
 /* `cho_ben_khac` KHÔNG đi được khi ô soạn trống — đặc tả đòi "phải nêu chờ ai",
    mà bảng `van_de` không có cột nào chứa điều đó. */
 M.dat({...NEN, me:HAFI, ds:[DANHAN], bl:[], ct:DANHAN.id});
@@ -620,6 +728,115 @@ await M.vdChoBenKhac(DANHAN.id);
 ok('ghi câu hỏng thì KHÔNG đổi nấc',
    !M.day().some(x => x.bang === 'van_de' && x.loai === 'update'));
 
+/* ═══ 19b. QUẢN TRỊ ĐÓNG THAY — và để lại một dòng  (TRI-136) ═══ */
+console.log('\n── 19b. Quản trị đóng thay ──');
+M.dat({...NEN, me:TRACY, ds:[DANHAN], bl:[], ct:DANHAN.id});
+await M.vdDongVanDe(DANHAN.id);
+const dayDong = M.day();
+ok('quản trị đóng được vấn đề người khác nêu',
+   dayDong.some(x => x.bang === 'van_de' && x.g.trang_thai === 'xong'));
+ok('và để lại một dòng nói vì sao nó đóng',
+   dayDong.some(x => x.bang === 'van_de_binh_luan' && x.loai === 'insert'
+                     && /quyền quản trị/.test(x.g.noi_dung)));
+/* THỨ TỰ NGƯỢC với `vdChoBenKhac`. Ở đó câu viết là ĐIỀU KIỆN nên phải đi
+   trước; ở đây nó là DẤU VẾT của một việc đã xảy ra, nên đóng trước ghi sau —
+   ghi trước rồi cú đóng ngã là để lại một dòng nói dối. */
+bang('và đóng TRƯỚC, ghi câu SAU',
+     dayDong.findIndex(x => x.bang === 'van_de')
+       < dayDong.findIndex(x => x.bang === 'van_de_binh_luan'), true);
+
+/* Người NÊU tự đóng vấn đề của mình thì không có gì phải giải thích — thêm một
+   dòng máy viết vào đó chỉ làm loãng cuộc bàn. */
+M.dat({...NEN, me:NGOC, ds:[DANHAN], bl:[], ct:DANHAN.id});
+await M.vdDongVanDe(DANHAN.id);
+ok('người nêu tự đóng thì KHÔNG thêm dòng nào',
+   !M.day().some(x => x.bang === 'van_de_binh_luan'));
+
+/* Cú đóng ngã ở máy chủ thì đừng để lại dấu vết của một việc chưa xảy ra. */
+M.dat({...NEN, me:TRACY, ds:[DANHAN], bl:[], ct:DANHAN.id,
+       loiGhi:{message:'Chỉ người nêu vấn đề mới đóng được nó.'}});
+await M.vdDongVanDe(DANHAN.id);
+ok('đóng hỏng thì KHÔNG ghi dòng nào',
+   !M.day().some(x => x.bang === 'van_de_binh_luan'));
+ok('và nói lại đúng câu máy chủ trả về',
+   M.ghi().join('|').includes('Chỉ người nêu'));
+
+/* ═══ 19c. MENU ĐỔI NẤC NGAY TRÊN DÒNG  (Tracy 06/09, lối Linear) ═══ */
+console.log('\n── 19c. Menu nấc trên dòng ──');
+const NUT = (o) => ({currentTarget: {getBoundingClientRect: () => o}});
+const OKHUNG = NUT({top:100, bottom:120, left:20, right:34});
+
+/* Dòng mang MỘT nút duy nhất — vòng trạng thái — và cú bấm vào nó KHÔNG được
+   nổi lên `.vd-hang`, không thì cửa chi tiết bung ra che mất menu vừa mở. */
+M.dat({...NEN, me:TRACY, ds:[DANHAN], dem:{}});
+M.vdVe();
+const dsHang = M.o('vd-ds').innerHTML;
+ok('vòng trạng thái trên dòng là nút bấm được', /vd-tt-nut/.test(dsHang));
+ok('và cú bấm ấy không nổi lên mở cửa chi tiết',
+   /stopPropagation\(\);vdMoMenuNac\(/.test(dsHang));
+
+/* Quản trị trên vấn đề đã giao mà chưa ai bấm: đủ năm nấc. */
+M.dat({...NEN, me:TRACY, ds:[CHUA_BAM], dem:{}});
+M.vdMoMenuNac(OKHUNG, CHUA_BAM.id);
+const menu = M.o('vd-nac-menu').innerHTML;
+bang('menu bày đủ năm nấc cho quản trị',
+     (menu.match(/vd-nac-dong/g) || []).length, 5);
+ok('mỗi dòng menu mang một vòng trạng thái, không phải dấu tick',
+   /vd-nac-dong[^>]*>[^<]*<span class="vd-tt /.test(menu));
+
+/* NGƯỜI NGOÀI CUỘC không có lối nào — đừng bung một khung rỗng, nói thẳng. */
+/* Dọn menu trước: cọc trả CÙNG một vật cho cùng một id, nên ruột của ca trên
+   còn nằm đó và một ca "không mở" sẽ đỏ oan vì đọc phải hàng cũ. */
+M.dat({...NEN, me:ANDY, ds:[DANHAN], dem:{}});
+M.vdDongMenuNac();
+M.vdMoMenuNac(OKHUNG, DANHAN.id);
+ok('người ngoài cuộc: menu không mở', !M.o('vd-nac-menu').innerHTML);
+ok('và được nói rõ vì sao', M.ghi().join('|').includes('không đổi được trạng thái'));
+
+/* Vấn đề ĐÃ ĐÓNG: cũng không mở, và câu nhắc nói đúng lý do khác hẳn. */
+M.dat({...NEN, me:TRACY, ds:[vd({id:901, trang_thai:'xong', nhan_luc:LUC(),
+                                 dong_luc:LUC()})], dem:{}});
+M.vdDongMenuNac();
+M.vdMoMenuNac(OKHUNG, 901);
+ok('vấn đề đã đóng: menu không mở, và nói đúng lý do',
+   !M.o('vd-nac-menu').innerHTML && M.ghi().join('|').includes('đã đóng'));
+
+/* Nấc ĐANG ĐỨNG có mặt để đeo dấu chọn, và bấm vào nó chỉ đóng menu lại. */
+M.dat({...NEN, me:HAFI, ds:[DANHAN], dem:{}});
+M.vdMoMenuNac(OKHUNG, DANHAN.id);
+const menuHafi = M.o('vd-nac-menu').innerHTML;
+ok('nấc đang đứng đeo dấu chọn', /class="dau"/.test(menuHafi));
+ok('và bấm vào chính nó thì chỉ đóng menu',
+   /onclick="vdDongMenuNac\(\)"/.test(menuHafi));
+/* Hafi đang cầm việc nhưng KHÔNG phải người nêu — nấc "Đã xong" không được bày,
+   đúng luật người xử lý báo xong còn người nêu xác nhận. */
+ok('người cầm việc không thấy nấc Đã xong', !/Đã xong/.test(menuHafi));
+
+M.vdDongMenuNac();
+ok('đóng menu thì dọn trắng ruột', !M.o('vd-nac-menu').innerHTML);
+
+/* `cho_ben_khac` KHÔNG làm ngầm: menu giao người ta sang đúng ô viết câu. */
+M.dat({...NEN, me:HAFI, ds:[DANHAN], bl:[], dem:{}});
+await M.vdChonNac(DANHAN.id, 'cho_ben_khac');
+ok('chọn Chờ bên khác thì mở cửa chi tiết chứ không đổi nấc lặng lẽ',
+   M.ct() === DANHAN.id
+   && !M.day().some(x => x.bang === 'van_de' && x.loai === 'update'));
+ok('và nhắc đúng điều đang thiếu', M.ghi().join('|').includes('chờ ai'));
+
+/* Ba nấc còn lại đi thẳng. */
+M.dat({...NEN, me:TRACY, ds:[CHUA_BAM], dem:{}});
+await M.vdChonNac(CHUA_BAM.id, 'da_nhan');
+ok('chọn Đã nhận thì đóng mốc nhận',
+   M.day().some(x => x.bang === 'van_de' && x.g.trang_thai === 'da_nhan'
+                     && !!x.g.nhan_luc));
+M.dat({...NEN, me:TRACY, ds:[DANHAN], bl:[], dem:{}});
+await M.vdChonNac(DANHAN.id, 'xong');
+ok('chọn Đã xong thì đóng vấn đề',
+   M.day().some(x => x.bang === 'van_de' && x.g.trang_thai === 'xong'));
+M.dat({...NEN, me:TRACY, ds:[DANHAN], dem:{}});
+M.vdChonNac(DANHAN.id, 'khong_lam');
+ok('chọn Không làm thì hỏi lại một lượt trước', !!M.hop());
+
 /* ═══ 20. LỐI RA `khong_lam` — hộp hỏi giữ xanh, phá đỏ viền ═══ */
 console.log('\n── 20. Lối ra Không làm ──');
 M.dat({...NEN, me:NGOC, ds:[DANHAN], ct:DANHAN.id});
@@ -638,7 +855,14 @@ ok('gật rồi mới đặt nấc khong_lam',
    giờ quốc tế — một câu viết lúc 5 giờ sáng ở Việt Nam rơi sang ngày hôm trước,
    và mạch bàn luận đọc ra sai thứ tự ngày. */
 console.log('\n── 21. Giờ của một câu ──');
-const sang5h = new Date(); sang5h.setHours(5, 7, 0, 0);
+/* MỐC LẤY TỪ NGÀY GHIM CỦA COC, KHÔNG TỪ ĐỒNG HỒ MÁY. Bản đầu dựng
+   `new Date()` rồi đặt giờ về 5h07 — nhưng `homNay()` trong cọc trả một ngày
+   CỐ ĐỊNH, nên ca này chỉ xanh đúng cái ngày người ta viết ra nó (05/09) và đỏ
+   mọi ngày sau. Đọc ngược ngày ấy ra khỏi COC thì hai mốc không còn đường lệch
+   nhau, và ca vẫn canh đúng thứ nó sinh ra để canh: cắt mười ký tự đầu chuỗi
+   ISO thì 5 giờ sáng ở Việt Nam rơi về ngày hôm trước. */
+const NGAY_GHIM = (COC.match(/HOM_NAY = '([\d-]+)'/) || [])[1];
+const sang5h = new Date(NGAY_GHIM + 'T05:07:00');
 M.dat({...NEN, me:HAFI, ds:[]});
 ok('câu viết 5 giờ sáng hôm nay vẫn đọc là “hôm nay”',
    M.vdLucBl(sang5h.toISOString()).startsWith('hôm nay'));
@@ -694,6 +918,93 @@ M.vdVeChiTiet();
 M.vdDongCua();
 bang('đóng cửa thì quên luôn vấn đề đang mở', M.ct(), null);
 bang('và quên luôn mạch bàn luận đã tải', M.bl().length, 0);
+
+/* ═══ 24. HÀNG NÚT CỬA CHI TIẾT: MỘT BƯỚC TIẾP THEO, PHẦN CÒN LẠI VÀO ⋯ ═══
+   Tracy 07/09, cầm ảnh hàng năm nút: *"chỗ này vẫn chưa gộp thành 1 nút xổ ra
+   à"*. Xem hai bản mẫu rồi chốt **B** — giữ bước tiếp theo ngoài mặt, thu phần
+   còn lại vào ⋯ — chứ không phải A, gộp trọn vào một nút xổ nói trạng thái.
+
+   Ranh giới quan trọng nhất của bản này là NGƯỠNG HAI LỐI: gộp đúng một lối là
+   đổi một nút có chữ lấy một nút câm mà không bớt được cú bấm nào. Ba ca dưới
+   canh cả hai phía của ngưỡng ấy. */
+console.log('\n── 24. Nút ⋯ của cửa chi tiết ──');
+
+const hangNut = (html) => {
+  const i = html.indexOf('<div class="vd-nac-hang">');
+  if (i < 0) return '';
+  return html.slice(i, html.indexOf('</div>', i));
+};
+
+/* Quản trị trên một vấn đề đã có người cầm: năm lối — đúng cảnh trong ảnh. */
+const NAMLOI = vd({id:240, nguoi_nhan_id:'u-hafi', nhan_luc:LUC(), trang_thai:'da_nhan'});
+M.dat({...NEN, me:TRACY, ds:[NAMLOI], ct:240, bl:[]});
+M.vdVeChiTiet();
+const hangQT = hangNut(M.o('vd-than').innerHTML);
+bang('năm lối rút xuống đúng hai nút', (hangQT.match(/<button/g) || []).length, 2);
+ok('nút đặc ngoài mặt là bước tiếp theo, không phải trạng thái đang đứng',
+   /<button class="chinh" onclick="vdDongVanDe\(240\)">Đóng vấn đề<\/button>/.test(hangQT));
+ok('nút thứ hai là cửa ⋯, đi nền chìm',
+   /<button class="chim khac"[^>]*onclick="vdMoMenuLoi\(event,240\)">⋯<\/button>/.test(hangQT));
+
+M.vdMoMenuLoi(OKHUNG, 240);
+const menuLoi = M.o('vd-nac-menu').innerHTML;
+bang('mở ⋯ ra thấy đủ bốn lối còn lại',
+     (menuLoi.match(/vd-nac-dong/g) || []).length, 4);
+ok('đủ cả ba nấc còn lại',
+   /vdDatNac\(240,'dang_xu_ly'\)/.test(menuLoi)
+   && /vdChoBenKhac\(240\)/.test(menuLoi) && /vdHoiKhongLam\(240\)/.test(menuLoi));
+/* Lối vào DUY NHẤT còn lại để giao lại một vấn đề — dòng danh sách thôi mang
+   glyph ⇢ từ làn VDL. Bỏ quên nó là khoá luôn đường ấy. */
+ok('và Giao cho ai đứng CUỐI, sau các nấc',
+   menuLoi.indexOf('vdMoGiao(240)') > menuLoi.indexOf('vdHoiKhongLam(240)'));
+ok('lối ra giữ được màu đỏ khi vào menu',
+   /class="vd-nac-dong pha"[^>]*vdHoiKhongLam\(240\)/.test(menuLoi));
+/* Menu này bày HÀNH ĐỘNG, menu của dòng bày NẤC. Lẫn hình của nhau là nói dối
+   người đọc: một danh sách có vòng trạng thái và dấu chọn thì hứa rằng có một
+   mục đang đứng, mà ở đây không mục nào đang đứng cả. */
+ok('menu hành động không mượn vòng trạng thái của menu nấc',
+   !/vd-tt/.test(menuLoi) && !/class="dau"/.test(menuLoi));
+ok('bấm một mục thì đóng menu TRƯỚC khi chạy',
+   /onclick="vdDongMenuNac\(\);vd/.test(menuLoi));
+M.vdDongMenuNac();
+
+/* Phía KIA của ngưỡng: người được giao thấy *Nhận · Giao cho ai*. Hai nút có
+   chữ, và chúng phải ở nguyên đó — đây là cảnh thường gặp nhất của người không
+   phải quản trị. */
+const HAILOI = vd({id:241, nguoi_nhan_id:'u-hafi'});
+M.dat({...NEN, me:HAFI, ds:[HAILOI], ct:241, bl:[]});
+M.vdVeChiTiet();
+const hangHai = hangNut(M.o('vd-than').innerHTML);
+bang('hai lối thì KHÔNG gộp — vẫn hai nút có chữ',
+     (hangHai.match(/<button/g) || []).length, 2);
+ok('và không mọc ra nút ⋯ nào', !/vdMoMenuLoi/.test(hangHai));
+ok('cả hai lối vẫn đọc được ngay',
+   /vdNhan\(241\)/.test(hangHai) && /vdMoGiao\(241\)/.test(hangHai));
+
+/* Người ngoài mọi cuộc: không lối nào, nên không có hàng nút — chứ không phải
+   một hàng rỗng hay một nút ⋯ mở ra khung trống. */
+M.dat({...NEN, me:KHACH, ds:[vd({id:242})], ct:242, bl:[]});
+M.vdVeChiTiet();
+ok('không lối nào thì không có hàng nút',
+   !M.o('vd-than').innerHTML.includes('vd-nac-hang'));
+M.vdMoMenuLoi(OKHUNG, 242);
+ok('và gọi thẳng vào menu ⋯ cũng không mở ra khung trống',
+   !M.o('vd-nac-menu').innerHTML);
+
+/* 🪤 BẪY ĐÃ CẮN MỘT LƯỢT TRONG BẢN MẪU: menu "mở" đủ mọi phép đo trong mã — có
+   ruột, có toạ độ, `elementFromPoint` chạm được — mà mắt không thấy gì, vì nền
+   cửa sổ nổi (z-index 70, chồng cửa 75) nằm đè lên trên nó. Ca này đọc thẳng
+   hai con số trong khối kiểu dáng, vì không một phép thử DOM nào bắt được. */
+const zSo = (ten) => {
+  const m = SRC.match(new RegExp('\\.' + ten + '\\{[^}]*z-index:(\\d+)'));
+  return m ? Number(m[1]) : -1;
+};
+ok('menu đứng TRÊN lớp cửa sổ nổi, không thì nó mở mà không ai thấy',
+   zSo('vd-nac-menu') > zSo('cua-noi-nen') && zSo('vd-nac-nen') > zSo('cua-noi-nen'),
+   'menu ' + zSo('vd-nac-menu') + ' · nền menu ' + zSo('vd-nac-nen')
+   + ' · cửa ' + zSo('cua-noi-nen'));
+ok('và nền menu vẫn nằm dưới chính menu', zSo('vd-nac-nen') < zSo('vd-nac-menu'));
+
 
 console.log('\n' + (hong ? '❌ ' + hong + ' ca đỏ · ' : '✅ ') + dat + '/' + (dat + hong) + ' ca đạt\n');
   process.exit(hong ? 1 : 0);

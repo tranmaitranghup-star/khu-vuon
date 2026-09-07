@@ -50,13 +50,25 @@ begin
     raise exception 'Không phải thành viên ROVA';
   end if;
 
-  -- Đúng vế `using` của policy `sua_lich` (nang-cap-su-kien-ca-nhan.sql:94).
-  -- Chép ra đây chứ không soi ngược policy: hàm chạy bằng quyền định nghĩa nên
-  -- RLS không tự chặn hộ, và một hàm security definer không tự kiểm quyền là
-  -- một cánh cửa mở.
-  if not (la_lead() or exists (select 1 from lich_chung l
-                                where l.id = p_lich_id and l.tao_boi = v_toi)) then
-    raise exception 'Chỉ người tạo sự kiện hoặc lead mới đổi được giờ của nó';
+  -- Đúng vế `using` của policy `sua_lich` SAU bản 07/09: chỉ host, hoặc khách
+  -- mời khi host đã bật `khach_sua`. Chép ra đây chứ không soi ngược policy:
+  -- hàm chạy bằng quyền định nghĩa nên RLS không tự chặn hộ, và một hàm
+  -- security definer không tự kiểm quyền là một cánh cửa mở.
+  --
+  -- 🔴 SỬA LỖ HỔNG 07/09. Bản đầu viết `la_lead() or …` — chép từ policy bản
+  -- 30/08, trong khi tệp này ra đời 05/09, tức SAU ngày Tracy siết quyền về
+  -- host (04/09). Bảy người trong đội đang bật cờ lead, nên bất kỳ ai trong số
+  -- đó đổi được giờ chuỗi sự kiện của người khác — đi vòng qua đúng hàng rào
+  -- `nang-cap-quyen-host-su-kien.sql` vừa dựng. Ba tầng cùng nói một câu thì
+  -- phải sửa cả ba; mặt hình `lcDuocSua` đã đúng từ 04/09, hàm này thì không.
+  --
+  -- ⚠️ CHẠY SAU `nang-cap-quyen-khach.sql` — cột `khach_sua` và `nguoi_ids` do
+  -- tệp ấy dựng. Chạy trước thì câu dưới ném "column does not exist".
+  if not exists (select 1 from lich_chung l
+                  where l.id = p_lich_id
+                    and (l.tao_boi = v_toi
+                         or (l.khach_sua and v_toi = any(l.nguoi_ids)))) then
+    raise exception 'Chỉ người tạo sự kiện, hoặc khách được người đó cho quyền sửa, mới đổi được giờ của nó';
   end if;
 
   if p_gio is null or p_gio < 0 or p_gio > 1439 then

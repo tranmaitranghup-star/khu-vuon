@@ -79,15 +79,25 @@ const timO      = ma => LUONG.find(o => o.ma === ma) || null;
 const soCamKet  = ma => (LUONG.findIndex(o => o.ma === ma) + 1);
 let LC_LOAI_O = '';
 const document = {getElementById: id => id === 'lc-loai' ? {value: LC_LOAI_O} : null};
+/* Ô Loại của người đang xem (07/09) cần thêm bốn thứ. \`optCamKet\` ở đây là bản
+   rút gọn — bản thật đã có cốc ① canh; chỗ này chỉ cần đọc ra ô chọn đang mở ở
+   giá trị nào. */
+let LC_VIEC = {}, CO_LOAI_VIEC = true;
+const O_CO_DINH = '_cd';
+const giaTriO = t => t.rieng_tu ? O_CA_NHAN
+                   : t.tieu_diem_ma || (t.loai_viec === 'co_dinh' ? O_CO_DINH : '');
+const optCamKet = ma => '<option value="' + (ma ?? '') + '" selected></option>';
 `;
 
 const lich = new Function(COC_LICH + NGUON_LICH + `
-  return { LC_NHOM, lcOptNhom, lcOptLoai, lcLoaiCua, lcLoaiDangKhai, lcNhanLoai,
+  return { LC_NHOM, lcOptNhom, lcOptLoai, lcLoaiCua, lcLoaiDangKhai, lcOLoaiToi, lcLoaiSeDe,
            lcNhomCuaLich, lcNhanPhamVi, lcChoToi, O_CA_NHAN,
            dat: o => { CO_RIENG_TU = o.CO_RIENG_TU !== false;
                        CO_LOAI_SK  = o.CO_LOAI_SK  !== false;
                        LUONG = o.LUONG || [];
                        LC_LOAI_O = o.O || '';
+                       LC_VIEC = o.LC_VIEC || {};
+                       CO_LOAI_VIEC = o.CO_LOAI_VIEC !== false;
                        DOI = o.DOI || [];
                        ME  = o.ME  !== undefined ? o.ME : {id:'toi'}; } };
 `)();
@@ -214,9 +224,9 @@ console.log('\n⑤b SỰ KIỆN CÁ NHÂN MỜI ĐƯỢC NGƯỜI (Tracy đổi 
   /* Cùng một cờ trong kho, hai cái tên trên màn: dòng VIỆC đọc là "Việc cá
      nhân", buổi lịch đọc là "Cá nhân". Mượn chung một hằng là một chỗ sai. */
   la('nhãn loại của BUỔI nói "Cá nhân", không phải "Việc cá nhân"',
-     lich.lcNhanLoai({rieng_tu:true}).includes('Cá nhân')
-     && !lich.lcNhanLoai({rieng_tu:true}).includes('Việc cá nhân'),
-     lich.lcNhanLoai({rieng_tu:true}));
+     lich.lcOLoaiToi({rieng_tu:true}, 1, '2026-09-07').includes('Cá nhân')
+     && !lich.lcOLoaiToi({rieng_tu:true}, 1, '2026-09-07').includes('Việc cá nhân'),
+     lich.lcOLoaiToi({rieng_tu:true}, 1, '2026-09-07'));
   lich.dat({});
 }
 
@@ -264,17 +274,48 @@ console.log('\n⑥b Ô LOẠI — hai cờ máy chủ gác hai dòng KHÁC NHAU'
   lich.dat({});
 }
 
-console.log('\n⑥c NHÃN LOẠI trên cửa buổi — chỉ nói khi có gì để nói');
+console.log('\n⑥c Ô LOẠI trên cửa buổi — loại CỦA NGƯỜI ĐANG XEM, không phải của buổi');
 {
+  /* Dòng này từ 04/09 tới 07/09 là một NHÃN CHỈ ĐỌC bày cam kết của sự kiện.
+     Tracy chốt 07/09: phân loại là chuyện của từng người — cùng một buổi, host
+     xếp vào cam kết của host còn khách để phát sinh, ai muốn đổi thì tự đổi.
+     Nên dòng ấy nay là Ô CHỌN, và giá trị nó mở ra phải chép đúng luật thừa
+     hưởng bên máy chủ. Ca thứ tư dưới đây chính là lỗi TRI-159 nhìn từ mặt hình:
+     hạt của người khác thì KHÔNG được đứng trong ô chọn của mình. */
   const LUONG = [{ma:'ck-01', ten:'Cam kết một', luong:1}];
-  lich.dat({LUONG});
-  la('buổi thường: không in gì cả', lich.lcNhanLoai({}) === '');
-  la('buổi riêng: dấu khoá và tên loại',
-     lich.lcNhanLoai({rieng_tu: true}).includes('🔒'));
-  la('buổi gắn cam kết: ô số cộng tên cam kết',
-     lich.lcNhanLoai({tieu_diem_ma: 'ck-01'}).includes('Cam kết một'));
-  la('cam kết của người khác chưa nạp thì im lặng bỏ qua, không ngã',
-     lich.lcNhanLoai({tieu_diem_ma: 'ck-cua-nguoi-khac'}) === '');
+  const O = (l, viec) => { lich.dat({LUONG, LC_VIEC: viec || {}});
+                           return lich.lcOLoaiToi(l, 9, '2026-09-07'); };
+  const dangO = h => (h.match(/value="([^"]*)" selected/) || [,'∅'])[1];
+
+  la('buổi RIÊNG: chỉ đọc, không có ô chọn',
+     O({rieng_tu:true}).includes('🔒') && !O({rieng_tu:true}).includes('<select'),
+     'cờ riêng tư của sự kiện cai quản việc sinh ra từ nó — bày ô chọn là mời khai một thứ máy chủ sẽ ghi đè');
+  la('buổi thường một lần: ô mở ở "việc phát sinh"',
+     dangO(O({})) === '', dangO(O({})));
+  la('buổi LẶP LẠI: ô mở ở việc cố định',
+     dangO(O({lap:'tuan'})) === '_cd', dangO(O({lap:'tuan'})));
+  la('cam kết CỦA MÌNH: ô mở ở đúng cam kết ấy',
+     dangO(O({tieu_diem_ma:'ck-01'})) === 'ck-01', dangO(O({tieu_diem_ma:'ck-01'})));
+  la('cam kết CỦA NGƯỜI KHÁC: ô KHÔNG mở ở hạt ấy (đây là TRI-159)',
+     dangO(O({tieu_diem_ma:'ck-cua-sydney'})) === '',
+     'hạt người khác lọt vào ô chọn là lặp lại đúng lỗi 07/09');
+  la('buổi lặp mang cam kết người khác: rơi về việc cố định, không rơi về hạt ấy',
+     dangO(O({tieu_diem_ma:'ck-cua-sydney', lap:'tuan'})) === '_cd');
+
+  /* VIỆC ĐÃ ĐẺ thì ô đọc từ VIỆC, không đọc lại từ sự kiện — không thì người ta
+     tự xếp lại một lần rồi mở cửa ra thấy nó nhảy về giá trị cũ. */
+  la('đã có việc: ô đọc từ việc, không đọc từ sự kiện',
+     dangO(O({tieu_diem_ma:'ck-01'}, {'9|2026-09-07': {tieu_diem_ma:null}})) === '');
+  la('đã có việc mang cam kết khác sự kiện: vẫn theo việc',
+     dangO(O({}, {'9|2026-09-07': {tieu_diem_ma:'ck-01'}})) === 'ck-01');
+
+  /* Máy chủ chưa có cột `loai_viec` thì đừng mở ô ở một giá trị không ghi được:
+     `manhLoai` bỏ trường ấy đi, nên người ta chọn "cố định" mà lưu xong vẫn thấy
+     phát sinh — một cú bấm không để lại dấu vết nào là kiểu hỏng khó tra nhất. */
+  lich.dat({LUONG, CO_LOAI_VIEC: false});
+  la('máy chủ chưa có cột loại việc: buổi lặp rơi về phát sinh, không về cố định',
+     dangO(lich.lcOLoaiToi({lap:'tuan'}, 9, '2026-09-07')) === '');
+  lich.dat({});
 }
 
 console.log('\n⑦ TỆP SQL — hai hàng rào phải cùng có mặt');

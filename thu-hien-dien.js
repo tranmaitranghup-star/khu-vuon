@@ -72,6 +72,8 @@ function may(DOI, ME){
     const clearInterval = () => { SO_XOA++; };
     const hop = {innerHTML: '', hidden: false};
     const document = {getElementById: id => id === 'hn-hiendien' ? hop : null};
+    ${catKhoi("const CAP = {QUAN_TRI", "const laMember = ()  => capCua(ME) === CAP.MEMBER;")}
+    ${catKhoi('const DOI_DO = () =>', ';')}
     ${catHam('chuSach')}
     ${catHam('hdVe')}
     return {
@@ -91,7 +93,12 @@ const DOI7 = [
   {id:'u4', ten:'Hafi'},   {id:'u5', ten:'Sydney'},{id:'u6', ten:'Justin'},
   {id:'u7', ten:'John'},
 ];
-const ME = {id:'u2', ten:'Tracy'};
+/* ⚠️ ME PHẢI MANG CẤP, không chỉ mang id (07/09). Từ bản ba cấp, `hdVe` giấu cả
+   hàng với Member — mà một `ME` không cờ nào đọc ra ĐÚNG LÀ Member, nên bỏ cờ
+   ở đây là mọi ca dưới cùng thấy một cái hộp rỗng và trượt vì một lý do không
+   liên quan gì tới thứ chúng định đo. Tracy là quản trị, đúng người đang nhìn
+   hàng này. Ca riêng cho Member nằm ở `thu-ba-cap.js`. */
+const ME = {id:'u2', ten:'Tracy', la_lead:true, la_quan_tri:true};
 const NAY = Date.now();
 const ten = h => [...h.matchAll(/>([^<]*?)(?:<span|<\/span)/g)];
 
@@ -205,7 +212,8 @@ console.log('\n═══ HÀNG HIỆN DIỆN (TRI-88) ═══\n');
 
 /* ⑨ Tên người phải qua chuSach */
 {
-  const m = may([{id:'u1', ten:'<img src=x onerror=alert(1)>'}], {id:'u1'});
+  const m = may([{id:'u1', ten:'<img src=x onerror=alert(1)>'}],
+                {id:'u1', la_lead:true, la_quan_tri:true});
   m.dat({SAN:true, LUC:NAY, DS:[]});
   m.hdVe();
   la('tên có thẻ HTML bị vô hiệu hoá',

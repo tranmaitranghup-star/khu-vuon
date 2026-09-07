@@ -63,8 +63,12 @@ returns trigger language plpgsql security definer
 set search_path = public
 as $$
 begin
-  -- Chủ sự kiện và lead đi qua, không đụng gì.
-  if old.tao_boi = nguoi_id_dang_nhap() or la_lead() then return new; end if;
+  -- CHỈ chủ sự kiện đi qua. Lead KHÔNG (Tracy chốt 04/09, nhắc lại 07/09:
+  -- *"chỉ có host có quyền đó, và host cấp quyền cho khách thì khách được
+  -- thôi"*). Vế `la_lead()` từng đứng ở đây là bản chép lại từ tệp viết TRƯỚC
+  -- ngày ấy; giữ nó là mở lại đúng cánh cửa `nang-cap-quyen-host-su-kien.sql`
+  -- vừa đóng.
+  if old.tao_boi = nguoi_id_dang_nhap() then return new; end if;
   -- Còn lại là khách: hai cột này giữ nguyên bản cũ, dù họ gửi lên gì.
   new.rieng_tu := old.rieng_tu;
   new.tao_boi  := old.tao_boi;
@@ -77,18 +81,32 @@ create trigger tg_chan_khach_sua_cot_cam
   for each row execute function chan_khach_sua_cot_cam();
 
 
--- ═══ 3. NỚI `sua_lich` — thêm ĐÚNG một vế ══════════════════════════════════
--- Vế mới đòi CẢ HAI: cờ bật, VÀ người đang sửa có tên trong danh sách khách.
+-- ═══ 3. ĐẶT LẠI `sua_lich` — HAI cửa, không phải ba ════════════════════════
+-- Vế khách đòi CẢ HAI: cờ bật, VÀ người đang sửa có tên trong danh sách khách.
 -- Bật cờ mà không mời ai thì không mở cửa cho ai cả — đúng như Lịch Google.
+--
+-- 🔴 SỬA HỒI QUY 07/09. Bản đầu của tệp này giữ lại vế `la_lead()` vì nó chép
+-- policy cũ ở `nang-cap-su-kien-ca-nhan.sql:95` rồi nối thêm vế khách vào đuôi.
+-- Nhưng giữa hai tệp ấy đã có `nang-cap-quyen-host-su-kien.sql` (04/09) BỎ vế
+-- lead đi, nên chép bản cũ là lặng lẽ mở lại cánh cửa vừa đóng — và tệp mở lại
+-- nó chính là tệp mang tên "quyền của khách". Bảy người trong đội đang bật cờ
+-- lead, nên trên thực tế luật cũ đọc thành *ai cũng sửa được lịch của ai*.
+-- Tracy nhắc 07/09: *"Lead không sửa được mọi sự kiện trên lịch chung, chỉ có
+-- host có quyền đó, và host cấp quyền cho khách thì khách được thôi."*
+--
+-- ⚠️ BÀI HỌC CHO TỆP SAU: dựng lại một policy thì đọc bản ĐANG CHẠY trên máy
+-- chủ (`select qual from pg_policies where policyname='sua_lich'`), đừng chép
+-- từ tệp .sql cũ nhất tìm thấy. Một tệp .sql là ảnh chụp của một ngày, không
+-- phải trạng thái hôm nay.
 drop policy if exists sua_lich on lich_chung;
 create policy sua_lich on lich_chung for update
-  using      (la_lead() or tao_boi = nguoi_id_dang_nhap()
+  using      (tao_boi = nguoi_id_dang_nhap()
               or (khach_sua and nguoi_id_dang_nhap() = any(nguoi_ids)))
-  with check (la_lead() or tao_boi = nguoi_id_dang_nhap()
+  with check (tao_boi = nguoi_id_dang_nhap()
               or (khach_sua and nguoi_id_dang_nhap() = any(nguoi_ids)));
 
 comment on policy sua_lich on lich_chung is
-  'Sửa một sự kiện: lead, chủ sự kiện, hoặc khách mời khi chủ đã bật khach_sua. Cò tg_chan_khach_sua_cot_cam giữ rieng_tu và tao_boi khỏi tay khách kể cả lúc ấy.';
+  'Sửa một sự kiện: CHỈ chủ sự kiện (host), hoặc khách mời khi host đã bật khach_sua. Lead không có cửa nào ở đây. Cò tg_chan_khach_sua_cot_cam giữ rieng_tu và tao_boi khỏi tay khách kể cả lúc ấy.';
 
 -- ⛔ `xoa_lich` KHÔNG nới. Lịch Google cũng vậy: khách sửa được nội dung, nhưng
 --    huỷ cả sự kiện là việc của người tổ chức. Ghi ra đây để phiên sau đọc thấy

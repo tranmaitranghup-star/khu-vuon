@@ -25,10 +25,9 @@
 --      việc đang làm. Ai sau này định thêm `task_id` vào đây thì phải siết
 --      `doc_deepwork` lại trước.
 --
---    · ĐỒNG HỒ. Ngưỡng "im lặng quá 5 phút coi như đã đi khỏi" phải đo bằng
---      `now()` của máy chủ. Đo bằng đồng hồ máy khách thì một cái điện thoại
---      sai giờ đủ để hoặc giấu mất người đang làm, hoặc giữ mãi một người đã
---      tắt máy từ sáng.
+--    · ĐỒNG HỒ. Mọi phép so giờ phải đo bằng `now()` của máy chủ. Đo bằng
+--      đồng hồ máy khách thì một cái điện thoại sai giờ đủ để hoặc giấu mất
+--      người đang làm, hoặc giữ mãi một người đã tắt máy từ sáng.
 --
 --    · MỘT BẢN LUẬT. Phút đã trừ giờ nghỉ được tính một chỗ, không phải chép
 --      lại phép trừ ấy sang JavaScript rồi chờ hai bên lệch nhau.
@@ -53,19 +52,20 @@ select
   (p.tam_dung_luc is not null)       as dang_nghi
 from phien_deepwork p
 where p.ket_qua = 'dang_chay'
-  /* NGƯỠNG SỐNG. Máy đang giữ phiên đập một nhịp mỗi 60 giây (`dwDapNhip`),
-     và nó đập cả khi tab chìm lẫn khi người dùng bấm ⏸ — chỉ tắt hẳn khi máy
-     đã thật sự đi khỏi. Không có ngưỡng này thì ai đóng laptop giữa phiên sẽ
-     đeo viền xanh tới hết ngày, và một tín hiệu nói dối một lần thì lần sau
-     không ai còn nhìn nó nữa.
-     Năm phút là `DW_IM_LANG_PHUT` trong `public/index.html` — đổi thì đổi cả
-     hai chỗ. Nó đã để dư gấp năm lần nhịp đập, nên hụt vài nhịp vì mạng chập
-     chờn không làm ai biến mất. */
-  and p.nhip_cuoi is not null
-  and p.nhip_cuoi > now() - interval '5 minutes';
+  /* ⚠️ SỬA 07/09 (TRI-150) — ĐÃ TỪNG LÀ NGƯỠNG NHỊP TIM NĂM PHÚT.
+     Bản gốc đòi `nhip_cuoi > now() - interval '5 minutes'` và tin rằng một tab
+     đông lạnh nghĩa là máy ấy đã đi khỏi. Sai: người deep work trong một cửa
+     sổ khác chính là người có tab chìm lâu nhất, nên Andy làm suốt buổi mà mất
+     viền xanh trên máy Tracy, chạm vào app một cái là viền hiện lại.
+     Nay hỏi TRẦN thay cho nhịp tim. `DW_IM_LANG_PHUT` bên máy khách giữ nguyên
+     bằng 5 nhưng chỉ còn dùng cho việc đoạt lại phiên, không dính tới đây.
+     Mệnh đề dưới đã chép sang `nang-cap-hien-dien-theo-tran.sql` — SỬA CẢ HAI
+     TỆP để chạy lại tệp nào cũng ra cùng một kết quả. Đầu đuôi ở tệp kia.
+     180 phút là `DW_TRAN_PHUT` trong `public/index.html`. */
+  and p.bat_dau > now() - interval '180 minutes';
 
 comment on view ai_dang_lam is
-  'Ai trong đội đang trong một phiên deep work NGAY LÚC NÀY. Cố ý không có cột nào chỉ về việc đang làm — xem ghi chú riêng tư trong nang-cap-hien-dien-deepwork.sql.';
+  'Ai trong đội đang trong một phiên deep work NGAY LÚC NÀY — hỏi phiên còn mở và chưa chạm trần 180 phút, KHÔNG hỏi nhịp tim (TRI-150, 07/09). Cố ý không có cột nào chỉ về việc đang làm.';
 
 grant select on ai_dang_lam to authenticated;
 

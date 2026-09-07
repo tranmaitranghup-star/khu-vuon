@@ -78,6 +78,9 @@ const NGUON = [
   catDong('const DO_NHAN ='),
   catDong('const DO_CAU  ='),
   catDong('const doTrong ='),
+  /* Ba bảng của màn này nay đổ ra từ `DOI_DO()` chứ không thẳng `DOI` — người
+     mang cờ `ngoai_bang_do` không đứng trong bảng đo (Tracy chốt 07/09). */
+  catDong('const DOI_DO ='),
   catHam('veBangGat'),
   catHam('veBangCham'),
   catHam('veSoSanh'),

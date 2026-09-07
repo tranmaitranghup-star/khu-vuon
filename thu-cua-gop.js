@@ -23,6 +23,9 @@
      ⑥ Gửi cột `mau` xuống máy chủ chưa có cột ấy → CẢ CÂU LỆNH hỏng, việc không
         ghi được gì, chứ không phải một trường bị bỏ qua.
 
+   ⑩ Một cờ `LC_*` bị gán mà thiếu dòng khai → chế độ lỏng che lỗi cho tới khi
+        có đường nào ĐỌC nó trước, và đường ấy chính là cửa gộp (TRI-154).
+
    Chạy:  node production/tinh-thuc-app/thu-cua-gop.js
 */
 const fs = require('fs');
@@ -374,6 +377,25 @@ console.log('\n⑤ NHÁNH SỰ KIỆN: chép đúng ba ô, chặn khi thiếu ng
     t.api2.lcChonKhe('2026-09-08', 570, null);      // cửa gộp ĐÓNG
     la('Cửa gộp đóng → KHÔNG đụng vào ô chung của nó',
        t.DOM['vc-han'].value === '' && !t.SO.gio.some(g => g.id === 'vc-gio'));
+  }
+
+  console.log('\n⑩ MỌI CỜ `LC_*` BỊ GÁN ĐỀU PHẢI CÓ DÒNG KHAI (TRI-154)');
+  {
+    /* Khối mã chạy ở chế độ lỏng, nên một phép gán thiếu dòng khai vẫn đẻ ra
+       biến toàn cục và im lặng — cho tới khi có đường nào ĐỌC cờ ấy trước khi
+       gán. Cửa gộp chính là đường đó: nó gọi thẳng `lcLuu`, không đi qua
+       `lcMoForm`. TRI-145 thêm `LC_SUA_GIO` mà quên dòng khai, và trang vừa tải
+       không thêm nổi một sự kiện nào — cả bộ thử vẫn xanh 63/63 vì mọi bài đều
+       lấy một khối mã ra chạy trên màn giả, mà một khối đã lấy ra thì không còn
+       giữ được tầm nhìn của biến. Nên ca này soi trên FILE GỐC. */
+    const dungCo = new Set(SRC.match(/\bLC_[A-Z0-9_]+\b/g) || []);
+    const khaiCo = new Set((SRC.match(/\b(?:let|const|var)\s+LC_[A-Z0-9_]+/g) || [])
+                           .map(x => x.split(/\s+/)[1]));
+    const thieuCo = [...dungCo].filter(t => !khaiCo.has(t));
+    la('không cờ LC_ nào bị dùng mà thiếu let/const/var',
+       thieuCo.length === 0, 'thiếu dòng khai: ' + thieuCo.join(', '));
+    la('LC_SUA_GIO có dòng khai — cờ giờ nền của TRI-145',
+       khaiCo.has('LC_SUA_GIO'));
   }
 
   console.log(truot ? `\n❌ ${truot} ca TRƯỢT / ${dat + truot}` : `\n✅ cả ${dat} ca ĐẠT`);

@@ -112,10 +112,17 @@ console.log('\n③ Quyền — bày một thao tác mà máy chủ từ chối l
      Luật nay nằm ở ĐÚNG MỘT CHỖ (`lcDuocSua`), ba chỗ chép tay đã gom về đó,
      nên ca này soi cả hai đầu: nơi gọi, và câu luật. Hàng rào thật vẫn ở máy
      chủ — `nang-cap-quyen-host-su-kien.sql`, chính sách `sua_lich` chỉ `tao_boi`. */
+  /* NỚI THÊM VẾ KHÁCH 07/09 — Tracy: *"host cấp quyền cho khách thì khách được
+     thôi"*. Luật vẫn ở ĐÚNG MỘT CHỖ (`lcDuocSua`); ca này soi cả nơi gọi lẫn
+     câu luật, và canh riêng rằng `la_lead` không quay lại. */
   la('lcCuaNgay phát ra cờ sua, và luật ấy chỉ có một bản',
      /sua: lcDuocSua\(l\)/.test(catHam('lcCuaNgayTu'))
-       && /return !!\(ME && l && l\.tao_boi === ME\.id\)/.test(catHam('lcDuocSua')),
-     'phải đọc đúng luật ghi `sua_lich` của máy chủ: CHỈ host, không nới cho lead');
+       && /l\.tao_boi === ME\.id/.test(catHam('lcDuocSua')),
+     'phải đọc đúng luật ghi `sua_lich` của máy chủ');
+  la('luật ấy không nới cho lead, chỉ nới cho khách được host cấp quyền',
+     !/la_lead/.test(catHam('lcDuocSua'))
+       && /khach_sua/.test(catHam('lcDuocSua')),
+     'cả bảy người trong đội đều bật cờ lead — còn nó thì luật không siết gì');
   la('lcMoBuoi chặn cú click bắn theo sau cú kéo',
      /TLG_VUA_KEO < 400/.test(catHam('lcMoBuoi')),
      'thiếu thì thả tay xong là cửa buổi bật ra, chen ngang thao tác vừa xong');
@@ -306,7 +313,13 @@ console.log('\n⑩ lcLuuDoi chạy thật — bốn gói, soi từng trường')
     upsert(dong, opt){ ghi.push({bang, phep: 'upsert', dong, opt}); return Promise.resolve({error: null}); },
     update(patch){ ghi.push({bang, phep: 'update', patch});
       return {eq: () => Promise.resolve({error: null})}; },
-    select(){ return {eq: () => ({limit: () => Promise.resolve({data: [], error: null})})}; }
+    /* Chuỗi đọc phải nhận cả `.eq().eq().maybeSingle()` từ 07/09: `lcChupDoi`
+       hỏi dòng ngoại lệ cũ trước khi ghi đè lên nó (TRI-157). Trả về rỗng cho
+       mọi lượt đọc — bài này soi GÓI GỬI LÊN, không soi đường lui. */
+    select(){ const nut = {eq: () => nut,
+      limit: () => Promise.resolve({data: [], error: null}),
+      maybeSingle: () => Promise.resolve({data: null, error: null})};
+      return nut; }
   };}};
   const chuoi = {id: 7, ten: 'Họp tuần', lap: 'tuan', gio_bat_dau: 540, so_phut: 60,
                  ngay_bat_dau: '2026-08-01', ngay_ket_thuc: null};
@@ -318,15 +331,25 @@ console.log('\n⑩ lcLuuDoi chạy thật — bốn gói, soi từng trường')
                  hopHoiDong(){}, toast(c){ CTX.chu = c; }, tlQuenKho(){},
                  veTimeline: async () => {}, lamMoiCuaToi: async () => {},
                  ngayDep: g => g, tlgHHMM: p => String(p),
+                 /* Ngăn hoàn tác là chuyện của bài `thu-hoan-tac.js`; ở đây chỉ
+                    cần nó không làm ngã lời gọi (TRI-157). */
+                 htNhan: () => undefined,
                  tlgVN: null, chu: ''};
     /* lcTheoChuoi là đường MÁY CHỦ kéo việc của CẢ ĐỘI đi theo giờ mới của một
        chuỗi (TRI-109, 05/09) — mã thật gọi nó ở nhánh phạm vi Tất cả. Cắt thật
        chứ không tiêm bản giả: với CO_VIEC_BUOI tắt nó quay ra ngay dòng đầu,
        đúng như lcTheoViec ngay trên, nên bốn ca dưới vẫn soi được đúng cái gói
        gửi lên máy chủ mà không phải bịa ra một hàm thứ hai. */
+    /* `lcLuot` · `lcChupBuoi` · `lcChupDoi` cắt THẬT chứ không tiêm bản giả —
+       cùng luật đã chép ở làn VDT: chép một hàm chung vào cọc là bài thử đi chấm
+       một luật của riêng nó, và ngày app đổi cách chụp thì cọc vẫn chụp kiểu cũ
+       mà mọi ca vẫn xanh. */
     CTX.f = new Function('CTX', `with (CTX) {
       ${catHam('lcTheoViec')}
       ${catHam('lcTheoChuoi')}
+      ${catHam('lcLuot')}
+      ${catHam('lcChupBuoi')}
+      ${catHam('lcChupDoi')}
       ${catHam('lcLuuDoi')}
       return lcLuuDoi; }`)(CTX);
     return CTX;

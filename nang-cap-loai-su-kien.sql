@@ -118,12 +118,22 @@ create trigger tg_cham_theo_su_kien_cha
 -- Buổi đã đẻ việc trước khi có cột này: kéo cam kết xuống cho việc nào CHƯA có
 -- cam kết. Không đụng việc người ta đã tự xếp — đúng luật "thừa hưởng, không
 -- đồng bộ" ở đầu tệp.
+-- ⚠️ VẾ CUỐI THÊM 07/09, ĐỪNG BỎ: chỉ kéo cam kết xuống khi hạt ấy là luống
+-- của CHÍNH chủ việc. Bản đầu không có vế này, nên nó gán hạt của host cho
+-- việc của khách mời — rồi cò `kiem_task_dung_luong` chặn mọi cú ghi lên các
+-- dòng ấy về sau, khoá cứng cả việc tick xong lẫn deep work. Đã dọn bằng
+-- `va-viec-cua-buoi-luong-nguoi-khac.sql`; vế này để chạy lại tệp không dựng
+-- lại vết cũ. Cùng vế mà `nang-cap-mang-du-an.sql` đã phải đặt cho câu lấp
+-- `muc_tieu_id` của nó — và ở đó còn một lý do nữa: đụng vào một dòng lệch chủ
+-- là cò ném lỗi và CUỘN NGƯỢC CẢ TỆP.
 update task t
    set tieu_diem_ma = l.tieu_diem_ma
   from lich_chung l
+  join tieu_diem o on o.ma = l.tieu_diem_ma
  where l.id = t.lich_id
    and t.tieu_diem_ma is null
    and l.tieu_diem_ma is not null
+   and o.nguoi_id = t.nguoi_id
    and not t.rieng_tu;
 
 commit;
